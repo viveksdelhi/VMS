@@ -65,54 +65,6 @@ def start_stream(rtsp_link, camera_name):
         if out:
             out.release()
 
-@app.route('/video_feed/<camera_name>')
-def video_feed(camera_name):
-    def generate():
-        last_frame = None
-        while True:
-            with buffer_locks.get(camera_name, Lock()):  # Use lock to safely access the buffer
-                if camera_name in buffers and buffers[camera_name]:
-                    last_frame = buffers[camera_name].popleft()  # Get the latest frame
-                elif last_frame is not None:
-                    print(f"No new frames available for {camera_name}. Replaying last frame.")
-                else:
-                    print(f"No frames available for {camera_name}.")
-                    time.sleep(0.1)  # Prevent busy waiting
-                    continue
-            
-            if last_frame is not None:
-                _, jpeg = cv2.imencode('.jpg', last_frame)
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
-            time.sleep(1 / FRAME_RATE)  # Maintain the desired frame rate
-
-    return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
-'''
-#old code 
-@app.route('/add_camera', methods=['POST'])
-def add_camera():
-    try:
-        data = request.json
-        camera_name = data.get('camera_name')
-        rtsp_link = data.get('rtsp_link')
-
-        if not camera_name or not rtsp_link:
-            return jsonify({"error": "Camera name and RTSP link are required."}), 400
-
-        # Start a new thread for the new camera
-        if camera_name not in buffers:
-            with ThreadPoolExecutor(max_workers=10) as executor:  # Limit to a number of threads
-                executor.submit(start_stream, rtsp_link, camera_name)
-            return jsonify({"message": f"Camera {camera_name} added successfully."}), 201
-        else:
-            return jsonify({"error": "Camera with this name already exists."}), 409
-
-    except Exception as e:
-        print(f"Error adding camera: {e}")
-        return jsonify({"error": "Unable to add camera."}), 500
-    
-'''
-
 @app.route('/add_camera', methods=['POST'])
 def add_camera():
     try:
@@ -137,21 +89,6 @@ def add_camera():
         return jsonify({"error": "Unable to add camera."}), 500
 
 
-'calculate the disk information'
-@app.route('/disk_info', methods=['get'])
-def disk_info():
-    dir = os.getcwd()
-    drive = dir[:3]
-    total, used, free = shutil.disk_usage(drive)
-
-    # Convert bytes to gigabytes
-    total_gb = total / (1024 ** 3)
-    used_gb = used / (1024 ** 3)
-    free_gb = free / (1024 ** 3)
-    
-    data = {
-        "total_gb" : f"Total: {total / (1024 ** 3):.2f} GB"
-    }
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

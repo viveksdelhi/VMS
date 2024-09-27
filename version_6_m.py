@@ -67,6 +67,9 @@ def start_stream(rtsp_link, camera_name):
 
 @app.route('/add_camera', methods=['POST'])
 def add_camera():
+    '''
+    In this function add the camera for starting the recording
+    '''
     try:
         data = request.json
         camera_name = data.get('camera_name')
@@ -88,7 +91,35 @@ def add_camera():
         print(f"Error adding camera: {e}")
         return jsonify({"error": "Unable to add camera."}), 500
 
+@app.route('/recordings/<camera_name>', methods=['GET'])
+def list_recordings(camera_name):
+    ''' this api returns the all video related to particular camera'''
+    try:
+        folder_path = f"recordings/{camera_name}"
+        recordings = os.listdir(folder_path)
+        recordings = [rec for rec in recordings if rec.endswith('.avi')]
+        return jsonify(recordings), 200
+    except Exception as e:
+        print(f"Error retrieving recordings for {camera_name}: {e}")
+        return jsonify({"error": "Unable to retrieve recordings."}), 500
 
 
+# @app.route('/playback/<camera_name>/<recording_name>', methods=['GET'])
+# def playback_recording(camera_name, recording_name):
+#     '''play recording of camera '''
+#     try:
+#         folder_path = f"recordings/{camera_name}"
+#         file_path = os.path.join(folder_path, recording_name)
+#         if os.path.exists(file_path):
+#             return send_file(file_path, as_attachment=True)
+#         else:
+#             return jsonify({"error": "Recording not found."}), 404
+#     except Exception as e:
+#         print(f"Error playing back recording {recording_name} for {camera_name}: {e}")
+#         return jsonify({"error": "Unable to play back recording."}), 500
+
+
+    
+    
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

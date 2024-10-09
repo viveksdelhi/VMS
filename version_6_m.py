@@ -30,7 +30,7 @@ def start_stream(rtsp_link, camera_name):
     os.makedirs(folder_path, exist_ok=True)
 
     out = None
-    segment_duration = 2 * 60  # 2 minutes in seconds
+    segment_duration = 1 * 60  # 15 minutes recording
     start_time = time.time()
 
     try:
@@ -117,6 +117,22 @@ def list_recordings(camera_name):
 #     except Exception as e:
 #         print(f"Error playing back recording {recording_name} for {camera_name}: {e}")
 #         return jsonify({"error": "Unable to play back recording."}), 500
+
+@app.route('/playback/<camera_name>/<recording_name>', methods=['GET'])
+def playback_recording(camera_name, recording_name):
+    '''Play recording of camera'''
+    try:
+        folder_path = f"recordings/{camera_name}"
+        file_path = os.path.join(folder_path, recording_name)
+        
+        if os.path.exists(file_path):
+            # Remove as_attachment=True to allow video playback in the browser
+            return send_file(file_path, mimetype='video/x-msvideo')  # Change to 'video/mp4' if using mp4 files
+        else:
+            return jsonify({"error": "Recording not found."}), 404
+    except Exception as e:
+        print(f"Error playing back recording {recording_name} for {camera_name}: {e}")
+        return jsonify({"error": "Unable to play back recording."}), 500
 
 
     

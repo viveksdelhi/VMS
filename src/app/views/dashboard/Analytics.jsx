@@ -280,6 +280,7 @@ export default function Analytics() {
                 borderRadius: "12px",
                 width: "100%",
                 padding: "3px",
+                height:"134px"
               }}
             >
               <CardContent>
@@ -307,7 +308,7 @@ export default function Analytics() {
                     marginTop: "20px",
                   }}
                 >
-                  <div>
+                  <div className="m-0 p-0">
                     <Box
                       sx={{
                         width: "100%",
@@ -326,7 +327,7 @@ export default function Analytics() {
                     <p className="text-center">{basic}</p>
                   </div>
 
-                  <div>
+                  <div >
                     <Box
                       sx={{
                         width: "100%",

@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import axios from 'axios';
-import { token,API } from 'serverConnection';
+import { token, API, detection } from 'serverConnection';
 
 // Mapping for display names
 const displayNames = {
@@ -53,8 +53,9 @@ const visibleKeys = [
   // 'queueDetection',
 ];
 
-export const ObjectDetection = ({ cameraId, id }) => {
+export const ObjectDetection = ({ cameraId, cameraIP, publicUrl }) => {
   const [open, setOpen] = useState(false);
+  const [objectData, setObjectData] = useState([]);
   const [selectedDetections, setSelectedDetections] = useState({
     recording: false,
     snapshot: false,
@@ -77,14 +78,18 @@ export const ObjectDetection = ({ cameraId, id }) => {
     // Fetch data from API when the component mounts or cameraId changes
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${API}/api/CameraAlertStatus/CameraAlert/${id}`, {
+        const response = await axios.get(`${API}/api/CameraAlertStatus/CameraAlert/${cameraId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         const data = response.data;
         setSelectedDetections(data);
-        // console.log(data, "ihjabdhbahdbsdadadqadqdq")
+        //    get object list
+        const response2 = await axios.get(`${API}/api/CameraIPList/GetByCameraIP?cameraIP=${cameraIP}`
+        );
+        const data2 = response2.data;
+        setObjectData(data2)
 
       } catch (error) {
         console.error('Error fetching detection settings:', error);
@@ -92,7 +97,7 @@ export const ObjectDetection = ({ cameraId, id }) => {
     };
 
     fetchData();
-  }, [id]);
+  }, [cameraId]);
 
   const handleIconClick = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -104,9 +109,19 @@ export const ObjectDetection = ({ cameraId, id }) => {
     }));
   };
 
+  // console.log(selectedDetections.personDetection)
+  // console.log(objectData.objectList)
+  const postData = {
+    objectlist: objectData.objectList,
+    camera_id: cameraId, // Ensure camera_id is an integer
+    url: publicUrl,
+    camera_ip: cameraIP,
+    running:String(selectedDetections.personDetection)
+  };
+  // console.log(postData)
+  //==================================================
   const handleSave = async () => {
     const payload = {
-      id,
       cameraId,
       ...selectedDetections,
     };
@@ -121,6 +136,8 @@ export const ObjectDetection = ({ cameraId, id }) => {
           'Content-Type': 'application/json',
         },
       });
+
+      await axios.post(`${detection}/details`, {cameras: [postData]});
       setOpen(false);
     } catch (error) {
       console.error('Error saving settings:', error);

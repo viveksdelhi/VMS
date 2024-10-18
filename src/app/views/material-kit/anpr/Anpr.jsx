@@ -350,7 +350,7 @@ import { Card, ListGroup, Table, Modal, Button, Form } from "react-bootstrap";
 import Hls from "hls.js";
 import { PlayCircleOutline, StopCircle, PhotoCamera } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
-import { ANPRAPI, API, RTSPAPI } from "serverConnection";
+import { ANPRAPI, API, LiveFeedUrl  } from "serverConnection";
 
 function Anpr() {
   const [cameraList, setCameraList] = useState([]);
@@ -363,7 +363,7 @@ function Anpr() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [totalItems, setTotalItems] = useState(0);
 
   useEffect(() => {
@@ -393,8 +393,9 @@ function Anpr() {
           params.cameraId = selectedCamera.cameraId;
         }
 
-        const response = await axios.get(`${API}/api/CameraTrackingData/Pagination`, { params });
-        setTableData(response.data.cameraTrackingData);
+        const response = await axios.get(`${API}/api/DetectionVehicle/Pagination`, { params });
+        setTableData(response.data.cameraAlertStatuses);
+        console.log(response.data.cameraAlertStatuses);
         setTotalItems(response.data.totalCount);
       } catch (error) {
         console.error("Error fetching table data:", error);
@@ -447,7 +448,7 @@ function Anpr() {
     setCurrentPage(1); // Reset to the first page when camera changes
 
     try {
-      const response = await axios.get(`${API}/api/CameraTrackingData/Pagination`, {
+      const response = await axios.get(`${API}/api/DetectionVehicle/Pagination`, {
         params: {
           pageNumber: 1, // Ensure starting from the first page
           pageSize: itemsPerPage,
@@ -456,10 +457,10 @@ function Anpr() {
           orderType:"desc"
         }
       });
-      setTableData(response.data.cameraTrackingData);
+      setTableData(response.data.cameraAlertStatuses);
       setTotalItems(response.data.totalCount);
 
-      setVideoUrl(`${RTSPAPI}/${camera.cameraId}/index.m3u8`);
+      setVideoUrl(`${LiveFeedUrl }/${camera.cameraId}/index.m3u8`);
       setVideoPlaying(true);
     } catch (error) {
       console.error("Error fetching camera data:", error);
@@ -567,7 +568,7 @@ function Anpr() {
             </Card.Body>
           </Card>
         </div>
-      </div>
+      </div> 
 
       <div className="mt-4">
         <Table striped bordered hover variant="dark">
@@ -575,10 +576,10 @@ function Anpr() {
             <tr>
               <th>S.No.</th>
               <th>Camera Name</th>
-              <th>Vehicle Image</th>
-              <th>No. Plate Image</th>
               <th>Vehicle No</th>
               <th>Date and Time</th>
+              <th>Vehicle Image</th>
+              <th>No. Plate Image</th>
             </tr>
           </thead>
           <tbody>
@@ -586,30 +587,29 @@ function Anpr() {
               <tr key={data.id}>
                 <td>{index + 1 + indexOfFirstItem}</td>
                 <td>{data.camera.name}</td>
-                <td className="text-center">
+                <td>{data.text}</td>
+                <td>
+                  {data.regDate.slice(0, 10).replace(/-/g, "-")}
+                  {` ${data.regDate.slice(11, 19)}`}
+                </td>
+                <td className="text-center m-0 p-0" style={{width:"25px"}}> 
                   <IconButton
                     onClick={() => handleImageClick(`${ANPRAPI}/${data.vichelImage.replace(/\\/g, '/')}`)}
                     color="primary"
-                    className="ms-2"
                     size="small"
                   >
-                    <PhotoCamera />
+                    <img src={`${ANPRAPI}/${data.vichelImage}`} alt="no image" height={50} width={110} />
                   </IconButton>
                 </td>
-                <td className="text-center">
+                <td className="text-center m-0 p-0" style={{width:"25px"}}>
                   <IconButton
                     onClick={() => handleImageClick(`${ANPRAPI}/${data.noPlateImage.replace(/\\/g, '/')}`)}
                     color="primary"
                     className="ms-2"
                     size="small"
                   >
-                    <PhotoCamera />
+                     <img src={`${ANPRAPI}/${data.noPlateImage}`} alt=" no image" height={50}  width={110}/>
                   </IconButton>
-                </td>
-                <td>{data.vichelNo}</td>
-                <td>
-                  {data.regDate.slice(0, 10).replace(/-/g, "-")}
-                  {` ${data.regDate.slice(11, 19)}`}
                 </td>
               </tr>
             ))}

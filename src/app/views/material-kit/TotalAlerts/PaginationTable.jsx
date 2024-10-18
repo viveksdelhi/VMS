@@ -10,53 +10,53 @@ function PaginationTable() {
   const [tableData, setTableData] = useState([]);
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState("");
+  ;
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(0)
 
-
-  const location=useLocation()
+  const location = useLocation();
   const state = location.state?.Status || ""; // Empty if no state passed
-  console.log(state)
+  console.log(state);
 
   // Fetch table data
-  useEffect(() => {
-    const fetchTableData = async () => {
-      try {
-        const response = await axios.get(`${API}/api/CameraAlert/GetAll`, {
+  const fetchTableData = async () => {
+    try {
+      const response = await axios.get(
+        `${API}/api/CameraAlert/Pagination?pageNumber=${currentPage}&pageSize=${itemsPerPage}&orderBy=desc&orderType=desc`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
-        let filterData=response.data
-        console.log(filterData)
-        if(state==="Basic"){ 
-          filterData=filterData.filter(data=>data.alertStatus==="B")
         }
-        else if(state==="Sevier"){
-            filterData=filterData.filter(data=>data.alertStatus==="S")
-          }
-        else if(state==="Critical"){
-            filterData=filterData.filter(data=>data.alertStatus==="C")
-          }
-        setTableData(filterData);
-      } catch (error) {
-        console.error("Error fetching camera data:", error);
+      );
+      let filterData = response.data.cameraAlertStatuses;
+      console.log(filterData);
+      
+      // Filter based on state
+      if (state === "Basic") {
+        filterData = filterData.filter((data) => data.alertStatus === "B");
+      } else if (state === "Sevier") {
+        filterData = filterData.filter((data) => data.alertStatus === "S");
+      } else if (state === "Critical") {
+        filterData = filterData.filter((data) => data.alertStatus === "C");
       }
-    };
-    
+
+      setTableData(filterData);
+
+      // Set the total pages based on the response total count (assuming response.data.totalCount is provided)
+      const totalCount = response.data.totalCount;
+      setTotalPages(Math.ceil(totalCount / itemsPerPage));
+    } catch (error) {
+      console.error("Error fetching camera data:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchTableData();
-  }, []);
-
-
-  
-
-  // Calculate paginated data
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = tableData.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(tableData.length / itemsPerPage);
+  }, [currentPage, itemsPerPage]);
 
   // Handle image modal visibility
   const handleImageClick = (imageUrl) => {
@@ -69,13 +69,13 @@ function PaginationTable() {
   // Pagination handlers
   const handlePreviousPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(prevPage => prevPage - 1);
+      setCurrentPage((prevPage) => prevPage - 1);
     }
   };
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(prevPage => prevPage + 1);
+      setCurrentPage((prevPage) => prevPage + 1);
     }
   };
 
@@ -83,14 +83,14 @@ function PaginationTable() {
     setItemsPerPage(Number(event.target.value));
     setCurrentPage(1); // Reset to first page on page size change
   };
-
+//pagination end
   return (
     <Container className="mt-4">
       {/* Table for Camera Details */}
       <TableContainer component={Paper} className="mb-4">
         <Table>
           <TableHead>
-            <TableRow >
+            <TableRow>
               <TableCell>S.No.</TableCell>
               <TableCell>Object Count</TableCell>
               <TableCell>Alert Type</TableCell>
@@ -100,18 +100,14 @@ function PaginationTable() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {currentItems.map((data, index) => (
+            {tableData.map((data, index) => (
               <TableRow key={data.id}>
-                <TableCell>{indexOfFirstItem + index + 1}</TableCell>
+                <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                 <TableCell>{data.objectCount}</TableCell>
                 <TableCell>{data.alertStatus}</TableCell>
                 <TableCell>{data.objectName}</TableCell>
                 <TableCell>
-                  <IconButton
-                    onClick={() => handleImageClick(data.framePath)}
-                    color="primary"
-                    size="small"
-                  >
+                  <IconButton onClick={() => handleImageClick(data.framePath)} color="primary" size="small">
                     <PhotoCamera />
                   </IconButton>
                 </TableCell>
@@ -134,22 +130,13 @@ function PaginationTable() {
       <div className="d-flex justify-content-end align-items-center mb-4">
         <div className="d-flex align-items-center">
           {/* Pagination Controls */}
-          <Button 
-            variant="primary" 
-            onClick={handlePreviousPage} 
-            disabled={currentPage === 1}
-            className="me-2"
-          >
+          <Button variant="primary" onClick={handlePreviousPage} disabled={currentPage === 1} className="me-2">
             Previous
           </Button>
           <div className="me-3">
             Page {currentPage} of {totalPages}
           </div>
-          <Button 
-            variant="primary" 
-            onClick={handleNextPage} 
-            disabled={currentPage === totalPages}
-          >
+          <Button variant="primary" onClick={handleNextPage} disabled={currentPage === totalPages}>
             Next
           </Button>
         </div>
@@ -157,11 +144,7 @@ function PaginationTable() {
         {/* Items per Page Select Box */}
         <div className="ms-3">
           <label htmlFor="itemsPerPage" className="me-2">Show: </label>
-          <select
-            id="itemsPerPage"
-            value={itemsPerPage}
-            onChange={handleItemsPerPageChange}
-          >
+          <select id="itemsPerPage" value={itemsPerPage} onChange={handleItemsPerPageChange}>
             <option value={10}>10</option>
             <option value={20}>20</option>
             <option value={50}>50</option>

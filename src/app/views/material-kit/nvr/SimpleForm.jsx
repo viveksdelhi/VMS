@@ -191,14 +191,14 @@ const SimpleForm = () => {
               <MenuItem value="">Select NVR Type</MenuItem>
               <MenuItem value="Hikvision">Hikvision</MenuItem>
               <MenuItem value="Honeywell">Honeywell</MenuItem>
-              <MenuItem value="Honeywell">Dahua</MenuItem>
-              <MenuItem value="Honeywell">CP Plus</MenuItem>
-              <MenuItem value="Honeywell">Uniview</MenuItem>
-              <MenuItem value="Honeywell">Genetec</MenuItem>
-              <MenuItem value="Honeywell">Avigilon</MenuItem>
+              <MenuItem value="Dahua">Dahua</MenuItem>
+              <MenuItem value="CPPlus">CP Plus</MenuItem>
+              <MenuItem value="Uniview">Uniview</MenuItem>
+              <MenuItem value="Genetec">Genetec</MenuItem>
+              {/* <MenuItem value="Honeywell">Avigilon</MenuItem>
               <MenuItem value="Honeywell">Bosch</MenuItem>
               <MenuItem value="Honeywell">Milestone</MenuItem>
-              <MenuItem value="Honeywell">Digital Watchdog</MenuItem>
+              <MenuItem value="Honeywell">Digital Watchdog</MenuItem> */}
             </Select>
 
             <Button color="primary" variant="contained" type="submit">

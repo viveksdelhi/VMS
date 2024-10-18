@@ -274,7 +274,7 @@ console.log(status)
       rtspurl: camera.rtspurl,
       latitude: camera.latitude,
       longitude: camera.longitude,
-      status: camera.status,
+      // status: camera.status,
       lastLive: camera.lastLive,
     });
     setEditDialogOpen(true);
@@ -462,10 +462,10 @@ console.log(status)
             <TableCell>Brand</TableCell>
             <TableCell>MAC Address</TableCell>
             <TableCell>Manufacture Date</TableCell>
-            <TableCell>Last Live</TableCell>
+            {/* <TableCell>Last Live</TableCell> */}
             <TableCell>Location</TableCell>
             {/* <TableCell>Object Detection</TableCell> */}
-            <TableCell>Status</TableCell>
+            {/* <TableCell>Status</TableCell> */}
             <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
@@ -482,25 +482,25 @@ console.log(status)
                 <TableCell>{camera.brand}</TableCell>
                 <TableCell>{camera.macAddress}</TableCell>
                 <TableCell>{camera.manufacture}</TableCell>
-                <TableCell sx={{ textAlign: "center" }}>
+                {/* <TableCell sx={{ textAlign: "center" }}>
                   {camera.lastLive
                     ? moment(camera.lastLive).isValid()
                       ? moment(camera.lastLive).format("YYYY-MM-DD HH:mm")
                       : "Invalid Date"
                     : "No Data Available"}
-                </TableCell>
+                </TableCell> */}
                 <TableCell>{camera.location}</TableCell>
 
                 {/* <TableCell sx={{ textAlign: "center" }}>
                   <ObjectDetection />
                 </TableCell> */}
 
-                <TableCell>
+                {/* <TableCell>
                   <Switch
                     checked={camera.status}
                     onChange={() => handleStatusToggle(index)}
                   />
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   <IconButton onClick={() => handleEditClick(camera)}>
                     <EditIcon />

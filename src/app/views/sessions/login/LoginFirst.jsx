@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API } from "serverConnection";
 import {
   Box,
   Button,
@@ -16,6 +17,7 @@ import Cookies from "js-cookie";
 
 import backimg from "../../../../assets/Image/ajimg/loginbg.jpg";
 import loginbody from "../../../../assets/Image/ajimg/loginbody.png";
+import axios from "axios";
 // styled components
 const Auth0Root = styled("div")({
   display: "flex",
@@ -62,31 +64,51 @@ export default function LoginFirst() {
   const [loading, setLoading] = useState(false); // Loading state
   const navigate = useNavigate();
 
+  // const handleLogin = async () => {
+  //   setLoading(true);
+  //   const hardcodedUsername = "admin";
+  //   const hardcodedPassword = "admin";
+
+  //   if (
+  //     state.username === hardcodedUsername &&
+  //     state.password === hardcodedPassword
+  //   ) {
+  //     Cookies.set("authToken", "djvgyffds456656776dre755657r677");
+  //     navigate("/dashboard");
+  //   } else {
+  //     setMessage("Invalid username or password");
+  //     setOpenSnackbar(true);
+  //   }
+
+  //   setLoading(false);
+  // };
+
   const handleLogin = async () => {
     setLoading(true);
-    const hardcodedUsername = "admin";
-    const hardcodedPassword = "admin";
-
-    if (
-      state.username === hardcodedUsername &&
-      state.password === hardcodedPassword
-    ) {
-      Cookies.set("authToken", "djvgyffds456656776dre755657r677");
+  
+    try {
+      const response = await axios.post(`${API}/api/Auth/login`, {
+        userName: state.username,
+        password: state.password,
+      });
+  
+      const { token } = response.data;
+      Cookies.set("authToken", token);
       navigate("/dashboard");
-    } else {
+    } catch (error) {
       setMessage("Invalid username or password");
       setOpenSnackbar(true);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
+  
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setState({ ...state, [name]: value });
   };
 
-  const { username, password } = state;
 
   return (
     <>
@@ -132,7 +154,7 @@ export default function LoginFirst() {
               type="text"
               name="username"
               label="Username"
-              value={username}
+              value={state.username}
               onChange={handleChange}
               fullWidth
               margin="normal"
@@ -144,7 +166,7 @@ export default function LoginFirst() {
               name="password"
               type="password"
               label="Password"
-              value={password}
+              value={state.password}
               onChange={handleChange}
               fullWidth
               margin="normal"

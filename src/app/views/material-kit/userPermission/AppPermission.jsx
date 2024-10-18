@@ -1,7 +1,7 @@
 import { styled } from "@mui/material";
 // import SimpleTable from "./SimpleTable";
 import PaginationTable from "./PaginationTable"; //one
-// import { SimpleCard } from "app/components";
+import { SimpleCard } from "app/components";
 
 // STYLED COMPONENTS
 const Container = styled("div")(({ theme }) => ({
@@ -25,9 +25,9 @@ export default function AppPermission() {
         <SimpleTable />
       </SimpleCard> */}
 
-      {/* <SimpleCard> */}
+      <SimpleCard>
         <PaginationTable />
-      {/* </SimpleCard> */}
+      </SimpleCard>
     </Container>
   );
 }

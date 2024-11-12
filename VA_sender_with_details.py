@@ -38,7 +38,7 @@ def process_video(camera_id, camera_ip, camera_url, camera_name, location_name, 
         queue_name (str): The queue to send the video frames to.
         frame_interval (int): Interval for sending frames to the queue.
     """
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(camera_url)
     if not cap.isOpened():
         print(f"Error: Could not open video stream from {camera_url}")
         return

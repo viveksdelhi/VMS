@@ -13,7 +13,7 @@ import materialRoutes from "app/views/material-kit/MaterialRoutes";
 // E-CHART PAGE
 const AppEchart = Loadable(lazy(() => import("app/views/charts/echarts/AppEchart")));
 // DASHBOARD PAGE
-const Analytics = Loadable(lazy(() => import("app/views/dashboard/Analytics")));
+const Analytics = Loadable(lazy(() => import("app/views/dashboard/MainDashboard")));
 // dash
 const UserApp = Loadable(lazy(() => import("app/views/material-kit/userForm/UserApp")));
 const Applive = Loadable(lazy(() => import("app/views/material-kit/liveFeed/AppLive")));

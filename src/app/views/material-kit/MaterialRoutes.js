@@ -33,6 +33,7 @@ const AppAnpr = Loadable(lazy(() => import("./anpr/AppAnpr")));
 const Appalert = Loadable(lazy(() => import("./alerts/Appalert")));
 const TotalAlerts = Loadable(lazy(() => import("./TotalAlerts/Totalalerts")));
 const AlertDashboard = Loadable(lazy(() => import("./alertDashboard/AlertDashboard")));
+const TicketTable = Loadable(lazy(() => import("./Ticket/TicketTable")));
 
 
 
@@ -72,6 +73,7 @@ const materialRoutes = [
   {path:'/aboutvms', element:<Aboutvms />},
   {path:'/alertstable', element:<TotalAlerts />},
   {path:'/alertdashboard', element:<AlertDashboard />},
+  {path:'/ticket-table', element:<TicketTable />},
 
 ];
 

@@ -15,7 +15,7 @@ const Container = styled("div")(({ theme }) => ({
 
 export default function Allnvr() {
   return (
-    <Container>
+    <Container className="container-fluid m-0 p-1">
       {/* <Box className="breadcrumb">
       { name: "Material", path: "/material" },
         <Breadcrumb routeSegments={[ { name: "Table" }]} />
@@ -25,9 +25,9 @@ export default function Allnvr() {
         <SimpleTable />
       </SimpleCard> */}
 
-      <SimpleCard>
+      {/* <SimpleCard> */}
         <PaginationTable />
-      </SimpleCard>
+      {/* </SimpleCard> */}
     </Container>
   );
 }

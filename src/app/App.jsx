@@ -19,7 +19,7 @@ export default function App() {
   return (
     <SettingsProvider>
       {/* <AuthProvider> */}
-        <MatxTheme>
+        <MatxTheme >
           <CssBaseline />
           {content}
         </MatxTheme>

@@ -3,7 +3,6 @@ import { useLocation } from 'react-router-dom';
 import {
   Box,
   Button,
-  IconButton,
   Table,
   styled,
   TableRow,
@@ -22,17 +21,17 @@ import {
   Typography,
   Select,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import DescriptionIcon from "@mui/icons-material/Description";
+import { IconButton } from '@mui/material';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
 import { API, token } from "serverConnection";
 import * as XLSX from "xlsx";
-import { Document, Packer, Paragraph, TextRun } from "docx";
-import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import moment from "moment";
@@ -49,7 +48,7 @@ const StyledTable = styled(Table)(() => ({
   },
 }));
 
-export default function CameraList() {
+export default function CameraList() { 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [cameras, setCameras] = useState([]);
@@ -66,10 +65,10 @@ export default function CameraList() {
     channelId: "",
     nvrId: "",
     groupId: "",
-    area:"",
-    brand:"",
-    macAddress:"",
-    manufacture:"",
+    area: "",
+    brand: "",
+    macAddress: "",
+    manufacture: "",
     rtspurl: "",
     latitude: "",
     longitude: "",
@@ -78,7 +77,7 @@ export default function CameraList() {
 
   //Pagination start
   const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
 
   const handlePageChange = (newPage) => {
@@ -97,10 +96,38 @@ export default function CameraList() {
   const state = location.state || {}; // Default to an empty object if no state is present
   const status = state.Status; // Ensure the property name matches what was passed
 
-console.log(status)
+  // console.log(status)
   useEffect(() => {
+    const fetchCameras = async () => {
+      try {
+        const response = await axios.get(`${API}/api/Camera/Pagination?pageNumber=${pageNumber}&pageSize=${pageSize}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        let filteredData = response.data.cameras;
+        console.log(filteredData);
+  
+        if (status === "Active") {
+          filteredData = filteredData.filter(camera => camera.status === true);
+        } else if (status === "Inactive") {
+          filteredData = filteredData.filter(camera => camera.status === false);
+        } else if (status === "All" || !status) {
+          // No filtering needed if status is "All" or not defined
+          filteredData = filteredData;
+        }
+  
+        setCameras(filteredData);
+        setSearchResults(response.data.cameras);
+        setTotalPages(Math.ceil(response.data.totalCount / pageSize));
+      } catch (error) {
+        console.error("Error fetching cameras:", error);
+      }
+    };
+  
     fetchCameras();
-  }, [pageNumber,pageSize]);
+  }, [pageNumber, pageSize, status]);
+  
 
   const navigate = useNavigate();
 
@@ -156,26 +183,26 @@ console.log(status)
           Authorization: `Bearer ${token}`,
         },
       });
-      let filteredData=response.data.cameras
+      let filteredData = response.data.cameras
       console.log(filteredData)
-      if(status==="All"){
-        filteredData=filteredData
+      if (status === "All") {
+        filteredData = filteredData
       }
-      else if(status==="Active"){
-        filteredData=filteredData.filter(camera => camera.status === true)
-    
+      else if (status === "Active") {
+        filteredData = filteredData.filter(camera => camera.status === true)
+
       }
-      else if(status==="Inactive"){
-        filteredData=filteredData.filter(camera => camera.status === false)
-  
+      else if (status === "Inactive") {
+        filteredData = filteredData.filter(camera => camera.status === false)
+
       }
       else {
         filteredData = filteredData;
       }
       setCameras(filteredData);
-      
+
       setSearchResults(response.data.cameras);
-      setTotalPages(Math.ceil(response.data.totalCount/pageSize));
+      setTotalPages(Math.ceil(response.data.totalCount / pageSize));
     } catch (error) {
       console.error("Error fetching cameras:", error);
     }
@@ -267,10 +294,10 @@ console.log(status)
       channelId: camera.channelId,
       nvrId: camera.nvrId,
       groupId: camera.groupId,
-      area:camera.area,
-      brand:camera.brand,
-      macAddress:camera.macAddress,
-      manufacture:camera.manufacture,
+      area: camera.area,
+      brand: camera.brand,
+      macAddress: camera.macAddress,
+      manufacture: camera.manufacture,
       rtspurl: camera.rtspurl,
       latitude: camera.latitude,
       longitude: camera.longitude,
@@ -328,27 +355,6 @@ console.log(status)
     XLSX.writeFile(workbook, "cameras.xlsx");
   };
 
-  const downloadAsDocs = async () => {
-    const doc = new Document({
-      sections: [
-        {
-          children: searchResults.map(
-            (camera) =>
-              new Paragraph({
-                children: [
-                  new TextRun(
-                    `Name: ${camera.name}, Camera IP: ${camera.cameraIP}, Group ID: ${camera.groupId}, Area: ${camera.area}, Brand: ${camera.brand}, MAC Address: ${camera.macAddress}, Manufacture Date: ${camera.manufacture}, Last Live: ${camera.lastLive}, Location: ${camera.location}, Status: ${camera.status}`
-                  ),
-                ],
-              })
-          ),
-        },
-      ],
-    });
-
-    const blob = await Packer.toBlob(doc);
-    saveAs(blob, "cameras.docx");
-  };
 
   const downloadAsPDF = () => {
     const doc = new jsPDF();
@@ -391,7 +397,7 @@ console.log(status)
   };
 
   return (
-    <Box width="100%" overflow="auto">
+    <Box sx={{backgroundColor:"white"}} width="100%" overflow="auto">
       <Box
         display="flex"
         justifyContent="space-between"
@@ -401,11 +407,25 @@ console.log(status)
       >
         <Box display="flex" alignItems="center">
           <TextField
+            className="p-0 w-100"
             variant="outlined"
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ width: "100%" }}
+            sx={{
+              width: "100%",
+              borderRadius: '30px',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              },
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '30px',
+                '& input': {
+                  padding: '10px', // Set padding to 0px
+                },
+              },
+            }}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -414,106 +434,74 @@ console.log(status)
               ),
             }}
           />
-          </Box>
-          <Box>
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ ml: 1 }}
-              onClick={handleClick}
-            >
-              +
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={downloadAsExcel}
-              sx={{ ml: 1 }}
-            >
-              <FileDownloadIcon /> Excel
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={downloadAsDocs}
-              sx={{ ml: 1 }}
-            >
-              <DescriptionIcon /> Docs
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={downloadAsPDF}
-              sx={{ ml: 1 }}
-            >
-              <PictureAsPdfIcon /> PDF
-            </Button>
-          </Box>
+
+
+          <Button
+            className="w-100"
+            variant="contained"
+            sx={{ ml: 1 ,borderRadius:"30px",background:"#4A628A"}}
+            onClick={handleClick}
+          >
+            + Camera
+          </Button>
+        </Box>
+        <Box>
+          <IconButton onClick={downloadAsExcel} title="Export to Excel">
+            <SimCardDownloadIcon className="text-success" />
+          </IconButton>
+          <IconButton onClick={downloadAsPDF} title="Export to PDF">
+            <PictureAsPdfIcon className="text-warning" />
+          </IconButton>
+        </Box>
       </Box>
 
       <StyledTable>
-        <TableHead>
-          <TableRow>
-            <TableCell>S.No.</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Camera IP</TableCell>
-            <TableCell>Group ID</TableCell>
-            <TableCell>Area</TableCell>
-            <TableCell>Brand</TableCell>
-            <TableCell>MAC Address</TableCell>
-            <TableCell>Manufacture Date</TableCell>
-            {/* <TableCell>Last Live</TableCell> */}
-            <TableCell>Location</TableCell>
-            {/* <TableCell>Object Detection</TableCell> */}
-            {/* <TableCell>Status</TableCell> */}
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
+      <TableHead style={{background:'#4A628A'}} >
+  <TableRow >
+    <TableCell className="text-center text-light" style={{ borderTopLeftRadius: '10px', overflow: 'hidden' }} >S.No.</TableCell>
+    <TableCell className="text-light" >Camera Name</TableCell>
+    <TableCell className="text-light" >Camera IP</TableCell>
+    <TableCell className="text-light" >Group ID</TableCell>
+    <TableCell className="text-light" >Area</TableCell>
+    <TableCell className="text-light" >Model</TableCell>
+    <TableCell className="text-light" >MAC Address</TableCell>
+    <TableCell className="text-light" >Make</TableCell>
+    <TableCell className="text-light" >Location</TableCell>
+    <TableCell className="text-light"  style={{borderTopRightRadius: '10px', overflow: 'hidden' }}>Actions</TableCell>
+  </TableRow>
+</TableHead>
+
         <TableBody>
           {searchResults
             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
             .map((camera, index) => (
               <TableRow key={camera.id}>
-                <TableCell>{camera.id}</TableCell>
-                <TableCell>{camera.name}</TableCell>
+                <TableCell className="text-center">{index + 1}</TableCell>
+                <TableCell>
+                  {camera.name}
+                </TableCell>
                 <TableCell>{camera.cameraIP}</TableCell>
                 <TableCell>{camera.groupId}</TableCell>
                 <TableCell>{camera.area}</TableCell>
                 <TableCell>{camera.brand}</TableCell>
                 <TableCell>{camera.macAddress}</TableCell>
                 <TableCell>{camera.manufacture}</TableCell>
-                {/* <TableCell sx={{ textAlign: "center" }}>
-                  {camera.lastLive
-                    ? moment(camera.lastLive).isValid()
-                      ? moment(camera.lastLive).format("YYYY-MM-DD HH:mm")
-                      : "Invalid Date"
-                    : "No Data Available"}
-                </TableCell> */}
-                <TableCell>{camera.location}</TableCell>
-
-                {/* <TableCell sx={{ textAlign: "center" }}>
-                  <ObjectDetection />
-                </TableCell> */}
-
-                {/* <TableCell>
-                  <Switch
-                    checked={camera.status}
-                    onChange={() => handleStatusToggle(index)}
-                  />
-                </TableCell> */}
                 <TableCell>
-                  <IconButton onClick={() => handleEditClick(camera)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleDeleteClick(camera)}>
-                    <DeleteIcon />
-                  </IconButton>
+                  <LocationOnIcon sx={{ color: 'green', mr: 0.5 }} />
+                  {camera.location}
                 </TableCell>
+                <TableCell>
+                <IconButton onClick={() => handleEditClick(camera)}>
+                  <EditIcon sx={{ color: '#7AB2D3' }} />
+                </IconButton>
+                <IconButton onClick={() => handleDeleteClick(camera)}>
+                  <DeleteOutlineIcon sx={{ color: '#F95454' }} />
+                </IconButton>
+              </TableCell>
               </TableRow>
             ))}
         </TableBody>
       </StyledTable>
-
       {/* <TablePagination
         rowsPerPageOptions={[25, 50, 100]}
         component="div"
@@ -544,7 +532,7 @@ console.log(status)
         </Button>
 
         <Typography variant="body1" sx={{ mx: 2 }}>
-          Page {pageNumber} of {totalPages}
+          Page {pageNumber} of {totalPages || 1}
         </Typography>
 
         <Button
@@ -580,124 +568,124 @@ console.log(status)
         <DialogContent>
           <div className="row">
 
-          <div className="col-6">
-          <TextField
-            label="Name"
-            name="name"
-            value={formValues.name}
-            onChange={handleFormChange}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="Camera IP"
-            name="cameraIP"
-            value={formValues.cameraIP}
-            onChange={handleFormChange}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="Location"
-            name="location"
-            value={formValues.location}
-            onChange={handleFormChange}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="Port"
-            name="port"
-            value={formValues.port}
-            onChange={handleFormChange}
-            fullWidth
-            margin="dense"
-          />
-          
-          <TextField
-            label="Channel ID"
-            name="channelId"
-            value={formValues.channelId}
-            onChange={handleFormChange}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="NVR ID"
-            name="nvrId"
-            value={formValues.nvrId}
-            onChange={handleFormChange}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="Group ID"
-            name="groupId"
-            value={formValues.groupId}
-            onChange={handleFormChange}
-            fullWidth
-            margin="dense"
-          />
-          </div>
-          <div className="col-6">
-          <TextField
-            label="RTSP URL"
-            name="rtspurl"
-            value={formValues.rtspurl}
-            onChange={handleFormChange}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="Latitude"
-            name="latitude"
-            value={formValues.latitude}
-            onChange={handleFormChange}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="Longitude"
-            name="longitude"
-            value={formValues.longitude}
-            onChange={handleFormChange}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="Area"
-            name="area"
-            value={formValues.area}
-            onChange={handleFormChange}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="Brand"
-            name="brand"
-            value={formValues.brand}
-            onChange={handleFormChange}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="MAC"
-            name="macAddress"
-            value={formValues.macAddress}
-            onChange={handleFormChange}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="Manufacture Date"
-            name="manufacture"
-            value={formValues.manufacture}
-            onChange={handleFormChange}
-            fullWidth
-            margin="dense"
-          />
-          
-          </div>
+            <div className="col-6">
+              <TextField
+                label="Name"
+                name="name"
+                value={formValues.name}
+                onChange={handleFormChange}
+                fullWidth
+                margin="dense"
+              />
+              <TextField
+                label="Camera IP"
+                name="cameraIP"
+                value={formValues.cameraIP}
+                onChange={handleFormChange}
+                fullWidth
+                margin="dense"
+              />
+              <TextField
+                label="Location"
+                name="location"
+                value={formValues.location}
+                onChange={handleFormChange}
+                fullWidth
+                margin="dense"
+              />
+              <TextField
+                label="Port"
+                name="port"
+                value={formValues.port}
+                onChange={handleFormChange}
+                fullWidth
+                margin="dense"
+              />
+
+              <TextField
+                label="Channel ID"
+                name="channelId"
+                value={formValues.channelId}
+                onChange={handleFormChange}
+                fullWidth
+                margin="dense"
+              />
+              <TextField
+                label="NVR ID"
+                name="nvrId"
+                value={formValues.nvrId}
+                onChange={handleFormChange}
+                fullWidth
+                margin="dense"
+              />
+              <TextField
+                label="Group ID"
+                name="groupId"
+                value={formValues.groupId}
+                onChange={handleFormChange}
+                fullWidth
+                margin="dense"
+              />
+            </div>
+            <div className="col-6">
+              <TextField
+                label="RTSP URL"
+                name="rtspurl"
+                value={formValues.rtspurl}
+                onChange={handleFormChange}
+                fullWidth
+                margin="dense"
+              />
+              <TextField
+                label="Latitude"
+                name="latitude"
+                value={formValues.latitude}
+                onChange={handleFormChange}
+                fullWidth
+                margin="dense"
+              />
+              <TextField
+                label="Longitude"
+                name="longitude"
+                value={formValues.longitude}
+                onChange={handleFormChange}
+                fullWidth
+                margin="dense"
+              />
+              <TextField
+                label="Area"
+                name="area"
+                value={formValues.area}
+                onChange={handleFormChange}
+                fullWidth
+                margin="dense"
+              />
+              <TextField
+                label="Brand"
+                name="brand"
+                value={formValues.brand}
+                onChange={handleFormChange}
+                fullWidth
+                margin="dense"
+              />
+              <TextField
+                label="MAC"
+                name="macAddress"
+                value={formValues.macAddress}
+                onChange={handleFormChange}
+                fullWidth
+                margin="dense"
+              />
+              <TextField
+                label="Manufacture Date"
+                name="manufacture"
+                value={formValues.manufacture}
+                onChange={handleFormChange}
+                fullWidth
+                margin="dense"
+              />
+
+            </div>
           </div>
         </DialogContent>
         <DialogActions>

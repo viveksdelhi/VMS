@@ -15,7 +15,7 @@ const Container = styled("div")(({ theme }) => ({
 
 export default function AppGroup() {
   return (
-    <Container>
+    <Container className="container-fluid m-0 p-1">
       {/* <Box className="breadcrumb">
       { name: "Material", path: "/material" },
         <Breadcrumb routeSegments={[ { name: "Table" }]} />
@@ -25,9 +25,9 @@ export default function AppGroup() {
         <SimpleTable />
       </SimpleCard> */}
 
-      <SimpleCard title={<span style={{ textAlign: "left", display: "block" }}>Hotspot</span>}>
+      {/* <SimpleCard> */}
         <PaginationTable />
-      </SimpleCard>
+      {/* </SimpleCard> */}
     </Container>
   );
 }

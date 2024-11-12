@@ -5,10 +5,9 @@ import {
   Box,
   Button,
   Card,
-  Grid,
   styled,
   TextField,
-  Typography,
+  // Typography,
   Snackbar,
   Alert,
   CircularProgress,
@@ -48,10 +47,10 @@ const FlexBox = styled(Box)({
   width: "100%",
 });
 
-const FormTitle = styled(Typography)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
-  color: theme.palette.text.primary,
-}));
+// const FormTitle = styled(Typography)(({ theme }) => ({
+//   marginBottom: theme.spacing(3),
+//   color: theme.palette.text.primary,
+// }));
 
 export default function LoginFirst() {
   const [state, setState] = useState({

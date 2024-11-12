@@ -1,4 +1,4 @@
-import { FaRegIdBadge } from 'react-icons/fa';
+import { FaRegIdBadge, FaTicketAlt } from 'react-icons/fa';
 export const navigations = [
   { name: "Dashboard", path: "/dashboard", icon: "dashboard" },
   
@@ -33,28 +33,29 @@ export const navigations = [
   },
 
   { name: "Hotspot", path: "/add-group", icon: "wifi" },
+  { name: "Ticket", path: "/ticket-table", icon: <FaTicketAlt className='pb-1' /> },
 
  
 
-  { name: "Object List", path: "/objectList", icon: "list" },
+  // { name: "Object List", path: "/objectList", icon: "list" },
 
 // user management
-  { label: "Configuration", type: "label" },
-  { name: "User Management", 
-    icon: "account_circle",
-    children: [
-      { name: "Add User", iconText: "ADU", path: "/add-user" },
-      { name: "All User", iconText: "ALU", path: "/all-user" },
-      // { name: "Permission", iconText: "P", path: "/user-permission" }
-    ]
-  },
+  // { label: "Configuration", type: "label" },
+  // { name: "User Management", 
+  //   icon: "account_circle",
+  //   children: [
+  //     { name: "Add User", iconText: "ADU", path: "/add-user" },
+  //     { name: "All User", iconText: "ALU", path: "/all-user" },
+  //     // { name: "Permission", iconText: "P", path: "/user-permission" }
+  //   ]
+  // },
   {  name: "About VMS", 
     path: "aboutvms", 
     icon: "info",},
 
-    {  name: "User License", 
-      path: "userlicense", 
-      icon: <FaRegIdBadge  className='pb-1'/>,}
+    // {  name: "User License", 
+    //   path: "userlicense", 
+    //   icon: <FaRegIdBadge  className='pb-1'/>,}
 
   // { label: "Group", type: "label" },
 

@@ -21,16 +21,12 @@ export default function AppCamera() {
       { name: "Material", path: "/material" },
         <Breadcrumb routeSegments={[ { name: "Form" }]} />
       </Box> */}
+        
+      
 
-      <Stack spacing={3}> 
         <SimpleCard title="Camera Details">
-          <SimpleForm />
+        <SimpleForm />
         </SimpleCard>
-
-        {/* <SimpleCard title="stepper form">
-          <StepperForm />
-        </SimpleCard> */}
-      </Stack>
     </Container>
   );
 }

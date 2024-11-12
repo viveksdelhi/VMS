@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import axios from 'axios';
-import { token, API, detection } from 'serverConnection';
+import { token, API, detection, ANPRAPI } from 'serverConnection';
 
 // Mapping for display names
 const displayNames = {
@@ -53,7 +53,7 @@ const visibleKeys = [
   // 'queueDetection',
 ];
 
-export const ObjectDetection = ({ cameraId, cameraIP, publicUrl }) => {
+export const ObjectDetection = ({ cameraId, cameraIP, publicUrl,cameraName }) => {
   const [open, setOpen] = useState(false);
   const [objectData, setObjectData] = useState([]);
   const [selectedDetections, setSelectedDetections] = useState({
@@ -84,6 +84,7 @@ export const ObjectDetection = ({ cameraId, cameraIP, publicUrl }) => {
           },
         });
         const data = response.data;
+        // console.log(data,"get all list")
         setSelectedDetections(data);
         //    get object list
         const response2 = await axios.get(`${API}/api/CameraIPList/GetByCameraIP?cameraIP=${cameraIP}`
@@ -97,7 +98,7 @@ export const ObjectDetection = ({ cameraId, cameraIP, publicUrl }) => {
     };
 
     fetchData();
-  }, [cameraId]);
+  }, [cameraId, cameraIP]);
 
   const handleIconClick = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -108,7 +109,6 @@ export const ObjectDetection = ({ cameraId, cameraIP, publicUrl }) => {
       [event.target.name]: event.target.checked,
     }));
   };
-
   // console.log(selectedDetections.personDetection)
   // console.log(objectData.objectList)
   const postData = {
@@ -116,8 +116,28 @@ export const ObjectDetection = ({ cameraId, cameraIP, publicUrl }) => {
     camera_id: cameraId, // Ensure camera_id is an integer
     url: publicUrl,
     camera_ip: cameraIP,
-    running:String(selectedDetections.personDetection)
+    running: String(selectedDetections.personDetection)
   };
+  const postData2 = {
+    objectList: objectData.objectList,
+    cameraId: cameraId, // Ensure camera_id is an integer
+    rtspUrl: publicUrl,
+    cameraIP: cameraIP,
+    status: selectedDetections.personDetection
+  };
+
+  const postData3 = {
+    camera_id: cameraId, // Ensure camera_id is an integer
+    url: publicUrl,
+    running: String(selectedDetections.anpr)
+  };
+  const postData4 = {
+    cameraId: cameraId, // Ensure camera_id is an integer
+    cameraName: cameraName, // Ensure camera_id is an integer
+    url: publicUrl,
+    status: selectedDetections.anpr
+  };
+
   // console.log(postData)
   //==================================================
   const handleSave = async () => {
@@ -126,18 +146,21 @@ export const ObjectDetection = ({ cameraId, cameraIP, publicUrl }) => {
       ...selectedDetections,
     };
 
-    console.log('Camera ID:', cameraId);
-    console.log('Payload:', payload);
+    // console.log('Camera ID:', cameraId);
+    // console.log('Payload:', payload);
 
     try {
-      await axios.put(`${API}/api/CameraAlertStatus`, payload, {
+      const response = await axios.put(`${API}/api/CameraAlertStatus`, payload, {
         headers: {
           "Authorization": `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
-
-      await axios.post(`${detection}/details`, {cameras: [postData]});
+      // console.log(JSON.parse(response.config.data).anpr);
+      await axios.post(`${detection}/details`, { cameras: [postData] });
+      await axios.post(`${API}/api/VideoAnalytic/Post`, postData2);
+      await axios.post(`${ANPRAPI}/anprStartByQueue`, { cameras: [postData3] });
+      await axios.post(`${API}/api/ANPRStatus`,postData3);
       setOpen(false);
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -167,6 +190,7 @@ export const ObjectDetection = ({ cameraId, cameraIP, publicUrl }) => {
                     checked={selectedDetections[key]}
                     onChange={handleCheckboxChange}
                     name={key}
+                    disabled={key === 'recording'} // Disable the checkbox if the key is 'recording'
                   />
                 }
                 label={displayNames[key] || key.charAt(0).toUpperCase() + key.slice(1)}

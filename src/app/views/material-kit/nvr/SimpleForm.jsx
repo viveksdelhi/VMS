@@ -106,7 +106,7 @@ const SimpleForm = () => {
   return (
     <div>
       <ValidatorForm onSubmit={handleSubmit} onError={() => null}>
-        <div className="text-end"><Button onClick={backtotable} className="bg-primary text-light">X</Button></div>
+        <div className="text-end"><Button onClick={backtotable} className="bg-danger text-light">X</Button></div>
         <Grid container spacing={6} >
           <Grid item lg={6} md={6} sm={12} xs={12} sx={{ mt: 2 }}>
             <TextField
@@ -200,13 +200,11 @@ const SimpleForm = () => {
               <MenuItem value="Honeywell">Milestone</MenuItem>
               <MenuItem value="Honeywell">Digital Watchdog</MenuItem> */}
             </Select>
-
-            <Button color="primary" variant="contained" type="submit">
-              <Icon>send</Icon>
-              <Span sx={{ pl: 1, textTransform: "capitalize" }}>Submit</Span>
-            </Button>
           </Grid>
         </Grid>
+        <Button color="success" variant="contained" type="submit">
+              <Span sx={{ pl: 1, textTransform: "capitalize" }}>Submit</Span>
+            </Button>
       </ValidatorForm>
     </div>
   );

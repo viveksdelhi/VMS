@@ -17,15 +17,7 @@ import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerIconRetina from "leaflet/dist/images/marker-icon-2x.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
 } from "recharts";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
@@ -34,23 +26,9 @@ import LinkedCameraIcon from "@mui/icons-material/LinkedCamera";
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import DirectionsCarFilledIcon from '@mui/icons-material/DirectionsCarFilled';
 import AddAlertIcon from '@mui/icons-material/AddAlert';
+import Fireworks from "Diwali";
+import Counter from "Counter";
 
-// Function to generate smooth static data with small gradual changes
-const generateStaticData = (numPoints, amplitude) => {
-  return Array.from({ length: numPoints }, (_, i) => ({
-    time: i + 1,
-    value: amplitude + Math.sin(i / 5) * amplitude * 0.5, // Creates smooth up-down motion
-  }));
-};
-
-// Generate static weekly data
-const generateWeeklyData = () => {
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  return days.map((day, index) => ({
-    day,
-    value: Math.floor(Math.random() * 100) + 1, // Random value for demonstration
-  }));
-};
 
 // Chart Data
 const DefaultIcon = L.icon({
@@ -65,29 +43,7 @@ const DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-export default function Analytics() {
-  // Chart State
-  const [activityData, setActivityData] = useState(generateStaticData(100, 50));
-  const [streamingData, setStreamingData] = useState(
-    generateStaticData(100, 30)
-  );
-  const [weeklyData, setWeeklyData] = useState(generateWeeklyData());
-
-  // Update the chart slowly over time
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActivityData((prevData) => [
-        ...prevData.slice(1),
-        { ...prevData[0], value: prevData[0].value },
-      ]);
-      setStreamingData((prevData) => [
-        ...prevData.slice(1),
-        { ...prevData[0], value: prevData[0].value },
-      ]);
-    }, 30000); // Update every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
+export default function MainDashboard() {
 
   const navigate = useNavigate();
 
@@ -103,7 +59,15 @@ export default function Analytics() {
   const basic = tableData.filter(data => data.alertStatus === "B").length
   const sevier = tableData.filter(data => data.alertStatus === "S").length
   const cretical = tableData.filter(data => data.alertStatus === "C").length
+  
+  const [showFireworks, setShowFireworks] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowFireworks(false); // Hide the fireworks after 5 seconds
+    }, 1/2 * 60 * 1000);
 
+    return () => clearTimeout(timer); // Clean up the timer on unmount
+  }, []);
   //alerts
   useEffect(() => {
     const fetchTableData = async () => {
@@ -178,16 +142,18 @@ export default function Analytics() {
 
   return (
     <Fragment>
-      <ContentBox className="analytics">
+      <ContentBox className="analytics" >
         {/* first grid */}
         <Grid container spacing={2} className="pb-4">
           <Grid item lg={4} md={4} sm={6} xs={12}>
             <Card
               sx={{
-                backgroundColor: "#5F6F65",
-                borderRadius: "12px",
+                backgroundColor: "rgba(76, 175, 80, 0.2)",// Light gray background
+                borderLeft: "5px solid #4caf50", // Green left border
+                borderRadius: "5px", // Slightly rounded corners
                 width: "100%",
-                padding: "3px",
+                boxShadow: "rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset !important",
+                maxWidth: "100%", // Set a maximum width for a smaller card
               }}
             >
               <CardContent>
@@ -199,26 +165,44 @@ export default function Analytics() {
                   }}
                 >
                   <Box
-                    sx={{ display: "flex", alignItems: "center", gap: "8px" }}
+                    sx={{ display: "flex", alignItems: "center" }}
                   >
-                    <AnalyticsIcon sx={{ color: "yellow" }} />
-                    <Typography variant="subtitle1" color="white">
+                    <Typography variant="subtitle1" color="green">
                       Video Analytics
                     </Typography>
                   </Box>
-                  <CheckCircleIcon sx={{ color: "#00cc00" }} />
                 </Box>
-                <Typography
-                  variant="h5"
-                  sx={{ marginTop: "10px", fontWeight: "bold", color: "white" }}
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
                 >
-                  {totalanalytics}
-                </Typography>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: "bold",
+                      color: "#333", // Dark text for readability
+                    }}
+                  >
+                  <Counter target={totalanalytics}/>
+                    {/* {totalanalytics} */}
+                  </Typography>
+                  <AnalyticsIcon sx={{ color: "#000", fontSize: "50px" }} /> {/* Larger icon */}
+                </Box>
+
                 <Typography
                   variant="body2"
                   sx={{
-                    color: "#00cc00",
+                    padding: "0px",
+                    margin: "0px",
+                    color: "#1976d2", // Link color
                     cursor: "pointer",
+                    "&:hover": {
+                      color: "#0d47a1", // Darker shade on hover
+                    },
                   }}
                   onClick={() => handleNavigation("/alertstable")}
                 >
@@ -227,13 +211,16 @@ export default function Analytics() {
               </CardContent>
             </Card>
           </Grid>
+
           <Grid item lg={4} md={4} sm={6} xs={12}>
             <Card
               sx={{
-                backgroundColor: "#405D72",
-                borderRadius: "12px",
+                backgroundColor: "rgba(12, 173, 152, 0.2)",// Light gray background
+                borderLeft: "5px solid #0cad98", // Green left border
+                borderRadius: "5px", // Slightly rounded corners
                 width: "100%",
-                padding: "3px",
+                boxShadow: "rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset !important",
+                maxWidth: "100%", // Set a maximum width for a smaller card
               }}
             >
               <CardContent>
@@ -245,26 +232,42 @@ export default function Analytics() {
                   }}
                 >
                   <Box
-                    sx={{ display: "flex", alignItems: "center", gap: "8px" }}
+                    sx={{ display: "flex", alignItems: "center" }}
                   >
-                    <DirectionsCarFilledIcon sx={{ color: "white" }} />
-                    <Typography variant="subtitle1" color="white">
+                    <Typography variant="subtitle1" color="green">
                       ANPR
                     </Typography>
                   </Box>
-                  <CheckCircleIcon sx={{ color: "#00cc00" }} />
                 </Box>
-                <Typography
-                  variant="h5"
-                  sx={{ marginTop: "10px", fontWeight: "bold", color: "white" }}
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
                 >
-                  {activeCameras}
-                </Typography>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: "bold",
+                      color: "#333", // Dark text for readability
+                    }}
+                  >
+                    <Counter target={totalanalytics}/>
+                  </Typography>
+                  <DirectionsCarFilledIcon sx={{ color: "#000", fontSize: "50px" }} />
+                </Box>
                 <Typography
                   variant="body2"
                   sx={{
-                    color: "#00cc00",
+                    padding: "0px",
+                    margin: "0px",
+                    color: "#1976d2", // Link color
                     cursor: "pointer",
+                    "&:hover": {
+                      color: "#0d47a1", // Darker shade on hover
+                    },
                   }}
                   onClick={() => handleNavigation("/anpr")}
                 >
@@ -276,11 +279,13 @@ export default function Analytics() {
           <Grid item lg={4} md={4} sm={6} xs={12}>
             <Card
               sx={{
-                backgroundColor: "#538392",
-                borderRadius: "12px",
+                backgroundColor: "rgba(15, 65, 122, 0.2)",// Light gray background
+                borderLeft: "5px solid #0f417a", // Green left border
+                borderRadius: "5px", // Slightly rounded corners
                 width: "100%",
-                padding: "3px",
-                height:"134px"
+                boxShadow: "rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset !important",
+                maxWidth: "100%", // Set a maximum width for a smaller card
+                height: "134px"
               }}
             >
               <CardContent>
@@ -295,7 +300,7 @@ export default function Analytics() {
                     sx={{ display: "flex", alignItems: "center", gap: "8px" }}
                   >
                     <AddAlertIcon sx={{ color: "red" }} />
-                    <Typography variant="subtitle1" color="white">
+                    <Typography variant="subtitle1" color="green">
                       Total Alerts
                     </Typography>
                   </Box>
@@ -309,58 +314,39 @@ export default function Analytics() {
                   }}
                 >
                   <div className="m-0 p-0">
-                    <Box
-                      sx={{
-                        width: "100%",
-                        height: "30px",
-                        backgroundColor: "yellow",
-                        borderRadius: "4px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "black",
-                        cursor: "pointer",
-                        padding: "0px 10px"
-                      }}
-                      onClick={() => handleNavigation("/alertstable", { Status: "Basic" })}
-                    > B </Box>
-                    <p className="text-center">{basic}</p>
+                    <p className="text-center bg-warning" 
+                    onClick={() => handleNavigation("/alertstable", { Status: "Basic" })}
+                    style={{
+                      cursor:"pointer",
+                      padding: "8px 14px", borderRadius: "50%",
+                      boxShadow: "rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset",
+                    }}>B
+                      {/* {basic} */}
+                      </p>
                   </div>
-
-                  <div >
-                    <Box
-                      sx={{
-                        width: "100%",
-                        height: "30px",
-                        backgroundColor: "orange",
-                        borderRadius: "4px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "black",
-                        cursor: "pointer",
-                        padding: "10px"
-                      }}
-                      onClick={() => handleNavigation("/alertstable", { Status: "Critical" })}
-                    >C</Box>
-                    <p className="text-center">{cretical}</p></div>
-                  <div style={{ height: "30px" }}>
-                    <Box
-                      sx={{
-                        width: "100%",
-                        height: "30px",
-                        backgroundColor: "red",
-                        borderRadius: "4px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "black",
-                        cursor: "pointer",
-                        padding: "10px"
-                      }}
-                      onClick={() => handleNavigation("/alertstable", { Status: "Sevier" })}
-                    >S</Box>
-                    <p className="text-center">{sevier}</p></div>
+                  <div className="m-0 p-0">
+                    <p className="text-center"
+                    onClick={() => handleNavigation("/alertstable", { Status: "Critical" })}
+                     style={{
+                      cursor:"pointer",
+                      padding: "8px 14px", borderRadius: "50%",
+                      background:"orange",
+                      boxShadow: "rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset",
+                    }}>C
+                      {/* {cretical} */}
+                      </p>
+                  </div>
+                  <div className="m-0 p-0">
+                    <p className="text-center bg-danger"
+                    onClick={() => handleNavigation("/alertstable", { Status: "Sevier" })}
+                    style={{
+                      cursor:"pointer",
+                      padding: "8px 14px", borderRadius: "50%",
+                      boxShadow: "rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset",
+                    }}>S
+                      {/* {sevier} */}
+                      </p>
+                  </div>
                 </Box>
               </CardContent>
             </Card>
@@ -372,10 +358,12 @@ export default function Analytics() {
           <Grid item lg={4} md={4} sm={6} xs={12}>
             <Card
               sx={{
-                backgroundColor: "#5F6F65",
-                borderRadius: "12px",
+                backgroundColor: "rgba(156, 173, 26, 0.2)",// Light gray background
+                borderLeft: "5px solid #9cad1a", // Green left border
+                borderRadius: "5px", // Slightly rounded corners
                 width: "100%",
-                padding: "3px",
+                boxShadow: "rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset !important",
+                maxWidth: "100%", // Set a maximum width for a smaller card
               }}
             >
               <CardContent>
@@ -387,26 +375,43 @@ export default function Analytics() {
                   }}
                 >
                   <Box
-                    sx={{ display: "flex", alignItems: "center", gap: "8px" }}
+                    sx={{ display: "flex", alignItems: "center" }}
                   >
-                    <CameraAltIcon sx={{ color: "yellow" }} />
-                    <Typography variant="subtitle1" color="white">
+                    <Typography variant="subtitle1" color="green">
                       Total Camera
                     </Typography>
                   </Box>
-                  <CheckCircleIcon sx={{ color: "#00cc00" }} />
                 </Box>
-                <Typography
-                  variant="h5"
-                  sx={{ marginTop: "10px", fontWeight: "bold", color: "white" }}
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
                 >
-                  {totalCameras}
-                </Typography>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: "bold",
+                      color: "#333", // Dark text for readability
+                    }}
+                  >
+                    <Counter target={totalCameras}/>
+                  </Typography>
+                  <CameraAltIcon sx={{ color: "#000", fontSize: "50px" }} />
+                </Box>
+
                 <Typography
                   variant="body2"
                   sx={{
-                    color: "#00cc00",
+                    padding: "0px",
+                    margin: "0px",
+                    color: "#1976d2", // Link color
                     cursor: "pointer",
+                    "&:hover": {
+                      color: "#0d47a1", // Darker shade on hover
+                    },
                   }}
                   onClick={() => handleNavigation("/all-camera", { Status: "All" })}
                 >
@@ -418,10 +423,12 @@ export default function Analytics() {
           <Grid item lg={4} md={4} sm={6} xs={12}>
             <Card
               sx={{
-                backgroundColor: "#405D72",
-                borderRadius: "12px",
+                backgroundColor: "rgba(76, 175, 80, 0.2)",// Light gray background
+                borderLeft: "5px solid #4caf50", // Green left border
+                borderRadius: "5px", // Slightly rounded corners
                 width: "100%",
-                padding: "3px",
+                boxShadow: "rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset !important",
+                maxWidth: "100%", // Set a maximum width for a smaller card
               }}
             >
               <CardContent>
@@ -433,26 +440,43 @@ export default function Analytics() {
                   }}
                 >
                   <Box
-                    sx={{ display: "flex", alignItems: "center", gap: "8px" }}
+                    sx={{ display: "flex", alignItems: "center" }}
                   >
-                    <LinkedCameraIcon sx={{ color: "white" }} />
-                    <Typography variant="subtitle1" color="white">
+                    <Typography variant="subtitle1" color="green">
                       Active Camera
                     </Typography>
                   </Box>
-                  <CheckCircleIcon sx={{ color: "#00cc00" }} />
                 </Box>
-                <Typography
-                  variant="h5"
-                  sx={{ marginTop: "10px", fontWeight: "bold", color: "white" }}
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
                 >
-                  {activeCameras}
-                </Typography>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: "bold",
+                      color: "#333", // Dark text for readability
+                    }}
+                  >
+                    <Counter target={activeCameras}/>
+                  </Typography>
+                  <CameraAltIcon sx={{ color: "#000", fontSize: "50px" }} />
+                </Box>
+
                 <Typography
                   variant="body2"
                   sx={{
-                    color: "#00cc00",
+                    padding: "0px",
+                    margin: "0px",
+                    color: "#1976d2", // Link color
                     cursor: "pointer",
+                    "&:hover": {
+                      color: "#0d47a1", // Darker shade on hover
+                    },
                   }}
                   onClick={() => handleNavigation("/all-camera", { Status: "Active" })}
                 >
@@ -464,8 +488,73 @@ export default function Analytics() {
           <Grid item lg={4} md={4} sm={6} xs={12}>
             <Card
               sx={{
+                backgroundColor: "rgba(209, 55, 13, 0.2)",// Light gray background
+                borderLeft: "5px solid #d1370d", // Green left border
+                borderRadius: "5px", // Slightly rounded corners
+                width: "100%",
+                boxShadow: "rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset !important",
+                maxWidth: "100%", // Set a maximum width for a smaller card
+              }}
+            >
+              <CardContent>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Box
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
+                    <Typography variant="subtitle1" color="green">
+                      Inactive Camera
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: "bold",
+                      color: "#333", // Dark text for readability
+                    }}
+                  >
+                    <Counter target={inactiveCameras}/>
+                  </Typography>
+                  <CameraAltIcon sx={{ color: "#000", fontSize: "50px" }} />
+                </Box>
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    padding: "0px",
+                    margin: "0px",
+                    color: "#1976d2", // Link color
+                    cursor: "pointer",
+                    "&:hover": {
+                      color: "#0d47a1", // Darker shade on hover
+                    },
+                  }}
+                  onClick={() => handleNavigation("/all-camera", { Status: "Inactive" })}
+                >
+                  View Details
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          {/* <Grid item lg={4} md={4} sm={6} xs={12}>
+            <Card
+              sx={{
                 backgroundColor: "#538392",
-                borderRadius: "12px",
+
                 width: "100%",
                 padding: "3px",
               }}
@@ -506,48 +595,27 @@ export default function Analytics() {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid>
+          </Grid> */}
 
         </Grid>
 
 
-        <Grid container spacing={3}>
+        <Grid container spacing={3} className="mt-1">
           {/* Weekly Data Bar Chart */}
           <Grid item xs={12} md={6}>
             <Card
               sx={{
-                padding: 2,
-                backgroundColor: "#2F3645",
+                padding: 1,
+                backgroundColor: "white",
                 color: "white",
-                marginTop: "20px",
-                borderRadius: "30px", // Set border-radius
               }}
             >
-              <Typography variant="h6" gutterBottom>
+              {/* <Typography variant="h6" gutterBottom>
                 Camera Alert
-              </Typography>
-              <Box>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={weeklyData}>
-                    <CartesianGrid strokeDasharray="0 0" stroke="#333" />
-                    <XAxis dataKey="day" stroke="#ccc" />
-                    <YAxis stroke="#ccc" />
-                    <RechartsTooltip
-                      contentStyle={{
-                        backgroundColor: "transparent",
-                        border: "none",
-                        boxShadow: "none",
-                        color: "#fff", // Optional: set text color to ensure readability on dark backgrounds
-                      }}
-                      cursor={false} // Optional: removes the hover cursor effect
-                    />
-                    <Bar
-                      dataKey="value"
-                      fill="rgba(128, 175, 129, 0.6)"
-                      radius={[30, 30, 0, 0]} // Rounded corners for bars (only top corners here)
-                      style={{ stroke: "#fff", strokeWidth: 0 }} // Thin border
-                    />
-                  </BarChart>
+              </Typography> */}
+              <Box className="border-nome ">
+                <ResponsiveContainer width="100%" height={200}>
+                <iframe src="https://vmsgrafana.ajeevi.in/d-solo/fe2c25g1ki7swb/vms?from=1730205356749&to=1730205656751&timezone=browser&orgId=1&panelId=4&theme=light&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>
                 </ResponsiveContainer>
               </Box>
             </Card>
@@ -557,106 +625,56 @@ export default function Analytics() {
           <Grid item xs={12} md={6}>
             <Card
               sx={{
-                padding: 2,
-                backgroundColor: "#344C64",
+                padding: 1,
+                backgroundColor: "white",
                 color: "white",
-                marginTop: "20px",
               }}
             >
-              <Typography variant="h6" gutterBottom>
+              {/* <Typography variant="h6" gutterBottom>
                 Camera Streaming
-              </Typography>
+              </Typography> */}
               <Box>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={streamingData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                    <XAxis dataKey="time" stroke="#ccc" />
-                    <YAxis stroke="#ccc" />
-                    <RechartsTooltip
-                      contentStyle={{
-                        backgroundColor: "transparent",
-                        border: "none",
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="value"
-                      stroke="#82ca9d"
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <ResponsiveContainer width="100%" height={200}>
+                <iframe src="https://vmsgrafana.ajeevi.in/d-solo/fe2c25g1ki7swb/vms?from=now&to=now-5h&timezone=browser&orgId=1&panelId=2&theme=light&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>                </ResponsiveContainer>
+              </Box>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Card
+              sx={{
+                padding: 1,
+                backgroundColor: "white",
+                color: "white",
+              }}
+            >
+              {/* <Typography variant="h6" gutterBottom>
+                Camera Alert
+              </Typography> */}
+              <Box className="border-nome ">
+                <ResponsiveContainer width="100%" height={200}>
+                <iframe src="https://vmsgrafana.ajeevi.in/d-solo/fe2c25g1ki7swb/vms?from=1730205356749&to=1730205656751&timezone=browser&orgId=1&panelId=3&theme=light&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>                </ResponsiveContainer>
+              </Box>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Card
+              sx={{
+                padding: 1,
+                backgroundColor: "white",
+                color: "white",
+              }}
+            >
+              {/* <Typography variant="h6" gutterBottom>
+                Camera Alert
+              </Typography> */}
+              <Box className="border-nome ">
+                <ResponsiveContainer width="100%" height={200}>
+                <iframe src="https://vmsgrafana.ajeevi.in/d-solo/fe2c25g1ki7swb/vms?from=1730205356749&to=1730205656751&timezone=browser&orgId=1&panelId=1&theme=light&__feature.dashboardSceneSolo" width="450" height="200" frameborder="0"></iframe>                  </ResponsiveContainer>
               </Box>
             </Card>
           </Grid>
         </Grid>
 
-        {/* Alert Notifications Table */}
-        {/* <Grid container spacing={3} style={{ marginTop: "30px" }}>
-          <Grid item xs={12}>
-            <Card
-              sx={{
-                padding: 2,
-                backgroundColor: "#1c1c1c",
-                color: "white",
-                borderRadius: "12px", // Rounded corners
-                boxShadow: 3, // Shadow effect
-              }}
-            >
-              <Typography variant="h6" gutterBottom>
-                Alert Notifications
-              </Typography>
-              <TableContainer
-                component={Paper}
-                sx={{
-                  backgroundColor: "#2c2c2c", // Slightly lighter dark background for contrast
-                  color: "white",
-                  borderRadius: "8px", // Rounded corners for the table container
-                  overflow: "hidden", // Ensures rounded corners are visible
-                }}
-              >
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell
-                        className="text-white"
-                        sx={{ fontWeight: "bold", backgroundColor: "#333" }}
-                      >
-                        Total Alerts
-                      </TableCell>
-                      <TableCell
-                        className="text-white"
-                        sx={{ fontWeight: "bold", backgroundColor: "#333" }}
-                      >
-                        Critical Alerts
-                      </TableCell>
-                      <TableCell
-                        className="text-white"
-                        sx={{ fontWeight: "bold", backgroundColor: "#333" }}
-                      >
-                        Severe Alerts
-                      </TableCell>
-                      <TableCell
-                        className="text-white"
-                        sx={{ fontWeight: "bold", backgroundColor: "#333" }}
-                      >
-                        Normal Alerts
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell className="text-white">50</TableCell>
-                      <TableCell className="text-white">10</TableCell>
-                      <TableCell className="text-white">15</TableCell>
-                      <TableCell className="text-white">25</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Card>
-          </Grid>
-        </Grid> */}
 
         {/* Map component */}
         <div style={{ height: "500px", marginTop: "30px" }}>
@@ -724,6 +742,7 @@ export default function Analytics() {
           </MapContainer>
         </div>
       </ContentBox>
+      {/* {showFireworks && <Fireworks />} */}
     </Fragment>
   );
 }

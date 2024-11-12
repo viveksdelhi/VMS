@@ -160,7 +160,7 @@ const SimpleForm = () => {
     <div>
       <ValidatorForm onSubmit={handleSubmit} onError={() => null}>
         <div className="text-end">
-          <Button onClick={backToTable} className="bg-primary text-light">
+          <Button onClick={backToTable} className="bg-danger text-light">
             X
           </Button>
         </div>
@@ -234,7 +234,7 @@ const SimpleForm = () => {
                 <TextField
                   type="text"
                   name="manufacture"
-                  label="Manufacture"
+                  label="Make "
                   onChange={handleChange}
                   value={manufacture}
                 />
@@ -296,7 +296,7 @@ const SimpleForm = () => {
             <TextField
               type="text"
               name="public_url"
-              label="Public URL (RTSP)"
+              label="Public URL"
               onChange={handleChange}
               value={public_url}
               validators={["required", "isRTSPUrl"]}
@@ -355,7 +355,7 @@ const SimpleForm = () => {
                 <TextField
                   type="text"
                   name="brand"
-                  label="Brand"
+                  label="Model"
                   onChange={handleChange}
                   value={brand}
                 />
@@ -364,8 +364,7 @@ const SimpleForm = () => {
           </Grid>
         </Grid>
 
-        <Button color="primary" variant="contained" type="submit">
-          <Icon>send</Icon>
+        <Button color="success" variant="contained" type="submit">
           <Span sx={{ pl: 1, textTransform: "capitalize" }}>Submit</Span>
         </Button>
       </ValidatorForm>

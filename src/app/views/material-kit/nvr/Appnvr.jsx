@@ -21,16 +21,12 @@ export default function Appnvr() {
       { name: "Material", path: "/material" },
         <Breadcrumb routeSegments={[ { name: "Form" }]} />
       </Box> */}
+        
+      
 
-      <Stack spacing={3}> 
-        <SimpleCard title={<span style={{ textAlign: "left", display: "block" }}>NVR Details</span>}>
-          <SimpleForm />
+        <SimpleCard title="NVR Details">
+        <SimpleForm />
         </SimpleCard>
-
-        {/* <SimpleCard title="stepper form">
-          <StepperForm />
-        </SimpleCard> */}
-      </Stack>
     </Container>
   );
 }

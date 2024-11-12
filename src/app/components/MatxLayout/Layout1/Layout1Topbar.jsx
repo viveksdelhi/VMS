@@ -123,9 +123,9 @@ const Layout1Topbar = () => {
 
   return (
     <TopbarRoot>
-      <TopbarContainer sx={{backgroundColor: "#222A44"}}>
+      <TopbarContainer sx={{backgroundColor: "#F5F5F7"}}>
         <Box display="flex">
-          <StyledIconButton className="text-light" onClick={handleSidebarToggle}>
+          <StyledIconButton className="text-dark" onClick={handleSidebarToggle}>
             <Menu />
           </StyledIconButton>
 

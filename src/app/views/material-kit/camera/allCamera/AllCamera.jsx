@@ -15,7 +15,7 @@ const Container = styled("div")(({ theme }) => ({
 
 export default function AllCamera() {
   return (
-    <Container>
+    <Container className="container-fluid m-0 p-1">
       {/* <Box className="breadcrumb">
       { name: "Material", path: "/material" },
         <Breadcrumb routeSegments={[ { name: "Table" }]} />
@@ -25,9 +25,9 @@ export default function AllCamera() {
         <SimpleTable />
       </SimpleCard> */}
 
-      <SimpleCard>
+      {/* <SimpleCard> */}
         <PaginationTable />
-      </SimpleCard>
+      {/* </SimpleCard> */}
     </Container>
   );
 }

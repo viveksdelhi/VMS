@@ -10,11 +10,12 @@ import {
   InputAdornment,
   Button,
 } from "@mui/material";
-import FolderIcon from "@mui/icons-material/Folder";
+import PermMediaTwoToneIcon from '@mui/icons-material/PermMediaTwoTone';
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
 import SearchIcon from "@mui/icons-material/Search";
+import VideoLibraryTwoToneIcon from '@mui/icons-material/VideoLibraryTwoTone';
 import axios from "axios";
 import { API, token, VideoAPI } from "serverConnection";
 import moment from "moment";
@@ -86,6 +87,7 @@ const Recording = () => {
             `${API}/api/CameraRecord/Pagination?pageNumber=${pageNumber}&pageSize=${pageSize}&cameraId=${selectedCamera.id}`,
           );
           setRecordings(response.data.cameraAlertStatuses);
+          console.log(response.data.cameraAlertStatuses, "bhjbfdja")
           setTotalPages(Math.ceil(response.data.totalCount / pageSize));
         } catch (error) {
           console.error("Error fetching recordings:", error);
@@ -187,37 +189,116 @@ const Recording = () => {
             </IconButton>
 
             <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between" }}>
-              <Box>
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  width: '100%',
+                  borderRadius: '50px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  p: 3,
+                  backgroundColor: '#f9f9f9',
+                }}
+              >
                 <TextField
                   label="Search"
                   variant="outlined"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  sx={{ mr: 2 }}
+                  sx={{
+                    flex: '0 0 40%', // Set width to 40%
+                    mr: 3,
+                    mt: 3,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '50px',
+                      '& fieldset': {
+                        borderColor: '#ccc',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#888',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#3f51b5',
+                      },
+                    },
+                    '& .MuiInputBase-input': {
+                      padding: '12px',
+                      color: '#333',
+                      fontWeight: '500',
+                    },
+                  }}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
-                        <SearchIcon />
+                        <SearchIcon sx={{ color: '#3f51b5' }} />
                       </InputAdornment>
                     ),
                   }}
                 />
-                From Date
-                <TextField
-                  type="datetime-local"
-                  variant="outlined"
-                  value={fromDate}
-                  onChange={(e) => setFromDate(e.target.value)}
-                  sx={{ mr: 2, ml: 1 }}
-                />
-                To Date
-                <TextField
-                  type="datetime-local"
-                  variant="outlined"
-                  value={toDate}
-                  onChange={(e) => setToDate(e.target.value)}
-                  sx={{ mr: 2, ml: 1 }}
-                />
+                <Box sx={{ display: 'flex', alignItems: 'center', flex: '0 0 60%' }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', mr: 2, flex: '0 0 30%' }}>
+                    <Typography variant="subtitle2" sx={{ color: '#666', mb: 0.5 }}>
+                      From Date
+                    </Typography>
+                    <TextField
+                      type="datetime-local"
+                      variant="outlined"
+                      value={fromDate}
+                      onChange={(e) => setFromDate(e.target.value)}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '50px',
+                          '& fieldset': {
+                            borderColor: '#ccc',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#888',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#3f51b5',
+                          },
+                        },
+                        '& .MuiInputBase-input': {
+                          padding: '12px',
+                          color: '#333',
+                          fontWeight: '500',
+                        },
+                      }}
+                    />
+                  </Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', flex: '0 0 30%' }}>
+                    <Typography variant="subtitle2" sx={{ color: '#666', mb: 0.5 }}>
+                      To Date
+                    </Typography>
+                    <TextField
+                      type="datetime-local"
+                      variant="outlined"
+                      value={toDate}
+                      onChange={(e) => setToDate(e.target.value)}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '50px',
+                          '& fieldset': {
+                            borderColor: '#ccc',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#888',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#3f51b5',
+                          },
+                        },
+                        '& .MuiInputBase-input': {
+                          padding: '12px',
+                          color: '#333',
+                          fontWeight: '500',
+                        },
+                      }}
+                    />
+                  </Box>
+                </Box>
               </Box>
               {/* <Button
               variant="contained"
@@ -249,29 +330,37 @@ const Recording = () => {
                             onClick={handleShow}
                           />
                         </a>
-                      </Box> */}
-                          <Box sx={{ position: "relative" }}>
-                            <img
-                              width="200px"
-                              height="150px"
-                              src={mediaImage}
-                              alt="Media Thumbnail"
-                              onClick={() =>
-                                handleShowVideoModal(
-                                  `${VideoAPI}/${recording.recordPath}`
-                                )
-                              }
-                              style={{ cursor: "pointer" }}
-                            />
+                      </Box> */}<Box sx={{ textAlign: 'center', width: '200px' }}>
+                            <Box
+                              sx={{
+                                position: "relative",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                cursor: "pointer",
+                                width: "200px", // Fixed width
+                                height: "150px", // Fixed height
+                                border: "1px solid #ccc", // Optional border for visibility
+                                borderRadius: "8px", // Optional border radius
+                                backgroundColor: "#f0f0f0", // Optional background color
+                              }}
+                              onClick={() => handleShowVideoModal(`${VideoAPI}/${recording.recordPath}`)}
+                            >
+                              <VideoLibraryTwoToneIcon sx={{ fontSize: 100 }} /> {/* Icon size */}
+                            </Box>
+
+                            <Typography variant="body2" sx={{ mt: 1 }}>
+                              {recording.recordPath.slice(4)}<br />
+                              {recording.regDate.slice(0, 10).replace(/-/g, "-")}
+                              <br />
+                              {new Date(recording.regDate).toLocaleString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: true,
+                              })}
+                            </Typography>
                           </Box>
-                          <Typography variant="body2" sx={{ mt: 1 }}>
-                            {recording.recordPath.slice(4)}
-                            <br />
-                            {recording.regDate.slice(0, 10).replace(/-/g, "-")}
 
-                            {` ${recording.regDate.slice(11, 16)}`}
-
-                          </Typography>
                           <Box
                             sx={{
                               mt: 2,
@@ -314,7 +403,7 @@ const Recording = () => {
               </button>
 
               <span className="mx-2">
-                Page {pageNumber} of {totalPages}
+                Page {pageNumber} of {totalPages || 1}
               </span>
 
               <button
@@ -347,7 +436,20 @@ const Recording = () => {
           <TextField
             label="Search Cameras"
             variant="outlined"
-            sx={{ mb: 3, width: '35%', borderRadius: '20%' }}  // Set 50% width and round border
+            sx={{
+              width: "35%",
+              borderRadius: '30px',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              },
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '30px',
+                '& input': {
+                  padding: '10px', // Set padding to 0px
+                },
+              },
+            }}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)} // Update search query
           />
@@ -364,7 +466,7 @@ const Recording = () => {
                   >
                     <CardContent>
                       <Box sx={{ textAlign: "center" }}>
-                        <FolderIcon sx={{ fontSize: 60, color: "#EECD6D" }} />
+                        <PermMediaTwoToneIcon sx={{ fontSize: 60, color: "#006989" }} />
                         <Typography variant="h6" component="div" sx={{ mt: 1 }}>
                           {camera.id} - {camera.name}
                         </Typography>
@@ -408,242 +510,3 @@ const Recording = () => {
 };
 
 export default Recording;
-
-// import React, { useState, useEffect } from 'react';
-// import {
-//   Card,
-//   CardContent,
-//   Grid,
-//   Typography,
-//   Box,
-//   IconButton,
-//   TextField,
-//   InputAdornment,
-//   Button, // Import Button
-// } from "@mui/material";
-// import FolderIcon from '@mui/icons-material/Folder';
-// import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-// import DeleteIcon from '@mui/icons-material/Delete';
-// import DownloadIcon from '@mui/icons-material/Download';
-// import SearchIcon from '@mui/icons-material/Search';
-// import axios from 'axios';
-// import { API, token, VideoAPI } from "serverConnection";
-// import moment from 'moment';
-
-// const Recording = () => {
-//   const [cameras, setCameras] = useState([]);
-//   const [selectedCamera, setSelectedCamera] = useState(null);
-//   const [recordings, setRecordings] = useState([]);
-//   const [searchQuery, setSearchQuery] = useState('');
-//   const [fromDate, setFromDate] = useState('');
-//   const [toDate, setToDate] = useState('');
-
-//   useEffect(() => {
-//     const fetchCameras = async () => {
-//       try {
-//         const response = await axios.get(`${API}/api/Camera/GetAll`, {
-//           headers: { 'Authorization': `Bearer ${token}` },
-//         });
-//         setCameras(response.data);
-//       } catch (error) {
-//         console.error('Error fetching cameras:', error);
-//       }
-//     };
-
-//     fetchCameras();
-//   }, []);
-
-//   useEffect(() => {
-//     const fetchRecordings = async () => {
-//       if (selectedCamera) {
-//         try {
-//           const response = await axios.get(`${API}/api/CameraRecord/Camera-List/${selectedCamera.id}`, {
-//             headers: { 'Authorization': `Bearer ${token}` },
-//           });
-//           setRecordings(response.data);
-//         } catch (error) {
-//           console.error('Error fetching recordings:', error);
-//         }
-//       }
-//     };
-
-//     fetchRecordings();
-//   }, [selectedCamera]);
-
-//   const handleCameraClick = (camera) => {
-//     setSelectedCamera(camera);
-//   };
-
-//   const handleBackClick = () => {
-//     setSelectedCamera(null);
-//   };
-
-//   const handleDelete = async (recordingId) => {
-//     try {
-//       await axios.delete(`${API}/api/CameraRecord/${recordingId}`, {
-//         headers: { 'Authorization': `Bearer ${token}` },
-//       });
-//       setRecordings(recordings.filter(recording => recording.id !== recordingId));
-//     } catch (error) {
-//       console.error('Error deleting recording:', error);
-//     }
-//   };
-
-//   const handleDeleteAll = async () => {
-//     try {
-//       await axios.delete(`${API}/api/CameraRecord/Clear/${selectedCamera.id}`, {
-//         headers: { 'Authorization': `Bearer ${token}` },
-//       });
-//       setRecordings([]);
-//     } catch (error) {
-//       console.error('Error deleting all recordings:', error);
-//     }
-//   };
-
-//   const handleDownload = (recording) => {
-//     const downloadUrl = `${VideoAPI}/${recording.recordPath}`;
-
-//     const newWindow = window.open(downloadUrl, '_blank');
-
-//     if (newWindow) {
-//       newWindow.onload = () => {
-//         const link = newWindow.document.createElement('a');
-//         link.href = downloadUrl;
-//         link.setAttribute('download', recording.recordPath.slice(41));
-//         newWindow.document.body.appendChild(link);
-//         link.click();
-//         newWindow.document.body.removeChild(link);
-//       };
-//     }
-//   };
-
-//   const filteredRecordings = recordings.filter(recording => {
-//     const recordDate = moment(recording.date);
-
-//     const searchMatch =
-//       (recording.title && recording.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
-//       (recording.id && recording.id.toString().includes(searchQuery)) ||
-//       (recording.recordPath && recording.recordPath.toLowerCase().includes(searchQuery.toLowerCase()));
-
-//     const dateMatch =
-//       (!fromDate || recordDate.isAfter(moment(fromDate))) &&
-//       (!toDate || recordDate.isBefore(moment(toDate).endOf('day')));
-
-//     return searchMatch && dateMatch;
-//   });
-
-//   return (
-//     <div>
-//       {selectedCamera ? (
-//         <div>
-//           <IconButton onClick={handleBackClick} sx={{ mb: 2 }}>
-//             <ArrowBackIcon />
-//           </IconButton>
-
-//           <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between' }}>
-//             <Box>
-//               <TextField
-//                 label="Search"
-//                 variant="outlined"
-//                 value={searchQuery}
-//                 onChange={(e) => setSearchQuery(e.target.value)}
-//                 sx={{ mr: 2 }}
-//                 InputProps={{
-//                   endAdornment: (
-//                     <InputAdornment position="end">
-//                       <SearchIcon />
-//                     </InputAdornment>
-//                   ),
-//                 }}
-//               />
-//               From Date
-//               <TextField
-//                 type="date"
-//                 variant="outlined"
-//                 value={fromDate}
-//                 onChange={(e) => setFromDate(e.target.value)}
-//                 sx={{ mr: 2, ml: 1 }}
-//               />
-//               To Date
-//               <TextField
-//                 type="date"
-//                 variant="outlined"
-//                 value={toDate}
-//                 onChange={(e) => setToDate(e.target.value)}
-//                 sx={{ mr: 2, ml: 1 }}
-//               />
-//             </Box>
-//             <Button
-//               variant="contained"
-//               color="error"
-//               onClick={handleDeleteAll}
-//               sx={{ alignSelf: 'center' }}
-//             >
-//               Clear All
-//             </Button>
-//           </Box>
-
-//           <Grid container spacing={3} sx={{ justifyContent: "center" }}>
-//             {filteredRecordings.map((recording) => (
-//               <Grid item xs={12} sm={6} md={4} key={recording.id}>
-//                 <Card>
-//                   <CardContent>
-//                     <Box sx={{ textAlign: "center" }}>
-//                       <Typography variant="h6" component="div" sx={{ mb: 1 }}>
-//                         {recording.title}
-//                       </Typography>
-//                       <Box sx={{ position: 'relative' }}>
-//                         <video width="200px" height="150px" controls>
-//                           <source src={`${VideoAPI}/${recording.recordPath}`}
-//                           type="video/mp4" />
-//                         </video>
-//                       </Box>
-//                       <Typography variant="body2" sx={{ mt: 1 }}>
-//                         {recording.recordPath.slice(4)}
-//                       </Typography>
-//                       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
-//                         <IconButton
-//                           aria-label="delete"
-//                           onClick={() => handleDelete(recording.id)}
-//                           sx={{ color: 'red' }}
-//                         >
-//                           <DeleteIcon />
-//                         </IconButton>
-//                         <IconButton
-//                           aria-label="download"
-//                           onClick={() => handleDownload(recording)}
-//                           sx={{ color: 'green' }}
-//                         >
-//                           <DownloadIcon />
-//                         </IconButton>
-//                       </Box>
-//                     </Box>
-//                   </CardContent>
-//                 </Card>
-//               </Grid>
-//             ))}
-//           </Grid>
-//         </div>
-//       ) : (
-//         <Grid container spacing={3} sx={{ justifyContent: "center", mt: 3 }}>
-//           {cameras.map((camera) => (
-//             <Grid item xs={12} sm={6} md={4} key={camera.id}>
-//               <Card onClick={() => handleCameraClick(camera)} sx={{ cursor: 'pointer' }}>
-//                 <CardContent>
-//                   <Box sx={{ textAlign: "center" }}>
-//                     <FolderIcon sx={{ fontSize: 60, color: "#EECD6D" }} />
-//                     <Typography variant="h6" component="div" sx={{ mt: 1 }}>
-//                       {camera.id}-{camera.name}
-//                     </Typography>
-//                   </Box>
-//                 </CardContent>
-//               </Card>
-//             </Grid>
-//           ))}
-//         </Grid>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default Recording;

@@ -2,7 +2,7 @@ import { styled } from "@mui/material";
 // import SimpleTable from "./SimpleTable";
 // import PaginationTable from "./PaginationTable"; //one
 // import { SimpleCard } from "app/components";
-import Alerts from "./Alerts";
+import Analytics from "./Analytics";
 
 // STYLED COMPONENTS
 const Container = styled("div")(({ theme }) => ({
@@ -27,7 +27,7 @@ export default function AppGroup() {
       </SimpleCard> */}
 
       {/* <SimpleCard title={<span style={{ textAlign: "left", display: "block" }}>ANPR</span>}> */}
-        <Alerts />
+        <Analytics />
       {/* </SimpleCard> */}
     </Container>
   );

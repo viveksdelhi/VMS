@@ -39,7 +39,7 @@ const StyledScrollBar = styled(Scrollbar)(() => ({
 }));
 
 const LayoutContainer = styled(Box)(({ width, open }) => ({
-  height: "100vh",
+  height: "100%",
   display: "flex",
   flexGrow: "1",
   flexDirection: "column",
@@ -112,8 +112,8 @@ const Layout1 = () => {
               </ThemeProvider>
             )}
             <Box flexGrow={1} position="relative">
-              <MatxSuspense>
-                <Outlet/>
+              <MatxSuspense >
+                <Outlet />
               </MatxSuspense>
             </Box>
 
@@ -129,8 +129,8 @@ const Layout1 = () => {
               </ThemeProvider>
             )}
 
-            <Box flexGrow={1} position="relative">
-              <MatxSuspense>
+            <Box flexGrow={1} position="relative" sx={{ backgroundColor: '#FEF9F2', height: '100%' }}>
+              <MatxSuspense sx={{ backgroundColor: '#FEF9F2', height: '100%' }}>
                 <Outlet />
               </MatxSuspense>
             </Box>

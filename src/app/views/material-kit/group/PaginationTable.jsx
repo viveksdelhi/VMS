@@ -22,7 +22,7 @@ import {
   Select,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import axios from "axios";
 import { API, token } from "serverConnection";
 
@@ -50,22 +50,22 @@ export default function PaginationTable() {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deleteIndex, setDeleteIndex] = useState(null);
 
-   //Pagination start
-   const [pageNumber, setPageNumber] = useState(1);
-   const [pageSize, setPageSize] = useState(20);
-   const [totalPages, setTotalPages] = useState(0);
- 
-   const handlePageChange = (newPage) => {
-     if (newPage > 0 && newPage <= totalPages) {
-       setPageNumber(newPage);
-     }
-   };
- 
-   const handlePageSizeChange = (e) => {
-     setPageSize(Number(e.target.value));
-     setPageNumber(1);
-   };
-   // Pagination end
+  //Pagination start
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setPageNumber(newPage);
+    }
+  };
+
+  const handlePageSizeChange = (e) => {
+    setPageSize(Number(e.target.value));
+    setPageNumber(1);
+  };
+  // Pagination end
 
   // Fetch Data from API
   const getApiData = () => {
@@ -82,7 +82,7 @@ export default function PaginationTable() {
             status: Boolean(subscriber.status), // Ensure status is a boolean
           }))
         );
-        setTotalPages(Math.ceil(response.data.totalCount/pageSize));
+        setTotalPages(Math.ceil(response.data.totalCount / pageSize));
       })
       .catch((error) => {
         console.error(
@@ -94,7 +94,7 @@ export default function PaginationTable() {
 
   useEffect(() => {
     getApiData();
-  }, [pageNumber,pageSize]);
+  }, [pageNumber, pageSize]);
 
   // Add or Edit Category
   const handleAddOrEditCategory = (event) => {
@@ -173,9 +173,9 @@ export default function PaginationTable() {
   // Delete a Category
   const handleDeleteCategory = async () => {
     const categoryToDelete = subscribers[deleteIndex];
-  
+
     try {
-        await axios.delete(`${API}/api/Group/${categoryToDelete.id}`, {
+      await axios.delete(`${API}/api/Group/${categoryToDelete.id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -191,7 +191,7 @@ export default function PaginationTable() {
       );
     }
   };
-  
+
 
   // Handle Page Change
   // const handlePageChange = (event, newPage) => {
@@ -204,46 +204,46 @@ export default function PaginationTable() {
   //   setPage(0);
   // };
 
- // Toggle Status
-const handleStatusToggle = (index) => {
-  const subscriberToUpdate = subscribers[index];
-  const updatedStatus = !subscriberToUpdate.status; // Toggle the status
+  // Toggle Status
+  const handleStatusToggle = (index) => {
+    const subscriberToUpdate = subscribers[index];
+    const updatedStatus = !subscriberToUpdate.status; // Toggle the status
 
-  // Optimistically update local state
-  const updatedSubscribers = subscribers.map((subscriber, i) =>
-    i === index ? { ...subscriber, status: updatedStatus } : subscriber
-  );
-  setSubscribers(updatedSubscribers);
+    // Optimistically update local state
+    const updatedSubscribers = subscribers.map((subscriber, i) =>
+      i === index ? { ...subscriber, status: updatedStatus } : subscriber
+    );
+    setSubscribers(updatedSubscribers);
 
-  // Prepare the payload with necessary fields like ID and status
-  const payload = {
-    id: subscriberToUpdate.id,
-    status: updatedStatus,
+    // Prepare the payload with necessary fields like ID and status
+    const payload = {
+      id: subscriberToUpdate.id,
+      status: updatedStatus,
+    };
+
+    // Send the status update to the API
+    axios
+      .put(
+        `${API}/api/Group/update-status`,
+        payload, // Send the proper payload to the API
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then(() => {
+        console.log("Status updated successfully");
+      })
+      .catch((error) => {
+        console.error(
+          "Error updating status:",
+          error.response?.data || error.message
+        );
+        // Revert local state on error
+        setSubscribers(subscribers);
+      });
   };
-
-  // Send the status update to the API
-  axios
-    .put(
-      `${API}/api/Group/update-status`,
-      payload, // Send the proper payload to the API
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-    .then(() => {
-      console.log("Status updated successfully");
-    })
-    .catch((error) => {
-      console.error(
-        "Error updating status:",
-        error.response?.data || error.message
-      );
-      // Revert local state on error
-      setSubscribers(subscribers);
-    });
-};
 
 
   const handleEdit = (index, id) => {
@@ -262,7 +262,7 @@ const handleStatusToggle = (index) => {
   };
 
   const handleDeleteCancel = () => {
-    
+
     setOpenDeleteDialog(false);
     setDeleteIndex(null);
   };
@@ -279,7 +279,14 @@ const handleStatusToggle = (index) => {
             onChange={(e) =>
               setNewCategory({ ...newCategory, name: e.target.value })
             }
-            sx={{ mr: 2, width: "400px" }}
+            sx={{
+              mr: 2,
+              width: "41%",
+              borderRadius: "30px", // Add border-radius here
+              '& .MuiOutlinedInput-root': {
+                borderRadius: "30px", // Ensure the inner input has the same border-radius
+              },
+            }}
             error={errors.name}
             helperText={errors.name ? "Name is required" : ""}
             required
@@ -292,25 +299,33 @@ const handleStatusToggle = (index) => {
             onChange={(e) =>
               setNewCategory({ ...newCategory, description: e.target.value })
             }
-            sx={{ mr: 2, width: "400px" }}
+            sx={{
+              mr: 2,
+              width: "41%",
+              borderRadius: "30px", // Add border-radius here
+              '& .MuiOutlinedInput-root': {
+                borderRadius: "30px", // Ensure the inner input has the same border-radius
+              },
+            }}
             error={errors.description}
             helperText={errors.description ? "Description is required" : ""}
             required
           />
-          <Button variant="contained" color="primary" type="submit">
-            {editIndex !== null ? "Edit Category" : "Add Category"}
+          <Button variant="contained" color="primary" type="submit"
+           sx={{ ml: 1 ,borderRadius:"30px",background:"#4A628A"}}>
+            {editIndex !== null ? "Edit Hotspot" : "Add Hotspot"}
           </Button>
         </Box>
       </form>
 
       <StyledTable>
-        <TableHead>
+        <TableHead style={{ background: '#4A628A' }} >
           <TableRow>
-            <TableCell align="left">ID</TableCell>
-            <TableCell align="left">Name</TableCell>
-            <TableCell align="left">Description</TableCell>
-            <TableCell align="center">Status</TableCell>
-            <TableCell align="right">Actions</TableCell>
+            <TableCell className="text-center text-light" style={{ borderTopLeftRadius: '10px', overflow: 'hidden' }} >S.No.</TableCell>
+            <TableCell className="text-light" align="left">Name</TableCell>
+            <TableCell className="text-light" align="left">Description</TableCell>
+            {/* <TableCell align="center">Status</TableCell> */}
+            <TableCell className="text-light text-center" style={{ borderTopRightRadius: '10px', overflow: 'hidden' }}>Actions</TableCell>
           </TableRow>
         </TableHead>
 
@@ -319,31 +334,31 @@ const handleStatusToggle = (index) => {
             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
             .map((subscriber, index) => (
               <TableRow key={subscriber.id}>
-                <TableCell align="left">{index+1}</TableCell>
+                <TableCell className="text-center" align="left">{index + 1}</TableCell>
                 <TableCell align="left">{subscriber.name}</TableCell>
                 <TableCell align="left">{subscriber.description}</TableCell>
-                <TableCell align="center">
+                {/* <TableCell align="center">
                   <Switch
                     checked={subscriber.status}
                     onChange={() =>
                       handleStatusToggle(page * rowsPerPage + index, subscriber.status)
                     }
                   />
-                </TableCell>
-                <TableCell align="right">
+                </TableCell> */}
+                <TableCell className="text-center">
                   <IconButton
                     onClick={() =>
                       handleEdit(page * rowsPerPage + index, subscriber.id)
                     }
                   >
-                    <EditIcon />
+                    <EditIcon sx={{ color: '#7AB2D3' }} />
                   </IconButton>
                   <IconButton
                     onClick={() =>
                       handleDeleteClick(page * rowsPerPage + index)
                     }
                   >
-                    <DeleteIcon />
+                    <DeleteOutlineIcon sx={{ color: '#F95454' }} />
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -371,7 +386,7 @@ const handleStatusToggle = (index) => {
         </Button>
 
         <Typography variant="body1" sx={{ mx: 2 }}>
-          Page {pageNumber} of {totalPages}
+          Page {pageNumber} of {totalPages || 1}
         </Typography>
 
         <Button
@@ -383,7 +398,8 @@ const handleStatusToggle = (index) => {
           Next
         </Button>
 
-        <Select
+        <Select 
+          className="p-0"
           value={pageSize}
           onChange={handlePageSizeChange}
           variant="outlined"

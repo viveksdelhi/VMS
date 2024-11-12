@@ -17,13 +17,12 @@ const Container = styled("div")(({ theme }) => ({
 
 export default function Appnvr() {
   return (
-    <Container>
+    <Container className="container-fluid p-0 m-0">
       {/* <Box className="breadcrumb">
       { name: "Material", path: "/material" },
         <Breadcrumb routeSegments={[ { name: "Form" }]} />
       </Box> */}
 
-      <Stack spacing={3}> 
         <SimpleCard title={<span style={{ textAlign: "left", display: "block" }}>Recordings</span>}>
           <Recording />
         </SimpleCard>
@@ -31,7 +30,6 @@ export default function Appnvr() {
         {/* <SimpleCard title="stepper form">
           <StepperForm />
         </SimpleCard> */}
-      </Stack>
     </Container>
   );
 }

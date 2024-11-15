@@ -32,7 +32,7 @@ const SimpleForm = () => {
     mac_address: "",
     latitude: "",
     longitude: "",
-    area: "",
+    area: "NA",
     brand: "",
   });
 
@@ -124,6 +124,7 @@ const SimpleForm = () => {
         }
       );
       console.log("Form submitted successfully:", response.data);
+      alert("Camera Add successfully")
       navigate("/all-camera");
     } catch (error) {
       console.error("Error submitting the form:", error);
@@ -341,7 +342,7 @@ const SimpleForm = () => {
             </Grid>
 
             <Grid container spacing={3} sx={{ mt: -3 }}>
-              <Grid item xs={6}>
+              {/* <Grid item xs={6}>
                 <TextField
                   type="text"
                   name="area"
@@ -349,7 +350,7 @@ const SimpleForm = () => {
                   onChange={handleChange}
                   value={area}
                 />
-              </Grid>
+              </Grid> */}
 
               <Grid item xs={6}>
                 <TextField

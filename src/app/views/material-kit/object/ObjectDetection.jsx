@@ -156,12 +156,16 @@ export const ObjectDetection = ({ cameraId, cameraIP, publicUrl,cameraName }) =>
           'Content-Type': 'application/json',
         },
       });
+       // Check if status code is 204 (No Content)
+      if (response.status === 204) {
+        setOpen(false); // Close modal or perform other actions
+      }
       // console.log(JSON.parse(response.config.data).anpr);
       await axios.post(`${detection}/details`, { cameras: [postData] });
       await axios.post(`${API}/api/VideoAnalytic/Post`, postData2);
       await axios.post(`${ANPRAPI}/anprStartByQueue`, { cameras: [postData3] });
-      await axios.post(`${API}/api/ANPRStatus`,postData3);
-      setOpen(false);
+      await axios.post(`${API}/api/ANPRStatus`,postData4);
+    
     } catch (error) {
       console.error('Error saving settings:', error);
       // Consider adding user feedback here

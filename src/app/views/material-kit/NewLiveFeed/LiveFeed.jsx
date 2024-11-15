@@ -241,55 +241,55 @@ const VideoPlayer = ({ url, camera, style, allcameradata }) => {
   const handleShow2 = () => setShowModal(true);
   const handleClose2 = () => setShowModal(false);
 
- // Snapshot handle with shutter effect
-const handleSnapshot = (videoRef) => {
-  // Get the video element
-  if (videoRef.current) {
-    const video = videoRef.current;
-    
-    // Create a shutter overlay element
-    const shutter = document.createElement("div");
-    shutter.style.position = "absolute";
-    shutter.style.top = 0;
-    shutter.style.left = 0;
-    shutter.style.width = "100%";
-    shutter.style.height = "100%";
-    shutter.style.backgroundColor = "rgba(0, 0, 0, 0.5)"; // Semi-transparent black
-    shutter.style.zIndex = 10; // Ensure it's above the video
-    shutter.style.transition = "opacity 0.2s"; // Smooth fade-out effect
-    shutter.style.opacity = 0;
+  // Snapshot handle with shutter effect
+  const handleSnapshot = (videoRef) => {
+    // Get the video element
+    if (videoRef.current) {
+      const video = videoRef.current;
 
-    // Append the shutter overlay to the body (or the container of the video)
-    document.body.appendChild(shutter);
-    
-    // Trigger the shutter effect by fading in and out quickly
-    setTimeout(() => {
-      shutter.style.opacity = 1; // Show the shutter
-    }, 10);
+      // Create a shutter overlay element
+      const shutter = document.createElement("div");
+      shutter.style.position = "absolute";
+      shutter.style.top = 0;
+      shutter.style.left = 0;
+      shutter.style.width = "100%";
+      shutter.style.height = "100%";
+      shutter.style.backgroundColor = "rgba(0, 0, 0, 0.5)"; // Semi-transparent black
+      shutter.style.zIndex = 10; // Ensure it's above the video
+      shutter.style.transition = "opacity 0.2s"; // Smooth fade-out effect
+      shutter.style.opacity = 0;
 
-    // After a short delay, hide the shutter and capture the snapshot
-    setTimeout(() => {
-      shutter.style.opacity = 0; // Hide the shutter
-      // Wait until the shutter is fully hidden before capturing the snapshot
+      // Append the shutter overlay to the body (or the container of the video)
+      document.body.appendChild(shutter);
+
+      // Trigger the shutter effect by fading in and out quickly
       setTimeout(() => {
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        shutter.style.opacity = 1; // Show the shutter
+      }, 10);
 
-        const dataUrl = canvas.toDataURL("image/png"); // Convert to base64
-        const link = document.createElement("a");
-        link.href = dataUrl;
-        link.download = `snapshot-${Date.now()}.png`; // Download the snapshot
-        link.click();
-        
-        // Clean up by removing the shutter overlay
-        document.body.removeChild(shutter);
-      }, 200); // Wait a bit for the shutter to disappear before capturing the image
-    }, 500); // Delay for shutter effect duration
-  }
-};
+      // After a short delay, hide the shutter and capture the snapshot
+      setTimeout(() => {
+        shutter.style.opacity = 0; // Hide the shutter
+        // Wait until the shutter is fully hidden before capturing the snapshot
+        setTimeout(() => {
+          const canvas = document.createElement("canvas");
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          const dataUrl = canvas.toDataURL("image/png"); // Convert to base64
+          const link = document.createElement("a");
+          link.href = dataUrl;
+          link.download = `snapshot-${Date.now()}.png`; // Download the snapshot
+          link.click();
+
+          // Clean up by removing the shutter overlay
+          document.body.removeChild(shutter);
+        }, 200); // Wait a bit for the shutter to disappear before capturing the image
+      }, 500); // Delay for shutter effect duration
+    }
+  };
 
 
   // Fullscreen handle
@@ -436,13 +436,13 @@ const handleSnapshot = (videoRef) => {
       </style>
       {videoStatus === "valid" && (
         <>
-          <div style={{ position: "absolute", top: "2px", right: "10px" ,display:"flex"}}>
+          <div style={{ position: "absolute", top: "2px", right: "10px", display: "flex" }}>
             <div className=" text-light">REC</div>
             <Spinner
               animation="grow"
               variant="danger"
               role="status"
-              style={{ width: '10px', height: '10px' ,margin:"5px 0px 0px 5px"}} // Set the width and height here
+              style={{ width: '10px', height: '10px', margin: "5px 0px 0px 5px" }} // Set the width and height here
             >
               <span className="visually-hidden">Loading...</span>
             </Spinner>
@@ -542,12 +542,13 @@ const handleSnapshot = (videoRef) => {
           <iframe
             width="100%"
             height="450"
-            style={{ border: 0 }}
+            style={{ border: '0' }}
             loading="lazy"
             allowFullScreen
-            src={`https://www.google.com/maps?q=${camera.latitude},${camera.longitude}&hl=es;z=12&output=embed`}
-            title="Google Maps Location"
-          ></iframe>
+            src={`https://www.openstreetmap.org/export/embed.html?bbox=${camera.longitude - 0.01},${camera.latitude - 0.01},${camera.longitude + 0.01},${camera.latitude + 0.01}&layer=mapnik&marker=${camera.latitude},${camera.longitude}`}
+            title="OpenStreetMap Location with Marker"
+          />
+
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>

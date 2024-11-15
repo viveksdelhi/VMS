@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const  Counter = ({ target }) => {
+const Counter = ({ target }) => {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -22,7 +22,14 @@ const  Counter = ({ target }) => {
         requestAnimationFrame(updateCounter); // Continue animation
       } else {
         setCount(target); // Ensure it ends at the target
-        document.getElementById('counter').classList.add('brake'); // Trigger brake animation
+
+        // Delay class addition to ensure DOM is updated
+        setTimeout(() => {
+          const element = document.getElementById('counter');
+          if (element) {
+            element.classList.add('brake'); // Trigger brake animation
+          }
+        }, 0); // Delay execution to next event loop
       }
     };
 
@@ -67,4 +74,5 @@ const  Counter = ({ target }) => {
     </div>
   );
 };
-export default Counter
+
+export default Counter;

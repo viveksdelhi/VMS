@@ -47,8 +47,6 @@ export const StyledTable = styled(Table)(() => ({
 }));
 
 export default function PaginationTable() {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(25);
   const [nvrList, setNvrList] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -92,15 +90,23 @@ export default function PaginationTable() {
 
   const sortData = (data) => {
     return data.sort((a, b) => {
-      if (order === "asc") {
-        return a[orderBy]?.localeCompare(b[orderBy]);
-      } else {
-        return b[orderBy]?.localeCompare(a[orderBy]);
+      const aValue = a[orderBy], bValue = b[orderBy];
+      
+      if (aValue == null || bValue == null) return 0;
+  
+      // Handle numerical comparison for numbers
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return order === "asc" ? aValue - bValue : bValue - aValue;
       }
+  
+      // Use localeCompare for strings, or convert to string for mixed types
+      return (aValue.toString()).localeCompare(bValue.toString()) * (order === "asc" ? 1 : -1);
     });
   };
-
   const sortedResults = sortData([...searchResults]);
+
+  
+
   const getApi = async () => {
     try {
       const response = await axios.get(`${API}/api/NVR/Pagination?pageNumber=${pageNumber}&pageSize=${pageSize}`, {
@@ -192,20 +198,14 @@ export default function PaginationTable() {
     }
   };
 
-  // const downloadAsExcel = () => {
-  //   const worksheet = XLSX.utils.json_to_sheet(searchResults);
-  //   const workbook = XLSX.utils.book_new();
-  //   XLSX.utils.book_append_sheet(workbook, worksheet, "NVRs");
-  //   XLSX.writeFile(workbook, "nvr_list.xlsx");
-  // };
   const downloadAsExcel = () => {
     // Create a new array with only the needed columns and a serial number
     const filteredResults = searchResults.map((nvr, index) => ({
       "S. No": index + 1,  // Add serial number
       "Name": nvr.Name,
-      "Username": nvr.Username,
+      "Username": nvr.username,
       "NVR IP": nvr.nvrip,
-      "Port": nvr.Port,
+      "Port": nvr.port,
       "NVR Type": nvr.nvrType
     }));
   
@@ -248,9 +248,9 @@ export default function PaginationTable() {
   
     doc.save("nvr_list.pdf");
   };
-  
 
-  const handleSearch = () => {
+  useEffect(() => {
+    // Dynamic search filtering
     const filtered = nvrList.filter((nvr) => {
       const nameMatch = nvr.name.toLowerCase().includes(searchQuery.toLowerCase());
       const nvripMatch = nvr.nvrip.toLowerCase().includes(searchQuery.toLowerCase());
@@ -262,8 +262,9 @@ export default function PaginationTable() {
     });
 
     setSearchResults(filtered);
-    setPage(0);
-  };
+  }, [searchQuery]); // Refilter when searchQuery or cameras change
+
+
 
   const navigate = useNavigate();
   const handleClick = () => {
@@ -282,7 +283,7 @@ export default function PaginationTable() {
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={handleSearch}>
+                  <IconButton>
                     <SearchIcon />
                   </IconButton>
                 </InputAdornment>
@@ -366,21 +367,65 @@ export default function PaginationTable() {
               </TableSortLabel>
             </TableCell>
             <TableCell className="text-light">
-              Port
+              <TableSortLabel
+                className="text-light"
+                active={orderBy === "port"}
+                direction={orderBy === "port" ? order : "asc"}
+                onClick={() => handleSort("port")}
+              >
+                Port
+              </TableSortLabel>
+              
             </TableCell>
+            {/* <TableCell className="text-light">
+              <TableSortLabel
+                className="text-light"
+                active={orderBy === "port"}
+                direction={orderBy === "port" ? order : "asc"}
+                onClick={() => handleSort("port")}
+              >
+                Port
+              </TableSortLabel>
+              
+            </TableCell> */}
+            {/* <TableCell className="text-light">
+              <TableSortLabel
+                className="text-light"
+                active={orderBy === "port"}
+                direction={orderBy === "port" ? order : "asc"}
+                onClick={() => handleSort("port")}
+              >
+                Port
+              </TableSortLabel>
+              
+            </TableCell> */}
+            {/* <TableCell className="text-light">
+              <TableSortLabel
+                className="text-light"
+                active={orderBy === "port"}
+                direction={orderBy === "port" ? order : "asc"}
+                onClick={() => handleSort("port")}
+              >
+                Port
+              </TableSortLabel>
+              
+            </TableCell> */}
             <TableCell className="text-light" style={{ borderTopRightRadius: '10px', overflow: 'hidden' }}>Actions</TableCell>
           </TableRow>
         </TableHead>
 
         <TableBody>
-          {sortedResults.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((nvr, index) => (
+          {sortedResults.map((nvr, index) => (
             <TableRow key={nvr.id}>
-              <TableCell  className="text-center">{index + 1}</TableCell>
+              <TableCell  className="text-center">{((pageNumber - 1) * pageSize) + index + 1}</TableCell>
               <TableCell>{nvr.name}</TableCell>
               <TableCell>{nvr.username}</TableCell>
               <TableCell>{nvr.nvrType}</TableCell>
               <TableCell>{nvr.nvrip}</TableCell>
               <TableCell>{nvr.port}</TableCell>
+              {/* <TableCell>{nvr.port}</TableCell> */}
+              {/* <TableCell>{nvr.port}</TableCell> */}
+              {/* <TableCell>{nvr.port}</TableCell> */}
               <TableCell>
                 <IconButton onClick={() => handleEditClick(nvr)}>
                   <EditIcon sx={{ color: '#7AB2D3' }} />
@@ -406,7 +451,7 @@ export default function PaginationTable() {
           onClick={() => handlePageChange(pageNumber - 1)}
           disabled={pageNumber === 1}
           sx={{ mr: 0 }}
-        >
+          >
           Previous
         </Button>
 
@@ -434,23 +479,7 @@ export default function PaginationTable() {
           <MenuItem value={20}>20</MenuItem>
           <MenuItem value={50}>50</MenuItem>
         </Select>
-
-        {/* <Typography variant="body2" sx={{ ml: 1 }}>
-          items per page
-        </Typography> */}
       </Box>
-      {/* <TablePagination
-        rowsPerPageOptions={[10, 25, 50]}
-        component="div"
-        count={nvrList.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={(event, newPage) => setPage(newPage)}
-        onRowsPerPageChange={(event) => {
-          setRowsPerPage(parseInt(event.target.value, 10));
-          setPage(0);
-        }}
-      /> */}
 
       <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)}>
         <DialogTitle>Edit NVR</DialogTitle>
@@ -488,14 +517,29 @@ export default function PaginationTable() {
             onChange={handleEditChange}
             fullWidth
           />
-          <TextField
-            margin="dense"
-            label="NVR Type"
-            name="nvrType"
-            value={selectedNvr.nvrType}
-            onChange={handleEditChange}
-            fullWidth
-          />
+          <Select
+              name="nvrType"
+              value={selectedNvr.nvrType}
+              onChange={(e) => setSelectedNvr({ ...selectedNvr, nvrType: e.target.value })}
+              displayEmpty
+              variant="outlined"
+              fullWidth
+              validators={["required", "isnvrTypeSelected"]}
+              errorMessages={["This field is required", "Please select an NVR type"]}
+              sx={{ mb: 2 }}
+            >
+              <MenuItem value="">Select NVR Type</MenuItem>
+              <MenuItem value="Hikvision">Hikvision</MenuItem>
+              <MenuItem value="Honeywell">Honeywell</MenuItem>
+              <MenuItem value="Dahua">Dahua</MenuItem>
+              <MenuItem value="CPPlus">CP Plus</MenuItem>
+              <MenuItem value="Uniview">Uniview</MenuItem>
+              <MenuItem value="Genetec">Genetec</MenuItem>
+              {/* <MenuItem value="Honeywell">Avigilon</MenuItem>
+              <MenuItem value="Honeywell">Bosch</MenuItem>
+              <MenuItem value="Honeywell">Milestone</MenuItem>
+              <MenuItem value="Honeywell">Digital Watchdog</MenuItem> */}
+            </Select>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenEditDialog(false)} color="primary">

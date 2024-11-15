@@ -204,7 +204,7 @@ export default function MainDashboard() {
                       color: "#0d47a1", // Darker shade on hover
                     },
                   }}
-                  onClick={() => handleNavigation("/alertstable")}
+                  onClick={() => handleNavigation("/dashboard")}
                 >
                   View Details
                 </Typography>

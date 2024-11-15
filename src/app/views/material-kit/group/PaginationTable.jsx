@@ -185,10 +185,9 @@ export default function PaginationTable() {
       setOpenDeleteDialog(false);
       setDeleteIndex(null);
     } catch (error) {
-      console.error(
-        "Error deleting category:",
-        error.response?.data || error.message
-      );
+      console.log(error.response)
+      alert(error.response.data.message)
+      setOpenDeleteDialog(false);
     }
   };
 

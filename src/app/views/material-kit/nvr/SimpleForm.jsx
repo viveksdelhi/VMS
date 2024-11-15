@@ -64,11 +64,11 @@ const SimpleForm = () => {
 
 
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    navigate("/all-nvr"); 
+    navigate("/all-nvr");
     try {
       const response = await axios.post(
         `${API}/api/NVR`,
@@ -91,11 +91,13 @@ const SimpleForm = () => {
       // Handle success (e.g., show a success message or reset the form)
     } catch (error) {
       console.error("Error submitting form:", error);
+      // console.log(error.response.data.message)
+      alert(error.response.data.message)
       // Handle error (e.g., show an error message)
     }
   };
-   
-  function backtotable(){
+
+  function backtotable() {
     navigate('/all-nvr')
   }
 
@@ -142,7 +144,7 @@ const SimpleForm = () => {
               validators={["required"]}
               errorMessages={["This field is required"]}
             />
-            </Grid>
+          </Grid>
           <Grid item lg={6} md={6} sm={12} xs={12} sx={{ mt: 2 }}>
 
             <TextField
@@ -203,8 +205,8 @@ const SimpleForm = () => {
           </Grid>
         </Grid>
         <Button color="success" variant="contained" type="submit">
-              <Span sx={{ pl: 1, textTransform: "capitalize" }}>Submit</Span>
-            </Button>
+          <Span sx={{ pl: 1, textTransform: "capitalize" }}>Submit</Span>
+        </Button>
       </ValidatorForm>
     </div>
   );

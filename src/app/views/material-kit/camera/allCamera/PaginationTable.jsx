@@ -1,25 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from 'react-router-dom';
 import {
-  Box,
-  Button,
-  Table,
-  styled,
-  TableRow,
-  TableBody,
-  TableCell,
-  TableHead,
-  TablePagination,
-  Switch,
-  TextField,
-  InputAdornment,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  MenuItem,
-  Typography,
-  Select,
+  Box, Button, Table, styled, TableRow, TableBody, TableCell, TableHead, TablePagination, Switch, TextField, InputAdornment, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Typography, Select, TableSortLabel,
 } from "@mui/material";
 import SimCardDownloadIcon from '@mui/icons-material/SimCardDownload';
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
@@ -37,6 +19,7 @@ import "jspdf-autotable";
 import moment from "moment";
 // import { ObjectDetection } from "../../object/ObjectDetection";
 import { useNavigate } from "react-router-dom";
+import { Modal } from "react-bootstrap";
 // STYLED COMPONENT
 const StyledTable = styled(Table)(() => ({
   whiteSpace: "pre",
@@ -48,7 +31,7 @@ const StyledTable = styled(Table)(() => ({
   },
 }));
 
-export default function CameraList() { 
+export default function CameraList() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [cameras, setCameras] = useState([]);
@@ -92,6 +75,18 @@ export default function CameraList() {
   };
   // Pagination end
 
+  //map show 
+  const [show, setShow] = useState(false);
+  const handleClose = () => setShow(false);
+  const [coordinates, setCoordinates] = useState({ lat: null, long: null });
+
+  const handleShow = (lat, long) => {
+    setCoordinates({ lat, long });  // Save the latitude and longitude in state
+    setShow(true);  // Set show to true, to display something (e.g., a map or modal)
+  };
+
+  //map end
+
   const location = useLocation();
   const state = location.state || {}; // Default to an empty object if no state is present
   const status = state.Status; // Ensure the property name matches what was passed
@@ -106,8 +101,8 @@ export default function CameraList() {
           },
         });
         let filteredData = response.data.cameras;
-        console.log(filteredData);
-  
+        // console.log(filteredData);
+
         if (status === "Active") {
           filteredData = filteredData.filter(camera => camera.status === true);
         } else if (status === "Inactive") {
@@ -116,7 +111,7 @@ export default function CameraList() {
           // No filtering needed if status is "All" or not defined
           filteredData = filteredData;
         }
-  
+
         setCameras(filteredData);
         setSearchResults(response.data.cameras);
         setTotalPages(Math.ceil(response.data.totalCount / pageSize));
@@ -124,10 +119,10 @@ export default function CameraList() {
         console.error("Error fetching cameras:", error);
       }
     };
-  
+
     fetchCameras();
   }, [pageNumber, pageSize, status]);
-  
+
 
   const navigate = useNavigate();
 
@@ -162,6 +157,33 @@ export default function CameraList() {
     fetchData();
   }, [status]); // Refetch data if status changes
 
+
+  // Sorting state
+  const [order, setOrder] = useState("asc");
+  const [orderBy, setOrderBy] = useState("");
+
+  const handleSort = (column) => {
+    const isAsc = orderBy === column && order === "asc"; // If currently sorted ascending, change to descending
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(column);
+  };
+
+  const sortData = (data) => {
+    return data.sort((a, b) => {
+      const aValue = a[orderBy], bValue = b[orderBy];
+
+      if (aValue == null || bValue == null) return 0;
+
+      // Handle numerical comparison for numbers
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return order === "asc" ? aValue - bValue : bValue - aValue;
+      }
+      // Use localeCompare for strings, or convert to string for mixed types
+      return (aValue.toString()).localeCompare(bValue.toString()) * (order === "asc" ? 1 : -1);
+    });
+  };
+  const sortedResults = sortData([...searchResults]);
+
   useEffect(() => {
     // Dynamic search filtering
     const filtered = cameras.filter(
@@ -184,7 +206,6 @@ export default function CameraList() {
         },
       });
       let filteredData = response.data.cameras
-      console.log(filteredData)
       if (status === "All") {
         filteredData = filteredData
       }
@@ -349,11 +370,25 @@ export default function CameraList() {
   };
 
   const downloadAsExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(searchResults);
+    const formattedResults = searchResults.map((item, index) => ({
+      "S.No.": index + 1,
+      "Name": item.name,
+      "Camera IP": item.cameraIp,
+      "Zone": item.zone,
+      "Brand": item.brand,
+      "MAC Address": item.macAddress,
+      "Manufacture Date": item.manufactureDate,
+      "Last Live": item.lastLive,
+      "Location": item.location,
+      "Status": item.status
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(formattedResults);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Cameras");
     XLSX.writeFile(workbook, "cameras.xlsx");
   };
+
 
 
   const downloadAsPDF = () => {
@@ -364,8 +399,7 @@ export default function CameraList() {
       "S.No.",
       "Name",
       "Camera IP",
-      "Group ID",
-      "Area",
+      "Zone",
       "Brand",
       "MAC Address",
       "Manufacture Date",
@@ -373,12 +407,11 @@ export default function CameraList() {
       "Location",
       "Status",
     ];
-    const tableRows = searchResults.map((camera) => [
-      camera.id,
+    const tableRows = searchResults.map((camera, index) => [
+      index,
       camera.name,
       camera.cameraIP,
       camera.groupId,
-      camera.area,
       camera.brand,
       camera.macAddress,
       camera.manufacture,
@@ -397,7 +430,7 @@ export default function CameraList() {
   };
 
   return (
-    <Box sx={{backgroundColor:"white"}} width="100%" overflow="auto">
+    <Box sx={{ backgroundColor: "white" }} width="100%" overflow="auto">
       <Box
         display="flex"
         justifyContent="space-between"
@@ -439,7 +472,7 @@ export default function CameraList() {
           <Button
             className="w-100"
             variant="contained"
-            sx={{ ml: 1 ,borderRadius:"30px",background:"#4A628A"}}
+            sx={{ ml: 1, borderRadius: "30px", background: "#4A628A" }}
             onClick={handleClick}
           >
             + Camera
@@ -456,41 +489,117 @@ export default function CameraList() {
       </Box>
 
       <StyledTable>
-      <TableHead style={{background:'#4A628A'}} >
-  <TableRow >
-    <TableCell className="text-center text-light" style={{ borderTopLeftRadius: '10px', overflow: 'hidden' }} >S.No.</TableCell>
-    <TableCell className="text-light" >Camera Name</TableCell>
-    <TableCell className="text-light" >Camera IP</TableCell>
-    <TableCell className="text-light" >Group ID</TableCell>
-    <TableCell className="text-light" >Area</TableCell>
-    <TableCell className="text-light" >Model</TableCell>
-    <TableCell className="text-light" >MAC Address</TableCell>
-    <TableCell className="text-light" >Make</TableCell>
-    <TableCell className="text-light" >Location</TableCell>
-    <TableCell className="text-light"  style={{borderTopRightRadius: '10px', overflow: 'hidden' }}>Actions</TableCell>
-  </TableRow>
-</TableHead>
+        <TableHead style={{ background: '#4A628A' }}>
+          <TableRow>
+            <TableCell
+              className="text-center text-light"
+              style={{ borderTopLeftRadius: '10px', overflow: 'hidden' }}
+            >
+              S.No.
+            </TableCell>
+            <TableCell className="text-light">
+              <TableSortLabel
+                className="text-light"
+                active={orderBy === "name"}
+                direction={orderBy === "name" ? order : "asc"}
+                onClick={() => handleSort("name")}>Camera Name</TableSortLabel>
+            </TableCell>
+            <TableCell
+              className="text-light"
+            >
+              <TableSortLabel
+                className="text-light"
+                active={orderBy === "cameraIP"}
+                direction={orderBy === "cameraIP" ? order : "asc"}
+                onClick={() => handleSort("cameraIP")}> Camera IP
+              </TableSortLabel>
+            </TableCell>
+            <TableCell
+              className="text-light"
+            >
+              <TableSortLabel
+                className="text-light"
+                active={orderBy === "groupId"}
+                direction={orderBy === "groupId" ? order : "asc"}
+                onClick={() => handleSort("groupId")}> Zone
+              </TableSortLabel>
+            </TableCell>
+            {/* <TableCell
+              className="text-light"
+            >
+              <TableSortLabel 
+               className="text-light"
+               active={orderBy === "area"}
+               direction={orderBy === "area" ? order : "asc"}
+               onClick={() => handleSort("area")}> Area
+               </TableSortLabel>
+            </TableCell> */}
+            <TableCell
+              className="text-light"
+            >
+              <TableSortLabel
+                className="text-light"
+                active={orderBy === "brand"}
+                direction={orderBy === "brand" ? order : "asc"}
+                onClick={() => handleSort("brand")}> Model
+              </TableSortLabel>
+            </TableCell>
+            <TableCell
+              className="text-light"
+            >
+              <TableSortLabel
+                className="text-light"
+                active={orderBy === "macAddress"}
+                direction={orderBy === "macAddress" ? order : "asc"}
+                onClick={() => handleSort("macAddress")}> MAC Address
+              </TableSortLabel>
+            </TableCell>
+            <TableCell
+              className="text-light"
+            >
+              <TableSortLabel
+                className="text-light"
+                active={orderBy === "manufacture"}
+                direction={orderBy === "manufacture" ? order : "asc"}
+                onClick={() => handleSort("manufacture")}> Make
+              </TableSortLabel>
+            </TableCell>
+            <TableCell
+              className="text-light"
+            >
+              <TableSortLabel
+                className="text-light"
+                active={orderBy === "location"}
+                direction={orderBy === "location" ? order : "asc"}
+                onClick={() => handleSort("location")}> Location
+              </TableSortLabel>
+            </TableCell>
+            <TableCell
+              className="text-light"
+              style={{ borderTopRightRadius: '10px', overflow: 'hidden' }}
+            >
+              Actions
+            </TableCell>
+          </TableRow>
+        </TableHead>
+
 
         <TableBody>
-          {searchResults
-            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-            .map((camera, index) => (
-              <TableRow key={camera.id}>
-                <TableCell className="text-center">{index + 1}</TableCell>
-                <TableCell>
-                  {camera.name}
-                </TableCell>
-                <TableCell>{camera.cameraIP}</TableCell>
-                <TableCell>{camera.groupId}</TableCell>
-                <TableCell>{camera.area}</TableCell>
-                <TableCell>{camera.brand}</TableCell>
-                <TableCell>{camera.macAddress}</TableCell>
-                <TableCell>{camera.manufacture}</TableCell>
-                <TableCell>
-                  <LocationOnIcon sx={{ color: 'green', mr: 0.5 }} />
-                  {camera.location}
-                </TableCell>
-                <TableCell>
+          {sortedResults.map((camera, index) => (
+            <TableRow key={camera.id}>
+              <TableCell className="text-center">{((pageNumber - 1) * pageSize) + index + 1}</TableCell>
+              <TableCell>{camera.name}</TableCell>
+              <TableCell>{camera.cameraIP}</TableCell>
+              <TableCell>{camera.groupId}</TableCell>
+              {/* <TableCell>{camera.area}</TableCell> */}
+              <TableCell>{camera.brand}</TableCell>
+              <TableCell>{camera.macAddress}</TableCell>
+              <TableCell>{camera.manufacture}</TableCell>
+              <TableCell>
+                <LocationOnIcon sx={{ color: 'green', mr: 0.5, cursor: "pointer" }} onClick={() => handleShow(camera.latitude, camera.longitude)} />
+                {camera.location}
+              </TableCell>
+              <TableCell>
                 <IconButton onClick={() => handleEditClick(camera)}>
                   <EditIcon sx={{ color: '#7AB2D3' }} />
                 </IconButton>
@@ -498,21 +607,10 @@ export default function CameraList() {
                   <DeleteOutlineIcon sx={{ color: '#F95454' }} />
                 </IconButton>
               </TableCell>
-              </TableRow>
-            ))}
+            </TableRow>
+          ))}
         </TableBody>
       </StyledTable>
-      {/* <TablePagination
-        rowsPerPageOptions={[25, 50, 100]}
-        component="div"
-        count={searchResults.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      /> */}
-
-      {/* Pagination start */}
 
       <Box
         sx={{
@@ -561,8 +659,6 @@ export default function CameraList() {
         </Typography> */}
       </Box>
 
-      {/* Pagination end */}
-
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
         <DialogTitle>Edit Camera</DialogTitle>
         <DialogContent>
@@ -610,32 +706,33 @@ export default function CameraList() {
                 fullWidth
                 margin="dense"
               />
-              <TextField
+              {/* <TextField
                 label="NVR ID"
                 name="nvrId"
                 value={formValues.nvrId}
                 onChange={handleFormChange}
                 fullWidth
                 margin="dense"
-              />
-              <TextField
-                label="Group ID"
+              /> */}
+              {/* <TextField
+                label="Zone ID"
                 name="groupId"
                 value={formValues.groupId}
                 onChange={handleFormChange}
                 fullWidth
                 margin="dense"
-              />
-            </div>
-            <div className="col-6">
+              /> */}
               <TextField
-                label="RTSP URL"
+                label="Public URL"
                 name="rtspurl"
                 value={formValues.rtspurl}
                 onChange={handleFormChange}
                 fullWidth
                 margin="dense"
               />
+            </div>
+            <div className="col-6">
+              
               <TextField
                 label="Latitude"
                 name="latitude"
@@ -652,16 +749,16 @@ export default function CameraList() {
                 fullWidth
                 margin="dense"
               />
-              <TextField
+              {/* <TextField
                 label="Area"
                 name="area"
                 value={formValues.area}
                 onChange={handleFormChange}
                 fullWidth
                 margin="dense"
-              />
+              /> */}
               <TextField
-                label="Brand"
+                label="Model"
                 name="brand"
                 value={formValues.brand}
                 onChange={handleFormChange}
@@ -677,7 +774,7 @@ export default function CameraList() {
                 margin="dense"
               />
               <TextField
-                label="Manufacture Date"
+                label="Make"
                 name="manufacture"
                 value={formValues.manufacture}
                 onChange={handleFormChange}
@@ -707,6 +804,31 @@ export default function CameraList() {
           <Button onClick={handleConfirmDelete}>Delete</Button>
         </DialogActions>
       </Dialog>
+      {/* map modal */}
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Map</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <iframe
+            width="100%"
+            height="450"
+            style={{ border: '0' }}  // Use an object for the style
+            loading="lazy"
+            allowFullScreen
+            src={`https://www.openstreetmap.org/export/embed.html?bbox=${coordinates.long - 0.01},${coordinates.lat - 0.01},${coordinates.long + 0.01},${coordinates.lat + 0.01}&layer=mapnik&marker=${coordinates.lat},${coordinates.long}`}
+            title="OpenStreetMap Location with Marker"
+          /> 
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
     </Box>
+
   );
 }

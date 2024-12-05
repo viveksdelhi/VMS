@@ -23,7 +23,7 @@ save_plate = 'plates'
 os.makedirs(save_frame, exist_ok=True)
 os.makedirs(save_plate, exist_ok=True)
 
-temp = None
+temp = []
 
 # Function to send logs to RabbitMQ
 def send_log_to_rabbitmq(log_message):
@@ -80,6 +80,16 @@ def log_exception(message):
     send_log_to_rabbitmq(message_data)
 
 
+last_temp_update_time = datetime.datetime.now()
+
+# Function to clear the `temp` list after 5 hours
+def clear_temp_after_interval(interval_hours=10):
+    global temp, last_temp_update_time
+    current_time = datetime.datetime.now()
+    if int((current_time - last_temp_update_time).total_seconds()) > interval_hours * 3600:
+        temp = []
+        last_temp_update_time = current_time
+        log_info("Temp list cleared after 5 hours")
 
 def setup_rabbitmq_connection(queue_name, rabbitmq_host, retries=5, retry_delay=5):
     """
@@ -106,7 +116,7 @@ def process_frame(ch, method, properties, body):
         ch, method, properties: RabbitMQ parameters.
         body: The serialized frame data received from the queue.
     """
-    global temp  # Use the global temp variable to track last detected plate
+    global temp, last_temp_update_time  # Track the update time  # Use the global temp variable to track last detected plate
     try:
         # Deserialize the frame and metadata
         frame_data = pickle.loads(body)
@@ -157,8 +167,9 @@ def process_frame(ch, method, properties, body):
                                 print("plate text :", match)
                                 
                                 # Only save if this plate is different from the last detected one
-                                if match != temp:
-                                    temp = match  # Update the temp variable with the new plate text
+                                match = match.upper()
+                                if match not in temp:
+                                    temp.append(match)  # Update the temp list with the new plate text
                                     now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
                                     frame_dir = os.path.join(save_frame, str(camera_id))
@@ -197,6 +208,9 @@ def process_frame(ch, method, properties, body):
                         log_error(f"Invalid length of detected text from camera id {camera_id}")        
         else:
             log_error(f"OCR result is empty, no text readed from camera id {camera_id}")
+
+        # Check if `temp` needs to be cleared after the interval
+        clear_temp_after_interval()    
         
 
     except Exception as e:
@@ -247,25 +261,7 @@ def main(queue_name="detected_plate", rabbitmq_host="rabbitmq"):
             log_exception(f"Unexpected error: {e}")
             time.sleep(25)
             continue
-
-    # try:
-    #     # Start consuming frames from the 'video_frames' queue
-    #     receiver_channel.basic_consume(
-    #         queue=queue_name, 
-    #         on_message_callback=lambda ch, method, properties, body: process_frame(
-    #             ch, method, properties, body
-    #         ),
-    #         auto_ack=True
-    #     )
-    #     log_info("Waiting for video frames...")
-    #     receiver_channel.start_consuming()
-    # except Exception as e:
-    #     log_error(f"An error occurred: {e}")
-    # finally:
-    #     # Close the connections when done
-    #     receiver_connection.close()
-    #     log_exception("Receiver stopped. RabbitMQ connections closed.")
-
+    
 if __name__ == "__main__":
     # Start the receiver and sender
     main()

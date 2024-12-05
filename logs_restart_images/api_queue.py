@@ -12,7 +12,7 @@ CORS(app)
 # Function to send logs to RabbitMQ
 def send_log_to_rabbitmq(log_message):
     try:
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq', heartbeat=600))
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', heartbeat=600))
         channel = connection.channel()
         channel.queue_declare(queue='anpr_logs')
         
@@ -75,7 +75,7 @@ def update_camera_details():
 
         # Connect to RabbitMQ
         try:
-            connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq', heartbeat=600))
+            connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', heartbeat=600))
             channel = connection.channel()
             log_info(f"Connected to RabbitMQ for camera {camera_id}.")
             try:

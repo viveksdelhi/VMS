@@ -13,7 +13,7 @@ import threading
 # Function to send logs to RabbitMQ
 def send_log_to_rabbitmq(log_message):
     try:
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq', heartbeat=600))
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', heartbeat=600))
         channel = connection.channel()
         channel.queue_declare(queue='anpr_logs')  # Declare the queue for logs
         
@@ -148,15 +148,6 @@ def process_video(camera_url, camera_id, rabbitmq_host, queue_name, frame_interv
                 log_error(f"Failed to process video stream after {retry_count} retries.")
                 break
 
-# def start_camera_process(camera_url, camera_id, rabbitmq_host, queue_name="all_frame", frame_interval=15):
-#     """
-#     Start a separate process for each camera.
-#     """
-#     process = Process(target=process_video, args=(camera_url, camera_id, rabbitmq_host, queue_name, frame_interval))
-#     process.start()
-#     camera_processes[camera_id] = process  # Store process in the dictionary
-#     return process
-
 # Dictionary to keep track of camera URLs by their IDs
 camera_urls = {}
 
@@ -188,27 +179,6 @@ def stop_camera_process(camera_id):
 
 camera_status = {}
 
-# def monitor_camera_processes(rabbitmq_host="localhost", queue_name="all_frame", frame_interval=15):
-#     while True:
-#         for camera_id, process in list(camera_processes.items()):
-#             # Check if camera status is set to False; if so, stop and remove from monitoring
-#             if not camera_status.get(camera_id, True):
-#                 if process.is_alive():
-#                     log_info(f"Stopping camera process for {camera_id} as status is set to False.")
-#                     stop_camera_process(camera_id)
-#                 continue  # Skip this camera for now since it shouldn't be monitored
-
-#             # If process has stopped and status is True, restart it
-#             if not process.is_alive():
-#                 log_info(f"Process for camera {camera_id} has stopped unexpectedly. Attempting to restart...")
-#                 camera_data = {
-#                     'CameraUrl': process.args[0],
-#                     'CameraId': camera_id,
-#                     'Running': "TRUE"
-#                 }
-#                 start_camera_process(camera_data['CameraUrl'], camera_data['CameraId'], rabbitmq_host, queue_name, frame_interval)
-
-#         time.sleep(5)  # Check every 5 seconds
 def monitor_camera_processes(rabbitmq_host="rabbitmq", queue_name="all_frame", frame_interval=15):
     while True:
         for camera_id, process in list(camera_processes.items()):
@@ -232,7 +202,7 @@ def monitor_camera_processes(rabbitmq_host="rabbitmq", queue_name="all_frame", f
                     
         time.sleep(25)  # Check every 25 seconds
 
-def fetch_camera_data_from_queue(queue_name, rabbitmq_host="rabbitmq"):
+def fetch_camera_data_from_queue(queue_name, rabbitmq_host="localhost"):
     """
     Fetch camera ID and RTSP URL from RabbitMQ queue and manage the camera processes.
     """

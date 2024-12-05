@@ -89,7 +89,7 @@ def setup_rabbitmq_connection(queue_name, rabbitmq_host, retries=5, retry_delay=
             log_error(f"RabbitMQ connection failed (attempt {attempt+1}/{retries}): {e}")
             time.sleep(retry_delay)
     raise log_exception(f"Could not connect to RabbitMQ after {retries} attempts")
-def process_frame(ch, method, properties, body, processed_channel):
+def process_frame(ch, method, properties, body, processed_channel, processed_queue_name, rabbitmq_host):
     """
     Callback function to process the received frames from RabbitMQ.
 
@@ -98,6 +98,9 @@ def process_frame(ch, method, properties, body, processed_channel):
         body: The serialized frame data received from the queue.
         processed_channel: RabbitMQ channel for sending processed frames.
     """
+    if not processed_channel.is_open:
+        log_error("Receiver channel is closed. Attempting to reconnect.")
+        processed_connection, processed_channel = setup_rabbitmq_connection(processed_queue_name, rabbitmq_host)
     try:
         # Deserialize the frame and metadata
         frame_data = pickle.loads(body)
@@ -111,7 +114,7 @@ def process_frame(ch, method, properties, body, processed_channel):
         results = model(frame)[0]
         for result in results.boxes.data.tolist():
             x1, y1, x2, y2, score, id = result
-            if score > 0.25:
+            if score > 0.5:
                 # Slice license plate
                 license_plate_crop = frame[int(y1):int(y2), int(x1): int(x2), :]
                 # Process license plate
@@ -166,6 +169,8 @@ def process_frame(ch, method, properties, body, processed_channel):
 
     except Exception as e:
         log_exception(f"Error processing frame --=: {e}")
+        # Set up RabbitMQ connection and channel for sending processed frames
+        processed_connection, processed_channel = setup_rabbitmq_connection(processed_queue_name, rabbitmq_host)
 
 
 def main(queue_name="detected_vehicle", processed_queue_name="detected_plate", rabbitmq_host="rabbitmq"):
@@ -191,52 +196,34 @@ def main(queue_name="detected_vehicle", processed_queue_name="detected_plate", r
 
     while True:
         try:
-            # Your main consuming logic
             if not receiver_channel.is_open:
                 log_error("Receiver channel is closed. Attempting to reconnect.")
-                print("it's ok to reconnect")
+                time.sleep(25)
                 receiver_connection, receiver_channel = setup_rabbitmq_connection(queue_name, rabbitmq_host)
+            if not processed_channel.is_open:
+                log_error("Receiver channel is closed. Attempting to reconnect.")
+                time.sleep(25)
+                processed_connection, processed_channel = setup_rabbitmq_connection(processed_queue_name, rabbitmq_host)  
             # Start consuming frames from the 'video_frames' queue
             receiver_channel.basic_consume(
                 queue=queue_name, 
                 on_message_callback=lambda ch, method, properties, body: process_frame(
-                    ch, method, properties, body, processed_channel
+                    ch, method, properties, body, processed_channel,processed_queue_name, rabbitmq_host 
                 ),
                 auto_ack=True
             )
             log_info("Waiting for video frames...")
             receiver_channel.start_consuming()
-        except pika.exceptions.ChannelClosedByBroker as e:
-            log_error("Channel closed by broker, reconnecting...")
-            receiver_connection, receiver_channel = setup_rabbitmq_connection(queue_name, rabbitmq_host)
         except pika.exceptions.ConnectionClosedByBroker as e:
             log_error("Connection closed by broker, reconnecting...")
+            time.sleep(25)
             receiver_connection, receiver_channel = setup_rabbitmq_connection(queue_name, rabbitmq_host)
+            processed_connection, processed_channel = setup_rabbitmq_connection(processed_queue_name, rabbitmq_host)
         except Exception as e:
             log_exception(f"Unexpected error: {e}")
             time.sleep(25)
             continue
-
-    # ---------------------------------------------------
-    # try:
-    #     # Start consuming frames from the 'video_frames' queue
-    #     receiver_channel.basic_consume(
-    #         queue=queue_name, 
-    #         on_message_callback=lambda ch, method, properties, body: process_frame(
-    #             ch, method, properties, body, processed_channel
-    #         ),
-    #         auto_ack=True
-    #     )
-    #     log_info("Waiting for video frames...")
-    #     receiver_channel.start_consuming()
-    # except Exception as e:
-    #     log_error(f"An error occurred: {e}")
-    #     exit()
-    # finally:
-    #     # Close the connections when done
-    #     receiver_connection.close()
-    #     processed_connection.close()
-    #     log_exception("Receiver stopped. RabbitMQ connections closed.")
+    
 
 if __name__ == "__main__":
     # Start the receiver and sender

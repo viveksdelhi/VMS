@@ -93,7 +93,7 @@ def setup_rabbitmq_connection(queue_name, rabbitmq_host, retries=5, retry_delay=
             time.sleep(retry_delay)
     raise log_exception(f"Could not connect to RabbitMQ after {retries} attempts")
 
-def process_frame(ch, method, properties, body, processed_channel):
+def process_frame(ch, method, properties, body, processed_channel,processed_queue_name, rabbitmq_host):
     """
     Callback function to process the received frames from RabbitMQ.
 
@@ -102,6 +102,9 @@ def process_frame(ch, method, properties, body, processed_channel):
         body: The serialized frame data received from the queue.
         processed_channel: RabbitMQ channel for sending processed frames.
     """
+    if not processed_channel.is_open:
+        log_error("Receiver channel is closed. Attempting to reconnect.")
+        processed_connection, processed_channel = setup_rabbitmq_connection(processed_queue_name, rabbitmq_host)
     try:
         # Deserialize the frame and metadata
         frame_data = pickle.loads(body)
@@ -158,6 +161,9 @@ def process_frame(ch, method, properties, body, processed_channel):
                 #log_info(f"Vehicle detected with camera id {camera_id}: {results.names[int(id)]}")
             else:
                 log_error(f"No vehicle detected with camera id {camera_id}")
+                # Set up RabbitMQ connection and channel for sending processed frames
+                processed_connection, processed_channel = setup_rabbitmq_connection(processed_queue_name, rabbitmq_host)
+
         
         
 
@@ -192,103 +198,34 @@ def main(queue_name="all_frame", processed_queue_name="detected_vehicle", rabbit
 
     while True:
         try:
-            # Your main consuming logic
             if not receiver_channel.is_open:
                 log_error("Receiver channel is closed. Attempting to reconnect.")
-                print("it's reateming")
+                time.sleep(25)
                 receiver_connection, receiver_channel = setup_rabbitmq_connection(queue_name, rabbitmq_host)
-            # Start consuming frames from the 'video_frames' queue
+            if not processed_channel.is_open:
+                log_error("Receiver channel is closed. Attempting to reconnect.")
+                time.sleep(25)
+                processed_connection, processed_channel = setup_rabbitmq_connection(processed_queue_name, rabbitmq_host)
             
             receiver_channel.basic_consume(
                 queue=queue_name, 
                 on_message_callback=lambda ch, method, properties, body: process_frame(
-                    ch, method, properties, body, processed_channel
+                    ch, method, properties, body, processed_channel,processed_queue_name, rabbitmq_host
                 ),
                 auto_ack=True
             )
             log_info("Waiting for video frames...")
             receiver_channel.start_consuming()
-
-        except pika.exceptions.ChannelClosedByBroker as e:
-            log_error("Channel closed by broker, reconnecting...")
-            receiver_connection, receiver_channel = setup_rabbitmq_connection(queue_name, rabbitmq_host)
+        
         except pika.exceptions.ConnectionClosedByBroker as e:
             log_error("Connection closed by broker, reconnecting...")
+            time.sleep(25)
             receiver_connection, receiver_channel = setup_rabbitmq_connection(queue_name, rabbitmq_host)
+            processed_connection, processed_channel = setup_rabbitmq_connection(processed_queue_name, rabbitmq_host)
         except Exception as e:
             log_exception(f"Unexpected error: {e}")
             time.sleep(25)
-            continue
-    # try:
-    #     # Start consuming frames from the 'video_frames' queue
-    #     receiver_channel.basic_consume(
-    #         queue=queue_name, 
-    #         on_message_callback=lambda ch, method, properties, body: process_frame(
-    #             ch, method, properties, body, processed_channel
-    #         ),
-    #         auto_ack=True
-    #     )
-    #     log_info("Waiting for video frames...")
-    #     receiver_channel.start_consuming()
-    # except Exception as e:
-    #     log_error(f"An error occurred: {e}")
-    # finally:
-    #     # Close the connections when done
-    #     receiver_connection.close()
-    #     processed_connection.close()
-    #     log_exception("Receiver stopped. RabbitMQ connections closed.")
-
-# def main(queue_name="all_frame", processed_queue_name="detected_vehicle", rabbitmq_host="localhost", retry_delay=25):
-#     """
-#     Main function to set up RabbitMQ connections for receiving and sending frames.
-
-#     Args:
-#         queue_name (str): The RabbitMQ queue to consume frames from.
-#         processed_queue_name (str): The RabbitMQ queue to send processed frames to.
-#         rabbitmq_host (str): The RabbitMQ server hostname.
-#         retry_delay (int): The number of seconds to wait before retrying after a connection failure.
-#     """
-#     while True:
-#         try:
-#             # Set up RabbitMQ connection and channel for receiving frames
-#             receiver_connection, receiver_channel = setup_rabbitmq_connection(queue_name, rabbitmq_host)
-
-#             # Set up RabbitMQ connection and channel for sending processed frames
-#             processed_connection, processed_channel = setup_rabbitmq_connection(processed_queue_name, rabbitmq_host)
-
-#             try:
-#                 # Start consuming frames from the queue
-#                 receiver_channel.basic_consume(
-#                     queue=queue_name,
-#                     on_message_callback=lambda ch, method, properties, body: process_frame(
-#                         ch, method, properties, body, processed_channel
-#                     ),
-#                     auto_ack=True
-#                 )
-#                 log_info("Waiting for video frames...")
-#                 receiver_channel.start_consuming()
-
-#             except pika.exceptions.AMQPConnectionError as e:
-#                 log_error(f"Connection error during consuming: {e}")
-#                 time.sleep(retry_delay)
-#                 continue  # Retry the loop to reconnect
-#             except Exception as e:
-#                 log_error(f"An error occurred: {e}")
-#                 time.sleep(retry_delay)
-#                 continue  # Retry the loop to reconnect
-
-#             finally:
-#                 # if receiver_connection.is_open:
-#                 #     receiver_connection.close()
-#                 # if processed_connection.is_open:
-#                 #     processed_connection.close()
-#                 log_info("RabbitMQ connections closed.")
-
-#         except Exception as e:
-#             log_exception(f"Failed to set up connections or retry: {e}")
-#             time.sleep(retry_delay)  # Wait before retrying the connection
-#             continue  # Retry the loop to reconnect
-
+            continue 
 
 if __name__ == "__main__":
     # Start the receiver and sender

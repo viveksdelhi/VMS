@@ -1,0 +1,28 @@
+
+
+services:
+  py_stream_app:
+    build:
+      context: .  # Use the current directory as the build context
+      dockerfile: Dockerfile-flask  # Specify the Flask Dockerfile
+    container_name: py_stream_app
+    expose:
+      - "6050"  # Expose Flask app on port 5000 inside the container
+    networks:
+      - app-network
+
+  nginx:
+    build:
+      context: .  # Use the current directory as the build context
+      dockerfile: Dockerfile-nginx  # Specify the Nginx Dockerfile
+    container_name: py_nginx_stream
+    ports:
+      - "6050:6050"  # Expose Nginx on port 80 on the host
+    depends_on:
+      - py_stream_app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

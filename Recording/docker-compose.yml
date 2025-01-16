@@ -1,0 +1,31 @@
+services:
+  py_recording_app:
+    build:
+      context: .
+      dockerfile: Dockerfile-flask
+    container_name: py_recording_app
+    expose:
+      - "6053"
+    volumes:
+      - "D:/data/recordings:/Recording/recording" # Custom location on Windows
+    networks:
+      - app-network
+    restart: always
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    container_name: py_nginx_recording
+    ports:
+      - "6053:6053"
+    depends_on:
+      - py_recording_app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+

@@ -1,0 +1,8 @@
+# Allow the VMS-UI folder
+!VMS-UI/
+
+# Ignore specific directories and files inside VMS-UI
+VMS-UI/node_modules/
+VMS-UI/.env
+VMS-UI/build/
+VMS-UI/*.log

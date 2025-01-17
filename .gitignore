@@ -1,0 +1,9 @@
+# Allow the VMS-UI folder
+
+
+# Ignore specific directories and files inside VMS-UI
+VMS-UI-new/node_modules/
+VMS-UI-new/.env
+VMS-UI-new/build/
+VMS-UI-new/*.log
+.gitignore

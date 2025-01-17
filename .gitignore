@@ -6,3 +6,4 @@ VMS-UI/node_modules/
 VMS-UI/.env
 VMS-UI/build/
 VMS-UI/*.log
+.gitignore

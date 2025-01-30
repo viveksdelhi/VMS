@@ -1,15 +1,25 @@
-from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password, check_password
 from .models import *
 from .serializers import *
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated  
+from rest_framework.pagination import PageNumberPagination
+from rest_framework import viewsets, filters
+from django_filters import rest_framework as django_filters
+from django_filters.rest_framework import DjangoFilterBackend
 
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10 
+    page_size_query_param = 'page_size'
+    max_page_size = 100  
+    
 
 class AnprstatusViewSet(viewsets.ModelViewSet):
     serializer_class = AnprstatusSerializer
+    pagination_class = StandardResultsSetPagination
+    
     
     def get_queryset(self):
         user_id = self.request.query_params.get('user_id', None)
@@ -19,30 +29,40 @@ class AnprstatusViewSet(viewsets.ModelViewSet):
 
 class CameraalertstatussViewSet(viewsets.ModelViewSet):
     serializer_class = CameraalertstatussSerializer
+    pagination_class = StandardResultsSetPagination
     
     def get_queryset(self):
         user_id = self.request.query_params.get('user_id', None)
+        
         if user_id:
             return Cameraalertstatuss.objects.filter(userid=user_id)
         return Cameraalertstatuss.objects.all()
 
+class CameraalertsFilter(django_filters.FilterSet):
+    camera_name = django_filters.filters.CharFilter(field_name='cameraId__name', lookup_expr='icontains')
+    camera_location = django_filters.filters.CharFilter(field_name='cameraId__location', lookup_expr='icontains')
+    camera_area = django_filters.filters.CharFilter(field_name='cameraId__area', lookup_expr='icontains')
+    camera_id = django_filters.filters.NumberFilter(field_name='cameraId', lookup_expr='exact')
+    user_id = django_filters.filters.NumberFilter(field_name='userid', lookup_expr='exact')
+    
+    class Meta:
+        model = Cameraalerts
+        fields = ['camera_name', 'camera_location', 'camera_area', 'camera_id']
+        
 class CameraalertsViewSet(viewsets.ModelViewSet):
     serializer_class = CameraalertsSerializer
+    pagination_class = StandardResultsSetPagination 
+    search_fields = ['objectName', 'objectCount', 'alertStatus', 'regDate', 'cameraId__name', 'cameraId__location', 'cameraId__area']
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend, )
+    filterset_class = CameraalertsFilter 
     
     def get_queryset(self):
-        
         queryset = Cameraalerts.objects.all()
-        
-        user_id = self.request.query_params.get('user_id', None)
-        camera_id =self.request.query_params.get('camera_id', None)
-        if user_id:
-            queryset = queryset.filter(userid=user_id)
-        if camera_id:
-            queryset = queryset.filter(cameraId=camera_id)
         return queryset
 
 class CameraiplistsViewSet(viewsets.ModelViewSet):
     serializer_class = CameraiplistsSerializer
+    pagination_class = StandardResultsSetPagination
     
     def get_queryset(self):
         cameraIP = self.request.query_params.get('cameraIP', None)
@@ -52,6 +72,7 @@ class CameraiplistsViewSet(viewsets.ModelViewSet):
 
 class CamerasViewSet(viewsets.ModelViewSet):
     serializer_class = CamerasSerializer
+    pagination_class = StandardResultsSetPagination
     
     def get_queryset(self):
         user_id = self.request.query_params.get('user_id', None)
@@ -61,6 +82,7 @@ class CamerasViewSet(viewsets.ModelViewSet):
 
 class GroupsViewSet(viewsets.ModelViewSet):
     serializer_class = GroupsSerializer
+    pagination_class = StandardResultsSetPagination
     
     def get_queryset(self):
         user_id = self.request.query_params.get('user_id', None)
@@ -70,6 +92,7 @@ class GroupsViewSet(viewsets.ModelViewSet):
 
 class NvrViewSet(viewsets.ModelViewSet):
     serializer_class = NvrSerializer
+    pagination_class = StandardResultsSetPagination
     
     def get_queryset(self):
         user_id = self.request.query_params.get('user_id', None)
@@ -79,6 +102,7 @@ class NvrViewSet(viewsets.ModelViewSet):
 
 class NumberplatedetectionsViewSet(viewsets.ModelViewSet):
     serializer_class = NumberplatedetectionsSerializer
+    pagination_class = StandardResultsSetPagination
     
     def get_queryset(self):
         user_id = self.request.query_params.get('user_id', None)
@@ -89,6 +113,7 @@ class NumberplatedetectionsViewSet(viewsets.ModelViewSet):
 class ReadedvehiclenoplatesViewSet(viewsets.ModelViewSet):
 
     serializer_class = ReadedvehiclenoplatesSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         
@@ -105,6 +130,7 @@ class ReadedvehiclenoplatesViewSet(viewsets.ModelViewSet):
 
 class RolesViewSet(viewsets.ModelViewSet):
     serializer_class = RolesSerializer
+    pagination_class = StandardResultsSetPagination
     
     def get_queryset(self):
         user_id = self.request.query_params.get('user_id', None)
@@ -114,6 +140,7 @@ class RolesViewSet(viewsets.ModelViewSet):
 
 class UsersViewSet(viewsets.ModelViewSet):
     serializer_class = UsersSerializer
+    pagination_class = StandardResultsSetPagination
     
     def get_queryset(self):
         # Get the user ID from the request (if passed as a query param)
@@ -137,6 +164,7 @@ class UsersViewSet(viewsets.ModelViewSet):
 
 class VehicledetectionsViewSet(viewsets.ModelViewSet):
     serializer_class = VehicledetectionsSerializer
+    pagination_class = StandardResultsSetPagination
     
     def get_queryset(self):
         user_id = self.request.query_params.get('user_id', None)
@@ -146,6 +174,7 @@ class VehicledetectionsViewSet(viewsets.ModelViewSet):
 
 class VideoanalyticsViewSet(viewsets.ModelViewSet):
     serializer_class = VideoanalyticsSerializer
+    pagination_class = StandardResultsSetPagination
     
     def get_queryset(self):
         user_id = self.request.query_params.get('user_id', None)

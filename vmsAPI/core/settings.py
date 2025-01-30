@@ -26,6 +26,8 @@ INSTALLED_APPS = [
     "app",
     "rest_framework",
     "corsheaders",
+    "django_filters",
+
 ]
 
 MIDDLEWARE = [
@@ -117,10 +119,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',  # Or another pagination class
-    'PAGE_SIZE': 10,  # Number of items per page
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',  # Or another pagination class
+#     'PAGE_SIZE': 10,  # Number of items per page
+# }
 
 # cors headers
 CORS_ALLOW_ALL_ORIGINS = True

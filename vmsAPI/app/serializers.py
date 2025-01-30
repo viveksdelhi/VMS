@@ -23,6 +23,7 @@ class CameraalertsSerializer(serializers.ModelSerializer):
         
 class CameraiplistsSerializer(serializers.ModelSerializer):
     class Meta:
+        
         model = Cameraiplists
         fields = '__all__'
         

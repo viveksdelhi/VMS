@@ -331,7 +331,7 @@ def process_frame(ch, method, properties, body, processed_channel,processed_queu
 
 
 # function to processed frame received
-def main(received_queue_name="all_frames", processed_queue_name="traffic_analytics", rabbitmq_host="localhost"):  
+def main(received_queue_name="all_frames", processed_queue_name="video_analytics", rabbitmq_host="localhost"):  
     """
     Main function to set up Rabbitmq connection for receiving and sending frames:
     Args:

@@ -69,10 +69,10 @@ DATABASES = {
     "default": {
             'ENGINE': 'django.db.backends.mysql',  # Or 'postgresql', 'sqlite3', etc.
             'NAME': 'py_vms',
-            'USER': 'root',
+            'USER': 'vms',
             'PASSWORD': 'Ajeevi@#321890',
-            'HOST': 'ecosmartdc.com',  # Or your DB host
-            'PORT': '9512',
+            'HOST': '14.195.152.244',  # Or your DB host
+            'PORT': '3306',
     }
 }
 

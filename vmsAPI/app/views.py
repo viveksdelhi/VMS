@@ -12,8 +12,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10 
-    page_size_query_param = 'page_size'
-    max_page_size = 100  
+    page_size_query_param = 'pageSize'
+    max_page_size = 1000  
     
 
 class AnprstatusViewSet(viewsets.ModelViewSet):
@@ -109,23 +109,30 @@ class NumberplatedetectionsViewSet(viewsets.ModelViewSet):
         if user_id:
             return Numberplatedetections.objects.filter(userid=user_id)
         return Numberplatedetections.objects.all()
+    
 
+class ReadedvehiclenoplatesFilter(django_filters.FilterSet):
+    camera_name = django_filters.filters.CharFilter(field_name='cameraId__name', lookup_expr='icontains')
+    camera_location = django_filters.filters.CharFilter(field_name='cameraId__location', lookup_expr='icontains')
+    camera_area = django_filters.filters.CharFilter(field_name='cameraId__area', lookup_expr='icontains')
+    camera_id = django_filters.filters.NumberFilter(field_name='cameraId', lookup_expr='exact')
+    user_id = django_filters.filters.NumberFilter(field_name='userid', lookup_expr='exact')
+    vehicle_number = django_filters.filters.CharFilter(field_name='text', lookup_expr='icontains')
+    
+    class Meta:
+        model = Readedvehiclenoplates
+        fields = ['camera_name', 'camera_location', 'camera_area', 'camera_id', 'vehicle_number']
+
+    
 class ReadedvehiclenoplatesViewSet(viewsets.ModelViewSet):
-
     serializer_class = ReadedvehiclenoplatesSerializer
-    pagination_class = StandardResultsSetPagination
-
+    pagination_class = StandardResultsSetPagination 
+    search_fields = ['regDate', 'cameraId__name', 'cameraId__location', 'cameraId__area', 'text']
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend, )
+    filterset_class = ReadedvehiclenoplatesFilter 
+    
     def get_queryset(self):
-        
         queryset = Readedvehiclenoplates.objects.all()
-        
-        user_id = self.request.query_params.get('user_id', None)
-        camera_id =self.request.query_params.get('camera_id', None)
-        
-        if user_id:
-            queryset =  Readedvehiclenoplates.objects.filter(userid=user_id)
-        if camera_id:
-            queryset =  Readedvehiclenoplates.objects.filter(cameraId=camera_id)
         return queryset
 
 class RolesViewSet(viewsets.ModelViewSet):

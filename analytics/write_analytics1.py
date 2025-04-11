@@ -6,7 +6,7 @@ import cv2
 import requests
 import logging
 import datetime
-
+import threading
 
 # MEDIA_FOLDER = os.path.join(os.getcwd(), "media")
 # if not os.path.exists(MEDIA_FOLDER):
@@ -70,29 +70,78 @@ def log_exception(message):
     }
     send_log_to_rabbitmq(message_data)
 
+# Global check_list and a timer dictionary
+check_list = set()
+clear_timer = {}
+
+def clear_check_list_entry(object_count):
+    time.sleep(300)  # Wait for 5 minutes
+    check_list.discard(object_count)
+    clear_timer.pop(object_count, None)
+
+# def push_detection_data_to_base_url(camera_ip, camera_id, object_count, object_detect, framePath, alert_type, user_id):
+#     api_url = f'https://vmspyapi.ajeevi.in/api/CameraAlert/'
+#     object_detect_str = " ".join(object_detect) if isinstance(object_detect, list) else str(object_detect)
+#     check_list = []
+#     check_list = check_list.append(object_count)
+#     if object_count not in check_list:
+#         payload = {
+#             "cameraId": int(camera_id),
+#             "framePath": framePath,
+#             "objectName": object_detect_str,
+#             "objectCount": object_count,
+#             "alertStatus": alert_type,
+#             "userid": user_id
+
+#         }
+
+#         headers = {"accept": "*/*", "Content-Type": "application/json",}
+#         print("Last data received :", payload)
+#         try:
+#             response = requests.post(api_url, json=payload, headers=headers)
+#             response.raise_for_status()
+#             print("This is respose :", response.raise_for_status())
+#         except requests.RequestException as e:
+#             print(f"Error pushing data to API: {e}")
+#             #Logs(camera_ip, "Error", f"Error pushing data to API: {e}")
+#             if e.response:
+#                 print(f"Response Content: {e.response.text}")
 def push_detection_data_to_base_url(camera_ip, camera_id, object_count, object_detect, framePath, alert_type, user_id):
-    api_url = f'{BaseUrl}/api/CameraAlert/'
+    api_url = 'https://vmspyapi.ajeevi.in/api/CameraAlert/'
+
     object_detect_str = " ".join(object_detect) if isinstance(object_detect, list) else str(object_detect)
-    payload = {
-        "cameraId": int(camera_id),
-        "framePath": framePath,
-        "objectName": object_detect_str,
-        "objectCount": object_count,
-        "alertStatus": alert_type,
-         "userid": user_id
 
-    }
+    if object_count not in check_list:
+        # Add to check list
+        check_list.add(object_count)
 
-    headers = {"accept": "*/*", "Content-Type": "application/json",}
-    print("Last data received :", payload)
-    try:
-        response = requests.post(api_url, json=payload, headers=headers)
-        response.raise_for_status()
-    except requests.RequestException as e:
-        print(f"Error pushing data to API: {e}")
-        #Logs(camera_ip, "Error", f"Error pushing data to API: {e}")
-        if e.response:
-            print(f"Response Content: {e.response.text}")
+        # Start timer to clear after 5 minutes if not already running
+        if object_count not in clear_timer:
+            t = threading.Thread(target=clear_check_list_entry, args=(object_count,))
+            t.daemon = True
+            t.start()
+            clear_timer[object_count] = t
+
+        payload = {
+            "cameraId": int(camera_id),
+            "framePath": framePath,
+            "objectName": object_detect_str,
+            "objectCount": object_count,
+            "alertStatus": alert_type,
+            "userid": user_id
+        }
+
+        headers = {"accept": "*/*", "Content-Type": "application/json"}
+        print("Last data received:", payload)
+
+        try:
+            response = requests.post(api_url, json=payload, headers=headers)
+            response.raise_for_status()
+            print("This is response:", response.text)
+        except requests.RequestException as e:
+            print(f"Error pushing data to API: {e}")
+            if e.response:
+                print(f"Response Content: {e.response.text}")
 
 api_url ="https://vmsccp.ajeevi.in/transaction_update"
  #api_url = os.getenv("CREDIT_URL")

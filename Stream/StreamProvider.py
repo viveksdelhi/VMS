@@ -191,3 +191,6 @@ def stream_file(camera_id, filename):
 
     logger.info(f"Serving file '{filename}' for camera {camera_id}")
     return send_from_directory(hls_path, filename)
+
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=6050)

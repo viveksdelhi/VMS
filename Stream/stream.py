@@ -98,7 +98,7 @@ def stop_ffmpeg_process(camera_id):
             print(f"No active FFmpeg process found for camera {camera_id}.")
 
 
-
+def start_ffmpeg(rtsp_url, camera_id):
     """
     Start FFmpeg to convert RTSP to HLS in a background thread.
     This function includes retry logic if FFmpeg fails due to network issues.
@@ -128,11 +128,11 @@ def stop_ffmpeg_process(camera_id):
             clear_directory(hls_path)
             # Start the FFmpeg process
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            #stdout, stderr = process.communicate()
+            stdout, stderr = process.communicate()
 
             # Log FFmpeg output
-            #print(f"FFmpeg stdout: {stdout.decode('utf-8')}")
-            #print(f"FFmpeg stderr: {stderr.decode('utf-8')}")
+            print(f"FFmpeg stdout: {stdout.decode('utf-8')}")
+            print(f"FFmpeg stderr: {stderr.decode('utf-8')}")
 
             if process.returncode != 0:
                 print(f"FFmpeg error for camera {camera_id}: {stderr.decode('utf-8')}")
@@ -173,57 +173,7 @@ def stop_ffmpeg_process(camera_id):
             # Retry after a delay
             time.sleep(5) # Retry after 5 seconds if FFmpeg fails to start or disconnects
 
-def start_ffmpeg(rtsp_url, camera_id):
-    hls_path = os.path.join(HLS_DIRECTORY, str(camera_id))
-    clear_directory(hls_path)
 
-    # Use a set of allowed FFmpeg parameters to prevent injection
-    command = [
-        "ffmpeg",
-        "-rtsp_transport", "tcp",
-        "-i", rtsp_url,
-        "-c:v", "libx264",
-        "-preset", "ultrafast",
-        "-tune", "zerolatency",
-        "-s", "854x480",
-        "-f", "hls",
-        "-hls_time", "1",
-        "-hls_list_size", "1",
-        "-hls_flags", "delete_segments+append_list",
-        f"{hls_path}/stream.m3u8"
-    ]
-
-    while live_camera_status.get(camera_id, False):
-        try:
-            print(f"Starting FFmpeg for camera {camera_id}...")
-            # Use Popen and check for errors after starting, not with communicate()
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            
-            with streams_lock:
-                streams[camera_id]["process"] = process
-
-            # Monitor the process without blocking
-            while process.poll() is None and live_camera_status.get(camera_id, False):
-                time.sleep(1) # Check process status every second
-            
-            # The loop above breaks if the process exits or the camera is removed
-            if live_camera_status.get(camera_id, False):
-                print(f"FFmpeg for camera {camera_id} stopped unexpectedly. Restarting...")
-                # Log the output for debugging
-                stdout, stderr = process.communicate()
-                print(f"FFmpeg stdout: {stdout.decode('utf-8')}")
-                print(f"FFmpeg stderr: {stderr.decode('utf-8')}")
-            else:
-                print(f"FFmpeg for camera {camera_id} stopped as requested.")
-                break # Exit the loop if camera was intentionally removed
-
-        except Exception as e:
-            print(f"Error with FFmpeg for camera {camera_id}: {e}")
-            time.sleep(5) # Retry after a delay
-
-    # Clean up after the loop exits
-    stop_ffmpeg_process(camera_id)
-    print(f"Thread for camera {camera_id} exiting.")
 
 @app.route('/add_camera', methods=['POST'])
 def add_camera():
@@ -304,6 +254,10 @@ def remove_camera(camera_id):
         return jsonify({"message": "Camera removed successfully"}), 200
 
     return jsonify({"error": "Camera not found"}), 404
+
+
+
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=6050)

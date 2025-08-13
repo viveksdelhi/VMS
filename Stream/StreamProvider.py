@@ -3,6 +3,8 @@ import shutil
 import subprocess
 import time
 import logging
+import threading
+import requests
 from concurrent.futures import ThreadPoolExecutor
 
 # Setup logging

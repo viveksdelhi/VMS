@@ -56,11 +56,18 @@ def start_ffmpeg(rtsp_url, camera_id):
         try:
             logger.info(f"Starting FFmpeg for camera {camera_id}")
             process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            pid = process.pid
+            logger.info(f"FFmpeg started for camera {camera_id} with PID {pid}")
             streams[camera_id] = {"process": process, "path": hls_path}
 
             while process.poll() is None and live_camera_status.get(camera_id, False):
                 delete_old_ts_files(hls_path)
                 time.sleep(1)
+
+            if live_camera_status[camera_id] == False:
+                logger.info(f"FFmpeg process for camera {camera_id} stopped by user.")
+                live_camera_status.pop(camera_id, None)
+                break
 
             logger.warning(f"FFmpeg process for camera {camera_id} stopped unexpectedly. Restarting...")
             stop_ffmpeg_process(camera_id)
@@ -104,7 +111,7 @@ def stop_ffmpeg_process(camera_id):
                 process.kill()
                 logger.warning(f"FFmpeg for camera {camera_id} forcefully killed.")
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify 
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -167,7 +174,6 @@ def remove_camera(camera_id):
     # Clean up shared state
     streams.pop(camera_id, None)
     stop_thread_event.pop(camera_id, None)
-    live_camera_status.pop(camera_id, None)
 
     return jsonify({"message": f"Camera {camera_id} removed successfully"}), 200
 

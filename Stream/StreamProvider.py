@@ -33,6 +33,7 @@ def delete_old_ts_files(hls_path, keep_latest=5):
     except Exception as e:
         logger.error(f"Error cleaning .ts files: {e}")
 
+#tested on 24 Aug 2025
 def start_ffmpeg(rtsp_url, camera_id):
     hls_path = os.path.join(HLS_DIRECTORY, str(camera_id))
     os.makedirs(hls_path, exist_ok=True)
@@ -59,6 +60,7 @@ def start_ffmpeg(rtsp_url, camera_id):
             pid = process.pid
             logger.info(f"FFmpeg started for camera {camera_id} with PID {pid}")
             streams[camera_id] = {"process": process, "path": hls_path}
+            
 
             while process.poll() is None and live_camera_status.get(camera_id, False):
                 delete_old_ts_files(hls_path)

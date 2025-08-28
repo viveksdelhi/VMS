@@ -30,6 +30,7 @@ class CameraManager:
 def get_camera_directory(camera_id):
     path = os.path.join(RECORDING_DIRECTORY, str(camera_id))
     os.makedirs(path, exist_ok=True)
+    print(f"Camera directory: {path}")
     return path
 
 def clear_directory(directory):
@@ -156,11 +157,67 @@ def api_stop_recording():
     stop_recording(camera_id)
     return jsonify({"message": f"Recording stopped for camera {camera_id}"}), 200
 
+def parse_filename(filename):
+    """
+    Extract datetime from filename like cameraId_YYYYMMDD_HHMMSS.mp4
+    """
+    try:
+        base = os.path.splitext(filename)[0]  # remove .mp4
+        parts = base.split("_")
+        if len(parts) < 3:
+            return None
+        # last two parts should be date & time
+        date_str, time_str = parts[-2], parts[-1]
+        return datetime.strptime(date_str + time_str, "%Y%m%d%H%M%S")
+    except Exception as e:
+        return None
+
 @app.route('/list_recordings/<camera_id>', methods=['GET'])
 def api_list_recordings(camera_id):
     directory = get_camera_directory(camera_id)
+    if not os.path.exists(directory):
+        return jsonify({"error": "Camera directory not found"}), 404
+
+    # Load all recordings
     files = [f for f in os.listdir(directory) if f.endswith('.mp4')]
-    return jsonify({"recordings": files})
+    file_times = []
+    for f in files:
+        dt = parse_filename(f)
+        if dt:
+            file_times.append((dt, f))
+
+    if not file_times:
+        return jsonify({"recordings": []})
+
+    # --- Case 1: Date-only filter ---
+    if 'date' in request.args:
+        try:
+            req_date = datetime.strptime(request.args['date'], "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+
+        matching_files = [f for dt, f in file_times if dt.date() == req_date]
+        return jsonify({
+            "date": str(req_date),
+            "recordings": sorted(matching_files)
+        })
+
+    # --- Case 2: DateTime filter with nearest fallback ---
+    if 'datetime' in request.args:
+        try:
+            req_dt = datetime.strptime(request.args['datetime'], "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            return jsonify({"error": "Invalid datetime format. Use YYYY-MM-DD HH:MM:SS"}), 400
+
+        nearest = min(file_times, key=lambda x: abs((x[0] - req_dt).total_seconds()))
+        return jsonify({
+            "requested": req_dt.strftime("%Y-%m-%d %H:%M:%S"),
+            "nearest": nearest[0].strftime("%Y-%m-%d %H:%M:%S"),
+            "file": nearest[1]
+        })
+
+    # --- Case 3: No filter, return all ---
+    return jsonify({"recordings": sorted(files)})
 
 @app.route('/delete_recording', methods=['POST'])
 def api_delete_recording():

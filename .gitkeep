@@ -1,0 +1,3 @@
+echo "" > Recording/.gitkeep
+echo "" > Stream/.gitkeep
+echo "" > VMSUI-main_1/.gitkeep

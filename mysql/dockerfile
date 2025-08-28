@@ -1,0 +1,26 @@
+# Use the official MySQL image as base
+# FROM mysql:8.0
+
+# # Set environment variables (change as per your need)
+# # Set environment variables (optional)
+# ENV MYSQL_ROOT_PASSWORD=root
+# ENV MYSQL_USER=vms
+# ENV MYSQL_PASSWORD=root123
+# # Copy initialization SQL script (optional)
+# # Any .sql or .sh file in /docker-entrypoint-initdb.d/ will run at container startup
+# # COPY init.sql /docker-entrypoint-initdb.d/
+
+# # Expose MySQL port
+# EXPOSE 3306
+
+
+FROM mysql:8.0
+
+# Set environment variables for MySQL
+ENV MYSQL_ROOT_PASSWORD=root
+ENV MYSQL_DATABASE=py_vms
+ENV MYSQL_USER=vms
+ENV MYSQL_PASSWORD=Ajeevi@#321890
+
+# Copy your SQL dump into the container
+COPY init.sql /docker-entrypoint-initdb.d/

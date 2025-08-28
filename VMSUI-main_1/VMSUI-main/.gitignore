@@ -1,0 +1,12 @@
+# Node modules should not be committed
+node_modules/
+
+# Ignore environment variables
+.env
+
+# Ignore build files
+build/
+
+livevms.zip
+
+

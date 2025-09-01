@@ -50,3 +50,32 @@ EXPOSE 7004
 
 # Command to run the application with Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:7004", "RecordingProvider:app"]
+
+
+# Use a lightweight Python base image
+FROM python:3.11-slim
+
+
+# Install FFmpeg 
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set the working directory
+WORKDIR /Recording
+
+# Copy the requirements file and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --upgrade gevent
+
+
+ENV RECORDING_API="https://14.195.152.244:7007"
+
+# Copy the application code
+COPY RecordingProvider.py .
+EXPOSE 7004
+
+# Command to run the application with Gunicorn
+# CMD ["gunicorn", "--bind", "0.0.0.0:7004", "RecordingProvider:app"]
+CMD ["gunicorn", "-k", "gevent", "--bind", "0.0.0.0:7004", "RecordingProvider:app"]

@@ -1,57 +1,46 @@
-# 📝 Blog Post UI
+# 📝 VMS UI
 
-A modern and responsive **blog management interface** built with **React**, **Ant Design**, and **Axios**. Easily create, edit, and manage blog posts with support for rich content, image uploads, pagination, and search.
+A modern and responsive Video Management System (VMS) interface built with React, Ant Design, Axios, HLS.js, and Framer Motion. Easily manage live camera streams, recordings, and camera configurations with smooth animations and real-time video playback.
 
----
+🚀 Features
 
-## 🚀 Features
+🎥 View live camera streams with HLS Player
 
-- ➕ Create and edit blog posts with form validation  
-- 🖼️ Upload multiple images using Ant Design `Upload`  
-- 📄 View blog post details in a modal  
-- 🔍 Search and filter blog entries  
-- 📋 Paginated blog listing table  
-- 🎞️ Smooth animations with GSAP *(optional)*  
+📼 Play recorded videos with search and date-range filters
 
+➕ Add, edit, and manage camera configurations
 
----
+🗂️ Organize cameras by zones, wards, and NVR connections
 
-## 🖼️ Screenshots
+🔍 Search and filter cameras easily
 
-### 🔹 Blog Form Page  
-![Blog Form](./src/assets/image-1.png)
+📋 Paginated camera listing table
 
-### 🔹 Blog List View  
-![Blog List](./src/assets/image.png)
+✨ Smooth animations and transitions with Framer Motion
 
----
+| Technology      | Description                       |
+| --------------- | --------------------------------- |
+| ⚛️ React        | Frontend library                  |
+| 🎨 Ant Design   | UI components & layout            |
+| 🌐 Axios        | API handling                      |
+| 📹 HLS.js       | Streaming live HLS video          |
+| ✨ Framer Motion | Smooth animations and transitions |
+| 🧭 React Router | Client-side routing               |
+| ⚡ Vite          | Build tool for fast development   |
 
-## 🛠️ Tech Stack
-
-| Technology       | Description                |
-|------------------|----------------------------|
-| ⚛️ React         | Frontend library            |
-| 🎨 Ant Design    | UI components & layout      |
-| 🌐 Axios         | API handling                |
-| 🧭 React Router  | Client-side routing         |
-| ✨ GSAP          | Optional animation library  |
-| ⚡ Vite           | Build tool for fast dev     |
-
----
 
 ## ⚙️ Getting Started
 
-Follow these steps to set up the project locally:
-
-```bash
 # 1. Clone the repository
-git clone https://github.com/raunak9081/Blog-post.git
-cd Blog-post
+git clone https://github.com/viveksdelhi/VMS.git
+cd VMS
 
 # 2. Install dependencies
 npm install
+# If npm install fails, use:
+npm install --force
 
-# 3. Run the app
+# 3. Run the app in development
 npm run dev
 
 # 4. Build for production

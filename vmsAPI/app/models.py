@@ -51,7 +51,7 @@ class Cameraalertstatuss(models.Model):
 
 class Cameraalerts(models.Model):
     id = models.AutoField(db_column='Id', primary_key=True)  
-    cameraId = models.ForeignKey('Cameras', on_delete=models.CASCADE, db_column='CameraId')  
+    cameraId = models.ForeignKey('Cameras', on_delete=models.SET_NULL, db_column='CameraId', null=True)  
     framePath = models.TextField(db_column='FramePath', blank=True, null=True)  
     objectName = models.TextField(db_column='ObjectName', blank=True, null=True)  
     objectCount = models.IntegerField(db_column='ObjectCount', blank=True, null=True)  

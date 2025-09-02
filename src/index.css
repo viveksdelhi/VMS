@@ -1,0 +1,12 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+
+.custom-gradient-table .ant-table-thead > tr > th {
+  background-color: #FF894E !important;
+  color: white !important;      /* White text for contrast */
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  border-bottom: 1px solid #d9d9d9;
+}

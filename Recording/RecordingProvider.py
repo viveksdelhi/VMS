@@ -9,6 +9,10 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import requests
 from concurrent.futures import ThreadPoolExecutor
+from zoneinfo import ZoneInfo
+
+# -------------------- Timezone Setup --------------------
+LOCAL_TZ = ZoneInfo("Asia/Kolkata")
 
 # -------------------- Configuration --------------------
 RECORDING_DIRECTORY = "recording"
@@ -50,7 +54,8 @@ def start_recording(camera_id, rtsp_url, duration_minutes, resolution):
     try:
         while CameraManager.recording_state.get(camera_id, False):
             try:
-                timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+                # timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+                timestamp = datetime.now(LOCAL_TZ).strftime('%Y%m%d_%H%M%S')
                 temp_file = os.path.join(directory, f"{camera_id}_{timestamp}.temp.mp4")
                 final_file = os.path.join(directory, f"{camera_id}_{timestamp}.mp4")
 
@@ -168,7 +173,9 @@ def parse_filename(filename):
             return None
         # last two parts should be date & time
         date_str, time_str = parts[-2], parts[-1]
-        return datetime.strptime(date_str + time_str, "%Y%m%d%H%M%S")
+        # return datetime.strptime(date_str + time_str, "%Y%m%d%H%M%S")
+        return datetime.strptime(date_str + time_str, "%Y%m%d%H%M%S").replace(tzinfo=LOCAL_TZ)
+
     except Exception as e:
         return None
 
@@ -205,7 +212,9 @@ def api_list_recordings(camera_id):
     # --- Case 2: DateTime filter with nearest fallback ---
     if 'datetime' in request.args:
         try:
-            req_dt = datetime.strptime(request.args['datetime'], "%Y-%m-%d %H:%M:%S")
+            # req_dt = datetime.strptime(request.args['datetime'], "%Y-%m-%d %H:%M:%S")
+            req_dt = datetime.strptime(request.args['datetime'], "%Y-%m-%d %H:%M:%S").replace(tzinfo=LOCAL_TZ)
+
         except ValueError:
             return jsonify({"error": "Invalid datetime format. Use YYYY-MM-DD HH:MM:SS"}), 400
 

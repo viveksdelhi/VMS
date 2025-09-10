@@ -6,19 +6,14 @@ const AuthContext = createContext();
 
 // Create a provider component
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [role, setRole] = useState(null); // 👈 Add role state
+  const [isAuthenticated, setIsAuthenticated] = useState(true); // Always authenticated
+  const [loading, setLoading] = useState(false); // No loading needed
+  const [role, setRole] = useState('Admin'); // Set default role to Admin
 
   useEffect(() => {
-    const token = Cookies.get('token');
-    const savedRole = Cookies.get('role'); // 👈 Read role from cookies
-
-    if (token) {
-      setIsAuthenticated(true);
-      setRole(savedRole || null); // Set role if available
-    }
-
+    // Bypass authentication - always set as authenticated
+    setIsAuthenticated(true);
+    setRole('Admin');
     setLoading(false);
   }, []);
 

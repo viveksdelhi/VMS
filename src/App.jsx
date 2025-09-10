@@ -14,8 +14,8 @@ const App = () => {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Redirect root (/) to /login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* Redirect root (/) to /dashboard */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
           {/* Public Login Route */}
           <Route path="/login" element={<LoginPage />} />

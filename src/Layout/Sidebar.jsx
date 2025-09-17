@@ -49,7 +49,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
       icon: <FaBug />,
       children: [
         { key: "analytics", label: "Video Analytics", icon: <FaChartLine />, path: "/analytics" },
-        { key: "event", label: "Event Detection", icon: <FaFire />, path: "/event" },
+        // { key: "event", label: "Event Detection", icon: <FaFire />, path: "/event" },
       ],
     },
     {
@@ -71,6 +71,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
         { key: "users", label: "Users", icon: <FaUsers />, path: "/users" },
         { key: "roles", label: "Roles", icon: <FaUserShield />, path: "/roles" },
         { key: "permissions", label: "Permissions", icon: <FaShieldAlt />, path: "/permissions" },
+        { key: "assign_permissions", label: "Assign Permissions", icon: <FaShieldAlt />, path: "/assign/permissions" },
       ],
     },
     {

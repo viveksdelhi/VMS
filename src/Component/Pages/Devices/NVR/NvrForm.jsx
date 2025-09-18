@@ -15,26 +15,30 @@ import {
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import { api } from "../../../../utils/axiosInstance";
-
+import { deviceApi } from "../../../../utils/axiosInstance";
+import Cookies from "js-cookie";
 const { Option } = Select;
+const zones = [
+  { id: 1, name: "North Zone" },
+  { id: 2, name: "South Zone" },
+  { id: 3, name: "East Zone" },
+  { id: 4, name: "West Zone" },
+];
 
 function NvrForm() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [locations, setLocations] = useState([]);
-  const [zones, setZones] = useState([]);
+  // const [zones, setZones] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
 
+  const userId = Cookies.get("userId");
   const editingNvr = location.state?.nvr || null;
 
   // Fetch dropdown data
   const fetchData = async () => {
     try {
-      const locRes = await api.get("/locations");
-      const zoneRes = await api.get("/zones");
-      setLocations(locRes.data || []);
+      const zoneRes = await deviceApi.get("/zones");
       setZones(zoneRes.data || []);
     } catch (err) {
       message.error("Failed to load dropdown data");
@@ -57,6 +61,7 @@ function NvrForm() {
         zone: editingNvr.zone,
         responsible_Person: editingNvr.responsible_Person,
         status: editingNvr.status === 1,
+        userid: String(userId),
       });
     } else {
       form.setFieldsValue({ port: 554, status: true });
@@ -66,20 +71,20 @@ function NvrForm() {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const payload = { ...values, status: values.status ? 1 : 0 };
+      const payload = { ...values, status: values.status ? 1 : 0, userid: String(userId) };
 
       if (editingNvr && values.password === "********") {
         delete payload.password; // keep old password
       }
 
       if (editingNvr) {
-        await api.put(`/NVR/${editingNvr.id}/`, payload);
+        await deviceApi.put(`/NVR/${editingNvr.id}/`, payload);
         message.success("NVR updated successfully!");
       } else {
-        await api.post("/NVR/", payload);
+        await deviceApi.post("/NVR/", payload);
         message.success("NVR created successfully!");
       }
-      navigate("/nvr");
+      navigate("/devices/nvrs");
     } catch (err) {
       console.error(err);
       message.error("Operation failed");
@@ -180,15 +185,9 @@ function NvrForm() {
               <Form.Item
                 label="Location"
                 name="location"
-                rules={[{ required: true, message: "Please select a location" }]}
+                rules={[{ required: true, message: "Please enter location" }]}
               >
-                <Select placeholder="Select location">
-                  {locations.map((loc) => (
-                    <Option key={loc.id} value={loc.id}>
-                      {loc.name}
-                    </Option>
-                  ))}
-                </Select>
+                <Input placeholder="Enter location" />
               </Form.Item>
             </Col>
           </Row>

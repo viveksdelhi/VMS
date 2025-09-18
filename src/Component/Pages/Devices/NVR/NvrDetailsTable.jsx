@@ -9,6 +9,8 @@ import {
 import debounce from "lodash/debounce";
 import { api } from "../../../../utils/axiosInstance";
 import { message, Popconfirm, Modal, Tag, Spin, Button } from "antd";
+import { deviceApi } from "../../../../utils/axiosInstance";
+import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { EditOutlined, DeleteOutlined, EyeOutlined, CameraOutlined } from "@ant-design/icons";
 import Expand from "./Expand"; // ✅ Import your Expand component
@@ -24,6 +26,7 @@ const NvrDetailsTable = () => {
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
+  const userId = Cookies.get("userId");
   const [viewNvr, setViewNvr] = useState(null);
   const [viewOnvif, setViewOnvif] = useState(null); // ✅ ONVIF Modal State
   const [loading, setLoading] = useState(false);
@@ -34,7 +37,8 @@ const NvrDetailsTable = () => {
   const fetchData = async (search = globalFilter, currentPage = page, size = pageSize) => {
     setLoading(true);
     try {
-      const res = await api.get(`${apiUrl}/NVR/?page=${currentPage}&page_size=${size}`);
+      // const res = await deviceApi.get(`/NVR/?page=${currentPage}&page_size=${size}`);
+      const res = await deviceApi.get(`/NVR/?user_id=${userId}&page=${currentPage}&page_size=${size}`);
       const nvrs = res.data.results || [];
       setData(
         nvrs.filter(
@@ -70,7 +74,7 @@ const NvrDetailsTable = () => {
   const handleDelete = async (id) => {
     setLoading(true);
     try {
-      await api.delete(`${apiUrl}/NVR/${id}/`);
+      await deviceApi.delete(`/NVR/${id}/`);
       message.success("NVR deleted successfully!");
       fetchData(globalFilter, page, pageSize);
     } catch (err) {
@@ -82,7 +86,7 @@ const NvrDetailsTable = () => {
 
   // ✅ Table Columns (important fields only)
   const columns = [
-    
+
     columnHelper.display({
       id: "serial",
       header: "S.No",
@@ -99,7 +103,7 @@ const NvrDetailsTable = () => {
         const row = info.row.original;
         return (
           <Tag
-            style={{ cursor: "pointer", fontWeight: 500 ,color:"#522EA8", borderColor:"#522EA8"}}
+            style={{ cursor: "pointer", fontWeight: 500, color: "#522EA8", borderColor: "#522EA8" }}
             icon={<CameraOutlined />}
             onClick={() => setViewOnvif(row)} // your function to handle ONVIF check
           >

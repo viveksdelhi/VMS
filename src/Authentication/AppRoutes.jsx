@@ -20,6 +20,8 @@ import UserTable from '../Component/Pages/UserManagement/UserTable';
 import UserForm from '../Component/Pages/UserManagement/UserForm';
 import PermissionData from '../Component/Pages/UserManagement/Permission';
 import NvrForm from '../Component/Pages/Devices/NVR/NvrForm';
+import CameraForm from '../Component/Pages/Devices/Camera/CameraForm';
+import AssignPermission from '../Component/Pages/UserManagement/AssignPermission';
 
 const routeConfig = [
   { path: '/dashboard', element: <Dashboard />, roles: ['Admin'] },
@@ -33,6 +35,7 @@ const routeConfig = [
   { path: '/devices/cameras', element: <CameraDetailsTable />, roles: ["Admin",'user'] },
   { path: '/devices/nvrs', element: <NvrDetailsTable />, roles: ["Admin",'user'] },
   { path: '/nvr/form', element: <NvrForm />, roles: ["Admin",'user'] },
+  { path: '/camera/form', element: <CameraForm />, roles: ["Admin",'user'] },
   { path: '/devices/zones', element: <ZoneDetails />, roles: ["Admin",'user'] },
   { path: '/devices/wards', element: <WardDetails />, roles: ["Admin",'user'] },
   //user management
@@ -40,6 +43,7 @@ const routeConfig = [
   { path: '/users', element: <UserTable />, roles: ["Admin"] },
   { path: '/user/form', element: <UserForm />, roles: ["Admin"] },
   { path: '/permissions', element: <PermissionData />, roles: ["Admin"] },
+  { path: '/assign/permissions', element: <AssignPermission />, roles: ["Admin"] },
   //end user management
 
   { path: '/unauthorized', element: <Unauthorized />, roles: [] }, // public

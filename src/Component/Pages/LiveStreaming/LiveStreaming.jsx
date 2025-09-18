@@ -69,16 +69,7 @@ const LiveGrid = () => {
     }
     setActiveCam(null);
   };
-  const staticStreams = [
-    { id: "1",  name: "Came1",  zone: "Zone A", src: "http://14.195.152.244:7015/stream/1576/stream.m3u8" },
-    { id: "2",  name: "Camera 2",  zone: "Zone A", src: "http://14.195.152.244:7015/stream/1575/stream.m3u8" },
-    { id: "3",  name: "Camera 3",  zone: "Zone B", src: "http://14.195.152.244:7015/stream/1574/stream.m3u8" },
-    { id: "4",  name: "Camera 4",  zone: "Zone B", src: "http://14.195.152.244:7015/stream/1573/stream.m3u8" },
-    // { id: "5",  name: "Camera 5",  zone: "Zone C", src: "https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8" },
-    // { id: "6",  name: "Camera 6",  zone: "Zone C", src: "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8" },
-    // { id: "7",  name: "Camera 7",  zone: "Zone D", src: "https://test-streams.mux.dev/bbb-abr/bbb.m3u8" },
-    // { id: "8",  name: "Camera 8",  zone: "Zone D", src: "https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8" },
-  ];
+
   return (
     <DndContext
       sensors={sensors}
@@ -107,10 +98,9 @@ const LiveGrid = () => {
             </Space>
           </div>
 
-          {/* Grid */}
           <CameraGrid
             gridSize={gridSize}
-            gridCams={staticStreams}
+            gridCams={gridCams}
             onZoom={setZoomCam}
             onRemove={handleRemove}
             gridRef={gridRef}

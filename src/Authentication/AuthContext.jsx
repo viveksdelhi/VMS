@@ -6,14 +6,21 @@ const AuthContext = createContext();
 
 // Create a provider component
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // Always authenticated
-  const [loading, setLoading] = useState(false); // No loading needed
-  const [role, setRole] = useState('Admin'); // Set default role to Admin
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState('Admin'); // 👈 Default to Admin for bypass
 
   useEffect(() => {
-    // Bypass authentication - always set as authenticated
-    setIsAuthenticated(true);
-    setRole('Admin');
+    const token = Cookies.get('token');
+    const savedRole = Cookies.get('role');
+    if (token) {
+      setIsAuthenticated(true);
+      setRole(savedRole || 'Admin');
+    } else {
+      // Bypass auth: always treat as authenticated Admin
+      setIsAuthenticated(true);
+      setRole('Admin');
+    }
     setLoading(false);
   }, []);
 

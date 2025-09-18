@@ -17,7 +17,7 @@ const GridCell = ({ index, cam, onZoom, onRemove, refreshKey }) => {
       {cam ? (
         <>
           <HlsPlayer
-            src={`${STREAM_API_URL}/Streaming/stream/${cam.id}/stream.m3u8`}
+            src={`${STREAM_API_URL}/stream/${cam.id}/stream.m3u8`}
             autoPlay
             muted
             playsInline

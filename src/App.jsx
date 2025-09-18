@@ -17,7 +17,7 @@ const App = () => {
           {/* Redirect root (/) to /dashboard */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-          {/* Public Login Route */}
+          {/* Public Login Route (still accessible) */}
           <Route path="/login" element={<LoginPage />} />
 
           {/* Protected Routes */}

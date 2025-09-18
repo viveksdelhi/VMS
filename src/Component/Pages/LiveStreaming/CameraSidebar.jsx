@@ -38,7 +38,7 @@ const CameraSidebar = () => {
   const [cameras, setCameras] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const userId = Cookies.get("userId");
+  const userId = Cookies.get("userId") || 77;
 
   // ✅ Fetch cameras from API
   useEffect(() => {

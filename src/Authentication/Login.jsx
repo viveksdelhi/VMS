@@ -41,7 +41,7 @@ const LoginPage = () => {
 
         Cookies.set("token", accessToken, { secure: true });
         Cookies.set("refreshToken", refreshToken, { secure: true });
-        Cookies.set("userId", userId, { secure: true });
+        Cookies.set("userId", 77, { secure: true });
         Cookies.set("email", userEmail, { secure: true });
         Cookies.set("role", userRole, { secure: true });
 

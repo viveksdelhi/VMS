@@ -60,7 +60,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
         { key: "cameras", label: "Cameras", icon: <FaVideo />, path: "/devices/cameras" },
         { key: "nvrs", label: "NVRs", icon: <FaServer />, path: "/devices/nvrs" },
         { key: "zones", label: "Zones", icon: <FaMapMarkerAlt />, path: "/devices/zones" },
-        // { key: "wards", label: "Wards", icon: <FaLayerGroup />, path: "/devices/wards" },
+        { key: "locations", label: "Locations", icon: <FaLayerGroup />, path: "/devices/locations" },
       ],
     },
     {

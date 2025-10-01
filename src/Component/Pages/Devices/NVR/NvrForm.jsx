@@ -32,7 +32,7 @@ function NvrForm() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const userId = Cookies.get("userId");
+  const userId = 77;
   const editingNvr = location.state?.nvr || null;
 
   // Fetch dropdown data
@@ -61,7 +61,7 @@ function NvrForm() {
         zone: editingNvr.zone,
         responsible_Person: editingNvr.responsible_Person,
         status: editingNvr.status === 1,
-        userid: String(userId),
+        userid: 77,
       });
     } else {
       form.setFieldsValue({ port: 554, status: true });

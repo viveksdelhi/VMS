@@ -27,7 +27,9 @@ const CameraItem = ({ cam }) => {
       className="p-2 border border-purple-200 rounded bg-white cursor-grab hover:bg-purple-50"
     >
       <div className="font-medium">{cam.name}</div>
-      <div className="text-xs text-gray-500">{cam.zone?.name || "No Zone"}</div>
+      <div className="text-xs text-gray-500">
+        {cam.zone?.name || "No Zone"} • {cam.location || "No Location"}
+      </div>
     </div>
   );
 };
@@ -35,6 +37,7 @@ const CameraItem = ({ cam }) => {
 const CameraSidebar = () => {
   const [search, setSearch] = useState("");
   const [zone, setZone] = useState(null);
+  const [location, setLocation] = useState(null);
   const [cameras, setCameras] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -58,16 +61,20 @@ const CameraSidebar = () => {
     fetchCameras();
   }, [userId]);
 
-  // ✅ Unique zones
+  // ✅ Unique zones & locations
   const zones = [...new Set(cameras.map((c) => c.zone?.name).filter(Boolean))];
+  const locations = [
+    ...new Set(cameras.map((c) => c.location).filter(Boolean)),
+  ];
 
-  // ✅ Apply filters (search + zone)
+  // ✅ Apply filters (search + zone + location)
   const filtered = cameras.filter((c) => {
     const matchesSearch = c.name
       ?.toLowerCase()
       .includes(search.toLowerCase());
     const matchesZone = zone ? c.zone?.name === zone : true;
-    return matchesSearch && matchesZone;
+    const matchesLocation = location ? c.location === location : true;
+    return matchesSearch && matchesZone && matchesLocation;
   });
 
   return (
@@ -82,7 +89,7 @@ const CameraSidebar = () => {
         className="mb-3"
       />
 
-      {/* Zone filter only */}
+      {/* Zone filter */}
       <Select
         allowClear
         placeholder="Select Zone"
@@ -93,6 +100,21 @@ const CameraSidebar = () => {
         {zones.map((z) => (
           <Option key={z} value={z}>
             {z}
+          </Option>
+        ))}
+      </Select>
+
+      {/* Location filter */}
+      <Select
+        allowClear
+        placeholder="Select Location"
+        value={location}
+        onChange={setLocation}
+        className="mb-3 w-full"
+      >
+        {locations.map((loc) => (
+          <Option key={loc} value={loc}>
+            {loc}
           </Option>
         ))}
       </Select>
@@ -116,6 +138,126 @@ const CameraSidebar = () => {
 };
 
 export { CameraSidebar };
+
+
+// import React, { useState, useEffect } from "react";
+// import { Input, Select, Spin, message } from "antd";
+// import { useDraggable } from "@dnd-kit/core";
+// import Cookies from "js-cookie";
+// import { deviceApi } from "../../../utils/axiosInstance";
+
+// const { Option } = Select;
+
+// const CameraItem = ({ cam }) => {
+//   const { attributes, listeners, setNodeRef, transform, isDragging } =
+//     useDraggable({
+//       id: cam.id,
+//       data: { cam },
+//     });
+
+//   return (
+//     <div
+//       ref={setNodeRef}
+//       {...attributes}
+//       {...listeners}
+//       style={{
+//         transform: transform
+//           ? `translate(${transform.x}px, ${transform.y}px)`
+//           : undefined,
+//         opacity: isDragging ? 0.5 : 1,
+//       }}
+//       className="p-2 border border-purple-200 rounded bg-white cursor-grab hover:bg-purple-50"
+//     >
+//       <div className="font-medium">{cam.name}</div>
+//       <div className="text-xs text-gray-500">{cam.zone?.name || "No Zone"}</div>
+//     </div>
+//   );
+// };
+
+// const CameraSidebar = () => {
+//   const [search, setSearch] = useState("");
+//   const [zone, setZone] = useState(null);
+//   const [cameras, setCameras] = useState([]);
+//   const [loading, setLoading] = useState(false);
+
+//   const userId = Cookies.get("userId");
+
+//   // ✅ Fetch cameras from API
+//   useEffect(() => {
+//     const fetchCameras = async () => {
+//       setLoading(true);
+//       try {
+//         const res = await deviceApi.get(`/Camera/?user_id=${userId}`);
+//         setCameras(res.data.results || []);
+//       } catch (err) {
+//         console.error("Error fetching cameras:", err);
+//         message.error("Failed to load cameras");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchCameras();
+//   }, [userId]);
+
+//   // ✅ Unique zones
+//   const zones = [...new Set(cameras.map((c) => c.zone?.name).filter(Boolean))];
+
+//   // ✅ Apply filters (search + zone)
+//   const filtered = cameras.filter((c) => {
+//     const matchesSearch = c.name
+//       ?.toLowerCase()
+//       .includes(search.toLowerCase());
+//     const matchesZone = zone ? c.zone?.name === zone : true;
+//     return matchesSearch && matchesZone;
+//   });
+
+//   return (
+//     <div className="w-72 border-r border-gray-200 p-3 flex flex-col">
+//       <h3 className="text-lg font-semibold text-purple-700 mb-3">Cameras</h3>
+
+//       {/* Search */}
+//       <Input.Search
+//         placeholder="Search camera..."
+//         allowClear
+//         onChange={(e) => setSearch(e.target.value)}
+//         className="mb-3"
+//       />
+
+//       {/* Zone filter only */}
+//       <Select
+//         allowClear
+//         placeholder="Select Zone"
+//         value={zone}
+//         onChange={setZone}
+//         className="mb-3 w-full"
+//       >
+//         {zones.map((z) => (
+//           <Option key={z} value={z}>
+//             {z}
+//           </Option>
+//         ))}
+//       </Select>
+
+//       {/* Camera List */}
+//       <div className="flex-1 overflow-y-auto space-y-2">
+//         {loading ? (
+//           <div className="flex justify-center items-center mt-10">
+//             <Spin />
+//           </div>
+//         ) : filtered.length > 0 ? (
+//           filtered.map((cam) => <CameraItem key={cam.id} cam={cam} />)
+//         ) : (
+//           <div className="text-gray-400 text-center text-sm mt-10">
+//             No cameras found
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export { CameraSidebar };
 
 // import React, { useState } from "react";
 // import { Input, Select } from "antd";

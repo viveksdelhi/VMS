@@ -55,7 +55,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
-        },
+        }, 
     },
 ]
 
@@ -68,11 +68,11 @@ WSGI_APPLICATION = "core.wsgi.application"
 DATABASES = {
     "default": {
             'ENGINE': 'django.db.backends.mysql',  # Or 'postgresql', 'sqlite3', etc.
-            'NAME': 'py_vms',
-            'USER': 'vms',
-            'PASSWORD': 'Ajeevi@#321890',
+            'NAME': 'new_vms',
+            'USER': 'root',
+            'PASSWORD': 'root',
             'HOST': '14.195.152.244',  # Or your DB host
-            'PORT': '3306',
+            'PORT': '3307',
     }
 }
 
@@ -95,6 +95,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+UMMS_JWT = {
+    "SECRET": "ThisIsASuperSecretKeyForJwt1234567890!!",
+    "ISSUER": "https://localhost:44328",
+    "AUDIENCE": "https://localhost:44328",
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "app.umms_auth.UMMSJWTAuthentication",
+    )
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/

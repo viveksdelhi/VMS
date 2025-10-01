@@ -1,13 +1,21 @@
-from rest_framework import status
+import os
+import requests
+from requests.exceptions import ConnectTimeout, HTTPError
+from rest_framework import status, viewsets, filters
 from rest_framework.response import Response
-from django.contrib.auth.hashers import make_password, check_password
-from .models import *
-from .serializers import *
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
-from rest_framework import viewsets, filters
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+
+from django.contrib.auth.hashers import make_password, check_password
+
 from django_filters import rest_framework as django_filters
 from django_filters.rest_framework import DjangoFilterBackend
+
+from .models import *
+from .serializers import *
+from .permissions import *
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -70,15 +78,80 @@ class CameraiplistsViewSet(viewsets.ModelViewSet):
             return Cameraiplists.objects.filter(cameraIP=cameraIP)
         return Cameraiplists.objects.all()
 
-class CamerasViewSet(viewsets.ModelViewSet):
+class CamerasViewSet(viewsets.ModelViewSet): 
     serializer_class = CamerasSerializer
     pagination_class = StandardResultsSetPagination
-    
+    permission_classes = [IsAuthenticated,  require_claims({
+            "SAFE_METHODS": "camera.read",   # GET, HEAD, OPTIONS
+            "UNSAFE_METHODS": "camera.write" # POST, PUT, PATCH, DELETE
+        })]
+
+    def get_queryset(self):
+        user_id = self.request.query_params.get('user_id')
+        zone_id = self.request.query_params.get('zone')
+        location_id = self.request.query_params.get('location')
+
+        queryset = Cameras.objects.all()
+
+        if user_id:
+            queryset = queryset.filter(userid=user_id)
+        if zone_id:
+            queryset = queryset.filter(zone=zone_id)
+        if location_id:
+            queryset = queryset.filter(location=location_id)
+
+        return queryset
+
+
+    def live_stream(self, id, public_url, credit_id):
+        """Start live stream by sending a POST request to STREAM_URL service."""
+        credit_id = 0 if credit_id == None else 0
+        stream_url = "http://14.195.152.244:9015/Streaming/add_camera"
+        try:
+            payload = {
+                "cameraId": id,
+                "rtspUrl": public_url,
+                "creditId": credit_id
+            }
+            response = requests.post(stream_url, json=payload, timeout=10)
+            response.raise_for_status()
+            print("Stream started successfully.")
+        except ConnectTimeout:
+            print("Check your internet connection or server status.")
+        except HTTPError as http_err:
+            print(f"HTTP Error occurred: {http_err}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
+    def perform_create(self, serializer):
+        """Called when a new camera is created."""
+        camera = serializer.save()  # Save the camera first
+
+        # Now automatically call live_stream
+        public_url = camera.rtspurl
+        credit_id = self.request.data.get("creditId", None)
+        if public_url and credit_id:
+            self.live_stream(camera.id, public_url, credit_id)
+ 
+class LocationViewSet(viewsets.ModelViewSet):
+    serializer_class = LocationSerializer
+    pagination_class = StandardResultsSetPagination
+
     def get_queryset(self):
         user_id = self.request.query_params.get('user_id', None)
         if user_id:
-            return Cameras.objects.filter(userid=user_id)
-        return Cameras.objects.all()
+            return Location.objects.filter(userid=user_id)
+        return Location.objects.all()
+
+class ZoneViewSet(viewsets.ModelViewSet):
+    serializer_class = ZoneSerializer
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        user_id = self.request.query_params.get('user_id', None)
+        if user_id:
+            return Zone.objects.filter(userid=user_id)
+        return Zone.objects.all()
 
 class GroupsViewSet(viewsets.ModelViewSet):
     serializer_class = GroupsSerializer

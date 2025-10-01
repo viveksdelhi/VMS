@@ -63,6 +63,16 @@ class RolesSerializer(serializers.ModelSerializer):
         model = Roles
         fields = '__all__'
         
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        fields = '__all__'
+        
+class ZoneSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Zone
+        fields = '__all__'
+        
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users

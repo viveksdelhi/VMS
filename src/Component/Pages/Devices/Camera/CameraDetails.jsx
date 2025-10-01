@@ -33,10 +33,10 @@ const CameraDetailsTable = () => {
   const [selectedCamera, setSelectedCamera] = useState(null);
 
 
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [featureFilter, setFeatureFilter] = useState("all");
-  const [zoneFilter, setZoneFilter] = useState("all");
-  const [nvrFilter, setNvrFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState(null);
+  const [featureFilter, setFeatureFilter] = useState(null);
+  const [zoneFilter, setZoneFilter] = useState(null);
+  const [nvrFilter, setNvrFilter] = useState(null);
 
   const [zones, setZones] = useState([]);
   const [nvrs, setNvrs] = useState([]);
@@ -144,23 +144,37 @@ const CameraDetailsTable = () => {
       await deviceApi.delete(`/Camera/${id}/`);
       setData((prev) => prev.filter((item) => item.id !== id));
 
+      let messageText = "Camera deleted successfully!";
+
       // 2️⃣ Then try to delete streaming
       try {
-        await axios.delete(
-          `http://14.195.152.244:9015/Streaming/remove_camera/${id}`
-        );
-        alert("Camera & Streaming deleted successfully!");
+        await axios.delete(`http://14.195.152.244:9015/Streaming/remove_camera/${id}`);
+        messageText += ",Streaming stopped successfully!";
       } catch (streamErr) {
         console.error("Streaming delete failed:", streamErr);
-        alert("Camera deleted but streaming not stopped!");
+        messageText += ",⚠️ Streaming not stopped!";
       }
+
+      // 3️⃣ Then try to stop recording
+      try {
+        await axios.delete(`http://14.195.152.244:9004/Recording/stop/${id}`);
+        messageText += "and Recording stopped successfully!";
+      } catch (recErr) {
+        console.error("Recording stop failed:", recErr);
+        messageText += ",⚠️ Recording not stopped!";
+      }
+
+      // 🔔 Final combined alert
+      alert(messageText);
     } catch (err) {
       console.error("Camera delete failed:", err);
-      alert("Failed to delete camera!");
+      alert("❌ Failed to delete camera!");
     } finally {
       setDeletingId(null);
     }
   };
+
+
   // ✅ Analytics toggle with modal warning
   const handleAnalyticsToggle = async (camera, field, value) => {
     if (value) {
@@ -210,8 +224,9 @@ const CameraDetailsTable = () => {
 
 
   // ✅ Toggle with streaming API support
+  // ✅ Toggle Streaming / Recording with API support
   const handleToggle = async (row, field, value) => {
-    // optimistic UI update
+    // Optimistic UI update
     setData((prev) =>
       prev.map((cam) =>
         cam.id === row.id ? { ...cam, [field]: value ? 1 : 0 } : cam
@@ -219,7 +234,7 @@ const CameraDetailsTable = () => {
     );
 
     try {
-      // 1️⃣ Always update Camera DB
+      // 1️⃣ Update Camera DB
       const payload = {
         ...row,
         [field]: value ? 1 : 0,
@@ -227,10 +242,10 @@ const CameraDetailsTable = () => {
       };
       await deviceApi.put(`/Camera/${row.id}/`, payload);
 
-      // 2️⃣ Extra calls if streaming toggle
+      // 2️⃣ External API calls
       if (field === "isStreaming") {
         if (value) {
-          // ▶️ Start streaming
+          // Start streaming
           await axios.post("http://14.195.152.244:9015/Streaming/add_camera/", {
             rtspUrl: row.rtspurl,
             cameraId: row.id,
@@ -238,7 +253,7 @@ const CameraDetailsTable = () => {
           });
           message.success("Streaming started successfully!");
         } else {
-          // ⏹ Stop streaming
+          // Stop streaming
           try {
             await axios.delete(
               `http://14.195.152.244:9015/Streaming/remove_camera/${row.id}`
@@ -249,7 +264,28 @@ const CameraDetailsTable = () => {
             message.warning("Camera updated but streaming not stopped!");
           }
         }
+      } else if (field === "isRecording") {
+        if (value) {
+          // Start recording
+          await axios.post("http://14.195.152.244:9004/Recording/start/", {
+            streamUrl: row.rtspurl,
+            cameraId: row.id,
+          });
+          message.success("Recording started successfully!");
+        } else {
+          // Stop recording
+          try {
+            await axios.delete(
+              `http://14.195.152.244:9004/Recording/stop/${row.id}`
+            );
+            message.success("Recording stopped successfully!");
+          } catch (err) {
+            console.error("Recording stop failed:", err);
+            message.warning("Camera updated but recording not stopped!");
+          }
+        }
       } else {
+        // For other fields
         message.success(`${field} updated successfully`);
       }
     } catch (err) {
@@ -258,7 +294,6 @@ const CameraDetailsTable = () => {
       fetchData(); // rollback
     }
   };
-
 
   const columns = [
     columnHelper.display({
@@ -279,7 +314,7 @@ const CameraDetailsTable = () => {
       ),
     }),
     columnHelper.accessor("location", { header: "Location" }),
-    columnHelper.accessor("area", { header: "Zone" }),
+    columnHelper.accessor("zone", { header: "Zone" }),
     columnHelper.accessor("status", {
       header: "Status",
       cell: (info) => {
@@ -572,7 +607,7 @@ const CameraDetailsTable = () => {
             <p><b>Name:</b> {viewCamera.name}</p>
             <p><b>IP:</b> {viewCamera.cameraIP}</p>
             <p><b>Location:</b> {viewCamera.location}</p>
-            <p><b>Zone:</b> {viewCamera.area}</p>
+            <p><b>Zone:</b> {viewCamera.zone}</p>
             <p><b>Brand:</b> {viewCamera.brand}</p>
             <p><b>Manufacture:</b> {viewCamera.manufacture}</p>
             <p><b>MAC:</b> {viewCamera.macAddress}</p>

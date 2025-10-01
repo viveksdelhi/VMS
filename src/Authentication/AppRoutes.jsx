@@ -22,6 +22,8 @@ import PermissionData from '../Component/Pages/UserManagement/Permission';
 import NvrForm from '../Component/Pages/Devices/NVR/NvrForm';
 import CameraForm from '../Component/Pages/Devices/Camera/CameraForm';
 import AssignPermission from '../Component/Pages/UserManagement/AssignPermission';
+import LocationForm from '../Component/Pages/Devices/Location/LocationForm';
+import LocationDetailsTable from '../Component/Pages/Devices/Location/LocationDetailsTable ';
 
 const routeConfig = [
   { path: '/dashboard', element: <Dashboard />, roles: ['Admin'] },
@@ -37,6 +39,8 @@ const routeConfig = [
   { path: '/nvr/form', element: <NvrForm />, roles: ["Admin",'user'] },
   { path: '/camera/form', element: <CameraForm />, roles: ["Admin",'user'] },
   { path: '/devices/zones', element: <ZoneDetails />, roles: ["Admin",'user'] },
+  { path: '/devices/locations', element: <LocationDetailsTable />, roles: ["Admin",'user'] },
+  { path: '/location/form', element: <LocationForm />, roles: ["Admin",'user'] },
   { path: '/devices/wards', element: <WardDetails />, roles: ["Admin",'user'] },
   //user management
   { path: '/roles', element: <RoleData />, roles: ["Admin"] },

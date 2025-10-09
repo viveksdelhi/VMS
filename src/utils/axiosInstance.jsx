@@ -3,7 +3,6 @@ import Cookies from "js-cookie";
 import {
   API_URL,
   CAMERA_API_URL,
-  NVR_API_URL,
 } from "../config";
 
 // Factory function to create axios instances with interceptors
@@ -70,7 +69,6 @@ const createAxiosInstance = (baseURL) => {
 // Export API clients
 export const api = createAxiosInstance(API_URL);
 export const deviceApi = createAxiosInstance(CAMERA_API_URL);
-export const nvrApi = createAxiosInstance(NVR_API_URL);
 
 // import axios from "axios";
 // import Cookies from "js-cookie";

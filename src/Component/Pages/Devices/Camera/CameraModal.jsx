@@ -2,14 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 import { Modal, Spin } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
 import Hls from "hls.js";
-import { STREAM_API_URL } from "../../../../config";
+import { STREAMING_API_URL } from "../../../../config";
 
 const CameraModal = ({ open, onClose, camera }) => {
   const videoRef = useRef(null);
   const [loading, setLoading] = useState(true);
 
   const hlsUrl = camera
-    ? `${STREAM_API_URL}/Streaming/stream/${camera.id}/stream.m3u8`
+    ? `${STREAMING_API_URL}/Streaming/stream/${camera.id}/stream.m3u8`
     : null;
 
   useEffect(() => {

@@ -15,6 +15,7 @@ import { EditOutlined, DeleteOutlined, EyeOutlined, CameraFilled } from "@ant-de
 import axios from "axios"; // ✅ needed for streaming API call
 import CameraModal from "./CameraModal";
 import AnalyticsModal from "./AnalyticsModal";
+import { STREAMING_API_URL, RECORDING_API_URL , ANALYTICS_API_URL } from "../../../../config";
 
 const columnHelper = createColumnHelper();
 
@@ -148,7 +149,7 @@ const CameraDetailsTable = () => {
 
       // 2️⃣ Then try to delete streaming
       try {
-        await axios.delete(`http://14.195.152.244:9015/Streaming/remove_camera/${id}`);
+        await axios.delete(`${STREAMING_API_URL}/Streaming/remove_camera/${id}`);
         messageText += ",Streaming stopped successfully!";
       } catch (streamErr) {
         console.error("Streaming delete failed:", streamErr);
@@ -157,7 +158,7 @@ const CameraDetailsTable = () => {
 
       // 3️⃣ Then try to stop recording
       try {
-        await axios.delete(`http://14.195.152.244:9004/Recording/stop/${id}`);
+        await axios.delete(`${RECORDING_API_URL}/Recording/stop/${id}`);
         messageText += "and Recording stopped successfully!";
       } catch (recErr) {
         console.error("Recording stop failed:", recErr);
@@ -203,7 +204,7 @@ const CameraDetailsTable = () => {
           ],
         };
 
-        await axios.post("http://14.195.152.244:7001/CameraDetails", payload);
+        await axios.post(`${ANALYTICS_API_URL}/CameraDetails`, payload);
 
         // Update camera DB
         const dbPayload = { ...camera, [field]: 0, userid: String(userId) };
@@ -246,7 +247,7 @@ const CameraDetailsTable = () => {
       if (field === "isStreaming") {
         if (value) {
           // Start streaming
-          await axios.post("http://14.195.152.244:9015/Streaming/add_camera/", {
+          await axios.post(`${STREAMING_API_URL}/Streaming/add_camera/`, {
             rtspUrl: row.rtspurl,
             cameraId: row.id,
             creditId: row.creditId || 0,
@@ -256,7 +257,7 @@ const CameraDetailsTable = () => {
           // Stop streaming
           try {
             await axios.delete(
-              `http://14.195.152.244:9015/Streaming/remove_camera/${row.id}`
+              `${STREAMING_API_URL}/Streaming/remove_camera/${row.id}`
             );
             message.success("Streaming stopped successfully!");
           } catch (err) {
@@ -267,7 +268,7 @@ const CameraDetailsTable = () => {
       } else if (field === "isRecording") {
         if (value) {
           // Start recording
-          await axios.post("http://14.195.152.244:9004/Recording/start/", {
+          await axios.post(`${RECORDING_API_URL}/Recording/start/`, {
             streamUrl: row.rtspurl,
             cameraId: row.id,
           });
@@ -276,7 +277,7 @@ const CameraDetailsTable = () => {
           // Stop recording
           try {
             await axios.delete(
-              `http://14.195.152.244:9004/Recording/stop/${row.id}`
+              `${RECORDING_API_URL}/Recording/stop/${row.id}`
             );
             message.success("Recording stopped successfully!");
           } catch (err) {
@@ -348,7 +349,7 @@ const CameraDetailsTable = () => {
         />
       ),
     }),
-    columnHelper.accessor("isANPR", {
+    columnHelper.accessor("isAnalytics", {
       header: "Analytics",
       cell: (info) => {
         const camera = info.row.original;
@@ -356,7 +357,7 @@ const CameraDetailsTable = () => {
         return (
           <Switch
             checked={!!info.getValue()}
-            onChange={(val) => handleAnalyticsToggle(camera, "isANPR", val)}
+            onChange={(val) => handleAnalyticsToggle(camera, "isAnalytics", val)}
             loading={loading} // ✅ show spinner
             disabled={loading} // optional: disable toggle while processing
           />

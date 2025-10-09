@@ -3,7 +3,7 @@ import { Button, Modal, Select, Space } from "antd";
 import { FullscreenOutlined, FullscreenExitOutlined } from "@ant-design/icons";
 import { DndContext, PointerSensor, useSensor, useSensors, closestCenter, DragOverlay } from "@dnd-kit/core";
 import HlsPlayer from "react-hls-player";
-import { STREAM_API_URL } from "../../../config";
+import { STREAMING_API_URL } from "../../../config";
 import { CameraSidebar } from "./CameraSidebar";
 import CameraGrid from "./CameraGrid";
 
@@ -119,7 +119,7 @@ const LiveGrid = () => {
       >
         {zoomCam && (
           <HlsPlayer
-            src={`${STREAM_API_URL}/Streaming/stream/${zoomCam.id}/stream.m3u8`}
+            src={`${STREAMING_API_URL}/Streaming/stream/${zoomCam.id}/stream.m3u8`}
             autoPlay
             controls
             muted

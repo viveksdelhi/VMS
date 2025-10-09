@@ -8,9 +8,9 @@ import {
 } from "@tanstack/react-table";
 import { Image } from "antd"; // ✅ AntD Image (preview/zoom)
 import debounce from "lodash/debounce";
-import axios from "axios"
 import Cookies from "js-cookie";
 import { deviceApi } from "../../../utils/axiosInstance";
+import { ANALYTICS_API_URL } from "../../../config";
 
 
 const columnHelper = createColumnHelper();
@@ -25,7 +25,7 @@ const AnalyticsTable = () => {
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
-  const userId = Cookies.get("userId"); 
+  const userId = Cookies.get("userId");
   // ✅ Define table columns
   const columns = [
     columnHelper.accessor("id", { header: "ID" }),
@@ -105,7 +105,7 @@ const AnalyticsTable = () => {
       header: "Snapshot",
       cell: (info) => {
         const path = info.getValue();
-        const imgUrl = `http://14.195.152.244:7001/${path}`;
+        const imgUrl = `${ANALYTICS_API_URL}/${path}`;
         return (
           <Image
             src={imgUrl}
@@ -130,22 +130,19 @@ const AnalyticsTable = () => {
     }
   };
 
-  // ✅ Fetch alerts
+  // ✅ Fetch alerts using deviceApi instead of hardcoded URL
   const fetchData = async (search = "", currentPage = 1, size = pageSize) => {
     try {
       setLoading(true);
-      const res = await axios.get(
-        "http://14.195.152.244:7006/api/CameraAlert/",
-        {
-          params: {
-            user_id: 77,
-            page: currentPage,
-            pageSize: size,
-            camera_id: cameraFilter || "", // ✅ camera filter
-            search,
-          },
-        }
-      );
+      const res = await deviceApi.get("/CameraAlert/", {
+        params: {
+          userid: userId,          // you can replace with dynamic userId if needed
+          page: currentPage,
+          pageSize: size,
+          camera_id: cameraFilter || "", // camera filter
+          search,
+        },
+      });
 
       setData(res.data.results || []);
       setTotalPages(Math.ceil(res.data.count / size));

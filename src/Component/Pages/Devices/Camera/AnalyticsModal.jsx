@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Modal, Button, message, Checkbox, Divider } from "antd";
 import axios from "axios";
 import { deviceApi } from "../../../../utils/axiosInstance";
+import { ANALYTICS_API_URL } from "../../../../config";
 
 const groupOptions = {
   Vehicles: [
@@ -53,7 +54,7 @@ const AnalyticsModal = ({ open, onClose, camera, userId, field, value, onSaved }
         ],
       };
 
-      await axios.post("http://14.195.152.244:7001/CameraDetails", analyticsPayload);
+      await axios.post(`${ANALYTICS_API_URL}/CameraDetails`, analyticsPayload);
       message.success("Analytics server updated successfully!");
 
       // 2️⃣ Camera DB API

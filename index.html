@@ -12,12 +12,7 @@
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
   <!-- Runtime environment config (replaced after build via Docker) -->
-<script>
-  window.env = {
-    API_URL: "__API_URL__",
-    STREAM_API_URL: "__STREAM_API_URL__"
-  };
-</script>
+<script src="/env.js"></script>
 <!-- Add to <head> -->
 </body>
 </html>

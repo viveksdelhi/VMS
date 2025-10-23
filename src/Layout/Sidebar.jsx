@@ -19,11 +19,17 @@ import {
 } from "react-icons/fa";
 import { MdMenu, MdMenuOpen, MdExpandLess, MdExpandMore } from "react-icons/md";
 import Logo from "../assets/logo.jpg";
+import { useCustomEvents } from "../contexts/CustomEventContext";
 
-const Sidebar = ({ collapsed, onToggleCollapse }) => {
+const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [openMenus, setOpenMenus] = useState({});
+  const { getCustomEventsForSidebar, customEvents } = useCustomEvents();
+  
+  // Debug logging
+  console.log('Sidebar - customEvents:', customEvents);
+  console.log('Sidebar - getCustomEventsForSidebar():', getCustomEventsForSidebar());
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -31,7 +37,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ✅ Full VMS Menu
+  // ✅ Full VMS Menu - make it reactive to custom events
   const menuItems = [
     {
       key: "video-management",
@@ -51,6 +57,34 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
         { key: "analytics", label: "Video Analytics", icon: <FaChartLine />, path: "/analytics" },
         // { key: "event", label: "Event Detection", icon: <FaFire />, path: "/event" },
       ],
+    },
+    {
+      key: "event-reports",
+      label: "Event reports",
+      icon: <FaBug />,
+      children: [
+        { key: "tripwire", label: "Tripwire", path: "/analytics/tripwire" },
+        { key: "trespass", label: "Trespass", path: "/analytics/trespass" },
+        { key: "camera_tampering", label: "Camera Tampering", path: "/analytics/camera-tampering" },
+        { key: "loitering_detection", label: "Loitering Detection", path: "/analytics/loitering-detection" },
+        { key: "tailgating_detection", label: "Tailgating Detection", path: "/analytics/tailgating-detection" },
+        { key: "left_object_detection", label: "Left Object Detection", path: "/analytics/left-object-detection" },
+        { key: "missing_object_detection", label: "Missing Object Detection", path: "/analytics/missing-object-detection" },
+        { key: "continuous_auto_ptz_tracking", label: "Continuous Auto PTZ Tracking", path: "/analytics/continuous-auto-ptz-tracking" },
+        { key: "ptz_handoff", label: "PTZ Handoff", path: "/analytics/ptz-handoff" },
+        { key: "ptz_preset_position_analytics", label: "PTZ Pre-set Position Analytics", path: "/analytics/ptz-preset-position-analytics" },
+        { key: "crowding_detection", label: "Crowding Detection", path: "/analytics/crowding-detection" },
+        { key: "crowd_counting", label: "Crowd Counting", path: "/analytics/crowd-counting" },
+        { key: "crowd_flow_detection", label: "Crowd Flow Detection", path: "/analytics/crowd-flow-detection" },
+        { key: "video_smoke_detection", label: "Video Smoke Detection", path: "/analytics/video-smoke-detection" },
+        { key: "video_fire_detection", label: "Video Fire Detection", path: "/analytics/video-fire-detection" },
+        { key: "slip_fall_detection", label: "Slip & Fall Detection", path: "/analytics/slip-fall-detection" },
+        // Add custom events dynamically
+        ...getCustomEventsForSidebar(),
+        { key: "custom_event_management", label: "Manage Custom Events", icon: <FaCogs />, path: "/analytics/custom-events" },
+        { key: "custom_event", label: "Create Custom Event", icon: <FaCogs />, path: "#custom-event" },
+      ],
+      
     },
     {
       key: "device-management",
@@ -178,6 +212,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
                         ? "bg-purple-100 text-[#8f5eb8] font-medium"
                         : "hover:bg-gray-50 text-purple-700"
                     }`}
+                    onClick={item.key === 'custom_event' ? (e) => { e.preventDefault(); onCustomEventClick && onCustomEventClick(); } : undefined}
                   >
                     {item.icon}
                     <span>{item.label}</span>
@@ -198,6 +233,7 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
                         ? "bg-[#b17ef3] text-white font-medium"
                         : "hover:bg-gray-100 text-gray-700"
                     }`}
+                    onClick={item.key === 'custom_event' ? (e) => { e.preventDefault(); onCustomEventClick && onCustomEventClick(); } : undefined}
                   >
                     {item.icon}
                     <span>{item.label}</span>
@@ -208,7 +244,8 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
           </div>
         ))}
       </div>
-
+      {/* Popup logic placeholder */}
+      {/* REMOVE popup code for customEventPopupOpen here, we will show it elsewhere */}
       {/* Footer */}
       <div className="p-4">
         <div className="bg-gray-50 rounded-xl p-4 text-center shadow-inner">

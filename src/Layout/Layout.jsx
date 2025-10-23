@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import CustomEventForm from '../Component/Pages/Analytics/CustomEventForm';
 
 const Layout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false); // for mobile sidebar toggle
+  const [customEventPopupOpen, setCustomEventPopupOpen] = useState(false);
 
   const hideScrollbarStyle = {
     height: '100%',
@@ -41,6 +43,7 @@ const Layout = ({ children }) => {
             collapsed={collapsed}
             onToggleCollapse={() => setCollapsed(!collapsed)}
             onMobileMenuClick={() => setShowSidebar(false)}
+            onCustomEventClick={() => setCustomEventPopupOpen(true)}
           />
         </div>
       </div>
@@ -63,6 +66,16 @@ const Layout = ({ children }) => {
         <main className="flex-1 pl-1 overflow-y-auto bg-white text-black rounded-tl-md rounded-tr-md">
           {children}
         </main>
+        
+        {/* Custom Event Popup */}
+        {customEventPopupOpen && (
+          <div style={{ position: 'fixed', left: 65, top: 0, width: 'calc(100vw - 65px)', height: '100vh', zIndex: 99999, background: 'rgba(0,0,0,0.38)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px #9164d966', padding: 32, minWidth: 600, maxWidth: '80vw' }}>
+              <h2 className="text-xl font-bold mb-4 text-black">Create Custom Event</h2>
+              <CustomEventForm onClose={() => setCustomEventPopupOpen(false)} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

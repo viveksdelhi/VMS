@@ -24,6 +24,9 @@ import CameraForm from '../Component/Pages/Devices/Camera/CameraForm';
 import AssignPermission from '../Component/Pages/UserManagement/AssignPermission';
 import LocationForm from '../Component/Pages/Devices/Location/LocationForm';
 import LocationDetailsTable from '../Component/Pages/Devices/Location/LocationDetailsTable ';
+import EventReportPage from '../Component/Pages/Analytics/EventDetectionTable';
+import CustomEventReportPage from '../Component/Pages/Analytics/CustomEventReportPage';
+import CustomEventManagement from '../Component/Pages/Analytics/CustomEventManagement';
 
 const routeConfig = [
   { path: '/dashboard', element: <Dashboard />, roles: ['Admin'] },
@@ -52,6 +55,25 @@ const routeConfig = [
   { path: '/unauthorized', element: <Unauthorized />, roles: [] }, // public
 ];
 
+const eventReportRoutes = [
+  { path: '/analytics/tripwire', eventType: 'tripwire' },
+  { path: '/analytics/trespass', eventType: 'trespass' },
+  { path: '/analytics/camera-tampering', eventType: 'camera-tampering' },
+  { path: '/analytics/loitering-detection', eventType: 'loitering-detection' },
+  { path: '/analytics/tailgating-detection', eventType: 'tailgating-detection' },
+  { path: '/analytics/left-object-detection', eventType: 'left-object-detection' },
+  { path: '/analytics/missing-object-detection', eventType: 'missing-object-detection' },
+  { path: '/analytics/continuous-auto-ptz-tracking', eventType: 'continuous-auto-ptz-tracking' },
+  { path: '/analytics/ptz-handoff', eventType: 'ptz-handoff' },
+  { path: '/analytics/ptz-preset-position-analytics', eventType: 'ptz-preset-position-analytics' },
+  { path: '/analytics/crowding-detection', eventType: 'crowding-detection' },
+  { path: '/analytics/crowd-counting', eventType: 'crowd-counting' },
+  { path: '/analytics/crowd-flow-detection', eventType: 'crowd-flow-detection' },
+  { path: '/analytics/video-smoke-detection', eventType: 'video-smoke-detection' },
+  { path: '/analytics/video-fire-detection', eventType: 'video-fire-detection' },
+  { path: '/analytics/slip-fall-detection', eventType: 'slip-fall-detection' },
+];
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -68,8 +90,26 @@ const AppRoutes = () => {
           }
         />
       ))}
-      {/* Fallback: Redirect any undefined route to login */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      {/* Event report routes */}
+      {eventReportRoutes.map(r => (
+        <Route
+          key={r.path}
+          path={r.path}
+          element={<EventReportPage eventType={r.eventType} />}
+        />
+      ))}
+      {/* Custom Event Management */}
+      <Route
+        path="/analytics/custom-events"
+        element={<CustomEventManagement />}
+      />
+      {/* Custom event routes - Dynamic */}
+      <Route
+        path="/analytics/custom/:customEventId"
+        element={<CustomEventReportPage />}
+      />
+      {/* Fallback: Redirect any undefined route to dashboard */}
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 };

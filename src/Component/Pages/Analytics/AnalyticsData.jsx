@@ -26,6 +26,11 @@ const AnalyticsTable = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const userId = Cookies.get("userId");
+  // Rules state (persist per user)
+  const [ruleEnabled, setRuleEnabled] = useState(false);
+  const [matchMode, setMatchMode] = useState("AND"); // AND | OR
+  const [rules, setRules] = useState([]); // {id, objectKey, operator, threshold}
+  const [draft, setDraft] = useState({ id: null, objectKey: "person", operator: ">", threshold: 1 });
   // ✅ Define table columns
   const columns = [
     columnHelper.accessor("id", { header: "ID" }),
@@ -161,8 +166,58 @@ const AnalyticsTable = () => {
     fetchData(globalFilter, page, pageSize);
   }, [globalFilter, page, pageSize, cameraFilter]); // ✅ refetch when camera changes
 
+  // ---- Persistence ----
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(`analytics_rules_v2_${userId}`);
+      if (stored) {
+        const { rules: r = [], enabled = false, mode = "AND" } = JSON.parse(stored);
+        setRules(r);
+        setRuleEnabled(enabled);
+        setMatchMode(mode);
+      }
+    } catch {}
+  }, [userId]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(`analytics_rules_v2_${userId}` , JSON.stringify({ rules, enabled: ruleEnabled, mode: matchMode }));
+    } catch {}
+  }, [rules, ruleEnabled, matchMode, userId]);
+
+  const filteredForRule = useMemo(() => {
+    if (!ruleEnabled || rules.length === 0) return data;
+    const safeParse = (raw) => {
+      if (!raw || typeof raw !== "string") return {};
+      try {
+        const cleaned = raw.replace(/'/g, '"');
+        const parsed = JSON.parse(cleaned);
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch {
+        return {};
+      }
+    };
+    const applyRule = (row, r) => {
+      const obj = safeParse(row.objectName);
+      const value = Number(obj[r.objectKey] ?? 0);
+      const thr = Number(r.threshold);
+      switch (r.operator) {
+        case ">": return value > thr;
+        case ">=": return value >= thr;
+        case "==": return value === thr;
+        case "<": return value < thr;
+        case "<=": return value <= thr;
+        default: return true;
+      }
+    };
+    return (data || []).filter((row) => {
+      if (matchMode === "AND") return rules.every((r) => applyRule(row, r));
+      return rules.some((r) => applyRule(row, r));
+    });
+  }, [data, ruleEnabled, rules, matchMode]);
+
   const table = useReactTable({
-    data,
+    data: filteredForRule,
     columns,
     state: { sorting },
     onSortingChange: setSorting,
@@ -228,6 +283,119 @@ const AnalyticsTable = () => {
               </option>
             ))}
           </select>
+          {/* Rules controls */}
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={ruleEnabled}
+              onChange={(e) => setRuleEnabled(e.target.checked)}
+            />
+            Apply Rules
+          </label>
+          <select
+            className="px-2 py-1 border rounded text-sm"
+            value={matchMode}
+            onChange={(e) => setMatchMode(e.target.value)}
+            title="Match mode"
+          >
+            <option value="AND" className="text-black">AND</option>
+            <option value="OR" className="text-black">OR</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Rules table */}
+      <div className="w-full bg-white border rounded-md p-3 shadow-sm">
+        <div className="flex gap-2 flex-wrap items-end">
+          <input
+            className="px-2 py-1 border rounded text-sm w-36"
+            placeholder="object (e.g., person)"
+            value={draft.objectKey}
+            onChange={(e) => setDraft((d) => ({ ...d, objectKey: e.target.value }))}
+          />
+          <select
+            className="px-2 py-1 border rounded text-sm"
+            value={draft.operator}
+            onChange={(e) => setDraft((d) => ({ ...d, operator: e.target.value }))}
+          >
+            {[">", ">=", "==", "<", "<="].map((op) => (
+              <option key={op} value={op} className="text-black">{op}</option>
+            ))}
+          </select>
+          <input
+            type="number"
+            className="px-2 py-1 border rounded text-sm w-24"
+            min={0}
+            value={draft.threshold}
+            onChange={(e) => setDraft((d) => ({ ...d, threshold: Number(e.target.value) }))}
+          />
+          <button
+            className="px-3 py-2 bg-[#9864db] text-white rounded text-sm"
+            onClick={() => {
+              if (!draft.objectKey) return;
+              if (draft.id == null) {
+                setRules((prev) => [
+                  ...prev,
+                  { id: Date.now(), objectKey: draft.objectKey, operator: draft.operator, threshold: Number(draft.threshold) },
+                ]);
+              } else {
+                setRules((prev) => prev.map((r) => (r.id === draft.id ? { ...draft, threshold: Number(draft.threshold) } : r)));
+              }
+              setDraft({ id: null, objectKey: "person", operator: ">", threshold: 1 });
+            }}
+          >
+            {draft.id == null ? "Add Rule" : "Save Rule"}
+          </button>
+          {draft.id != null && (
+            <button
+              className="px-3 py-2 bg-gray-200 text-black rounded text-sm"
+              onClick={() => setDraft({ id: null, objectKey: "person", operator: ">", threshold: 1 })}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+
+        <div className="mt-3 overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="text-left">
+                <th className="px-2 py-1">Object</th>
+                <th className="px-2 py-1">Operator</th>
+                <th className="px-2 py-1">Threshold</th>
+                <th className="px-2 py-1">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rules.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-2 py-2 text-gray-500">No rules added.</td>
+                </tr>
+              ) : (
+                rules.map((r) => (
+                  <tr key={r.id} className="border-t">
+                    <td className="px-2 py-1">{r.objectKey}</td>
+                    <td className="px-2 py-1">{r.operator}</td>
+                    <td className="px-2 py-1">{r.threshold}</td>
+                    <td className="px-2 py-1 flex gap-2">
+                      <button
+                        className="px-2 py-1 border rounded text-xs"
+                        onClick={() => setDraft(r)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="px-2 py-1 border rounded text-xs text-red-600"
+                        onClick={() => setRules((prev) => prev.filter((x) => x.id !== r.id))}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 

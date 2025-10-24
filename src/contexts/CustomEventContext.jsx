@@ -121,6 +121,8 @@ export const CustomEventProvider = ({ children }) => {
     const newEvent = {
       id: nextId,
       name: eventData.name,
+      description: eventData.description || null,
+      presetEvents: eventData.presetEvents || [],
       conditions: eventData.conditions,
       cameras: eventData.cameras,
       scheduling: eventData.scheduling || null,

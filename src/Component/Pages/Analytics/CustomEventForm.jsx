@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useCustomEvents } from '../../../contexts/CustomEventContext';
+import { getAllDefaultTriggers } from '../../../config/defaultEventTriggers';
 
 const OBJECT_OPTIONS = [
   'Person', 'Vehicle', 'Bicycle', 'Car', 'Dog', 'Animal', 'Bag', 'Box', 
@@ -13,6 +14,8 @@ const OPERATORS = ['>', '>=', '==', '<', '<='];
 const CustomEventForm = ({ onClose }) => {
   const { addCustomEvent } = useCustomEvents();
   const [eventName, setEventName] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedPresetEvents, setSelectedPresetEvents] = useState([]);
   const [conditions, setConditions] = useState([]);
   const [currentCondition, setCurrentCondition] = useState({
     object: 'Person',
@@ -34,6 +37,9 @@ const CustomEventForm = ({ onClose }) => {
     isEnabled: false
   });
 
+  // Get all preset events for dropdown
+  const presetEvents = getAllDefaultTriggers();
+
   const CAMERA_LIST = [
     { id: 1, name: 'Camera 1' },
     { id: 2, name: 'Camera 2' },
@@ -49,6 +55,48 @@ const CustomEventForm = ({ onClose }) => {
 
   const removeCondition = (id) => {
     setConditions(conditions.filter(c => c.id !== id));
+  };
+
+  // Handle preset event selection
+  const handlePresetEventToggle = (eventType) => {
+    setSelectedPresetEvents(prev => {
+      if (prev.includes(eventType)) {
+        // Remove preset event and its conditions
+        const presetEvent = presetEvents[eventType];
+        const newConditions = conditions.filter(condition => 
+          !presetEvent.conditions.some(presetCondition => 
+            presetCondition.object === condition.object &&
+            presetCondition.operator === condition.operator &&
+            presetCondition.threshold === condition.threshold
+          )
+        );
+        setConditions(newConditions);
+        return prev.filter(type => type !== eventType);
+      } else {
+        // Add preset event and its conditions
+        const presetEvent = presetEvents[eventType];
+        const newConditions = [...conditions];
+        
+        presetEvent.conditions.forEach(presetCondition => {
+          // Check if condition already exists
+          const exists = newConditions.some(condition => 
+            condition.object === presetCondition.object &&
+            condition.operator === presetCondition.operator &&
+            condition.threshold === presetCondition.threshold
+          );
+          
+          if (!exists) {
+            newConditions.push({
+              ...presetCondition,
+              id: Date.now() + Math.random() // Unique ID
+            });
+          }
+        });
+        
+        setConditions(newConditions);
+        return [...prev, eventType];
+      }
+    });
   };
 
   const toggleCamera = (cameraId) => {
@@ -98,6 +146,8 @@ const CustomEventForm = ({ onClose }) => {
       // Save custom event using context
       const newEvent = addCustomEvent({
         name: eventName,
+        description: description.trim() || null,
+        presetEvents: selectedPresetEvents,
         conditions,
         cameras: selectedCameras,
         scheduling: scheduling.isEnabled ? scheduling : null
@@ -144,6 +194,45 @@ const CustomEventForm = ({ onClose }) => {
           </div>
 
           <div className="mb-4">
+            <label className="block text-sm font-medium mb-2 text-gray-700">Description (Optional)</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter event description..."
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 resize-none"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2 text-gray-700">Select Preset Events (Optional)</label>
+            <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2 bg-gray-50">
+              {Object.entries(presetEvents).map(([eventType, eventData]) => (
+                <label key={eventType} className="flex items-start space-x-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedPresetEvents.includes(eventType)}
+                    onChange={() => handlePresetEventToggle(eventType)}
+                    className="mt-1 rounded"
+                  />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-900">{eventData.name}</div>
+                    <div className="text-xs text-gray-600">{eventData.description}</div>
+                    <div className="text-xs text-purple-600 mt-1">
+                      Conditions: {eventData.conditions.map(c => `${c.object} ${c.operator} ${c.threshold}`).join(', ')}
+                    </div>
+                  </div>
+                </label>
+              ))}
+            </div>
+            {selectedPresetEvents.length > 0 && (
+              <div className="mt-2 text-sm text-green-600">
+                ✓ {selectedPresetEvents.length} preset event(s) selected - conditions added automatically
+              </div>
+            )}
+          </div>
+
+          <div className="mb-4">
             <label className="block text-sm font-medium mb-2 text-gray-700">Add Conditions</label>
             <div className="flex gap-2 mb-2">
               <select
@@ -182,18 +271,24 @@ const CustomEventForm = ({ onClose }) => {
               </button>
             </div>
 
-            <div className="space-y-2">
-              {conditions.map(condition => (
-                <div key={condition.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                  <span className="text-gray-900">{condition.object} {condition.operator} {condition.threshold}</span>
-                  <button
-                    onClick={() => removeCondition(condition.id)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
+            <div className="max-h-32 max-w-165 overflow-y-auto border border-gray-200 rounded-md bg-gray-50 p-2">
+              <div className="flex flex-wrap gap-2">
+                {conditions.map(condition => (
+                  <div key={condition.id} className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-gray-300 text-sm">
+                    <span className="text-gray-700">{condition.object} {condition.operator} {condition.threshold}</span>
+                    <button
+                      onClick={() => removeCondition(condition.id)}
+                      className="text-red-500 hover:text-red-700 ml-1 text-xs font-bold"
+                      title="Remove condition"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                {conditions.length === 0 && (
+                  <span className="text-gray-500 text-sm italic">No conditions added yet</span>
+                )}
+              </div>
             </div>
           </div>
 

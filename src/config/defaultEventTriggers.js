@@ -167,3 +167,4 @@ export const getAllDefaultTriggers = () => {
 export const hasDefaultTriggers = (eventType) => {
   return eventType in DEFAULT_EVENT_TRIGGERS;
 };
+

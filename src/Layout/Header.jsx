@@ -199,7 +199,7 @@ const Header = ({ onToggle }) => {
                 <li
                   onClick={() => {
                     logout();
-                    navigate("/login");
+                    navigate("/dashboard");
                   }}
                   className="px-4 py-2 text-sm text-red-500 hover:bg-purple-50 cursor-pointer flex items-center gap-2"
                 >

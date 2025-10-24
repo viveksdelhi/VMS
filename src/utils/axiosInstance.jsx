@@ -52,9 +52,9 @@ const createAxiosInstance = (baseURL) => {
           originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
           return instance(originalRequest);
         } catch (refreshError) {
+          // Do not redirect; keep user on the current page for dev bypass
           Cookies.remove("token");
           Cookies.remove("refreshToken");
-          window.location.href = "/login"; // logout
           return Promise.reject(refreshError);
         }
       }

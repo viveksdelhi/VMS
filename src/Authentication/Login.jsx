@@ -39,11 +39,11 @@ const LoginPage = () => {
         const userRole =
           decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 
-        Cookies.set("token", accessToken, { secure: true });
-        Cookies.set("refreshToken", refreshToken, { secure: true });
-        Cookies.set("userId", userId, { secure: true });
-        Cookies.set("email", userEmail, { secure: true });
-        Cookies.set("role", userRole, { secure: true });
+        Cookies.set("token", accessToken);
+        Cookies.set("refreshToken", refreshToken);
+        Cookies.set("userId", userId);
+        Cookies.set("email", userEmail);
+        Cookies.set("role", userRole);
 
         login(accessToken, userRole);
         navigate("/dashboard");

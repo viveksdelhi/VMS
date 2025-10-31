@@ -7,7 +7,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
       { object: 'Fire', operator: '>=', threshold: 1 },
       { object: 'Flame', operator: '>=', threshold: 1 }
     ],
-    description: 'Default trigger for fire detection - alerts when fire or flame is detected'
+    description: 'Default trigger for fire detection - alerts when fire or flame is detected',
+    tags: ['fire', 'flame', 'safety', 'emergency']
   },
   
   // Smoke Detection Events
@@ -17,7 +18,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
       { object: 'Smoke', operator: '>=', threshold: 1 },
       { object: 'Fire', operator: '>=', threshold: 1 }
     ],
-    description: 'Default trigger for smoke detection - alerts when smoke or fire is detected'
+    description: 'Default trigger for smoke detection - alerts when smoke or fire is detected',
+    tags: ['smoke', 'fire', 'safety', 'emergency']
   },
   
   // Crowd-based Events
@@ -27,7 +29,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
       { object: 'Person', operator: '>', threshold: 5 },
       { object: 'Group', operator: '>=', threshold: 2 }
     ],
-    description: 'Default trigger for crowding detection - alerts when more than 5 people or 2+ groups detected'
+    description: 'Default trigger for crowding detection - alerts when more than 5 people or 2+ groups detected',
+    tags: ['crowd', 'density', 'people', 'public']
   },
   
   'crowd-counting': {
@@ -36,7 +39,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
       { object: 'Person', operator: '>', threshold: 5 },
       { object: 'Adult', operator: '>', threshold: 3 }
     ],
-    description: 'Default trigger for crowd counting - alerts when more than 5 people or 3+ adults detected'
+    description: 'Default trigger for crowd counting - alerts when more than 5 people or 3+ adults detected',
+    tags: ['crowd', 'counting', 'people']
   },
   
   'crowd-flow-detection': {
@@ -45,7 +49,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
       { object: 'Person', operator: '>', threshold: 3 },
       { object: 'Group', operator: '>=', threshold: 1 }
     ],
-    description: 'Default trigger for crowd flow detection - alerts when more than 3 people or groups detected'
+    description: 'Default trigger for crowd flow detection - alerts when more than 3 people or groups detected',
+    tags: ['crowd', 'flow', 'movement']
   },
   
   // Security Events
@@ -55,7 +60,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
       { object: 'Person', operator: '>=', threshold: 1 },
       { object: 'Vehicle', operator: '>=', threshold: 1 }
     ],
-    description: 'Default trigger for tripwire - alerts when person or vehicle crosses the line'
+    description: 'Default trigger for tripwire - alerts when person or vehicle crosses the line',
+    tags: ['perimeter', 'intrusion', 'line-crossing', 'security']
   },
   
   'trespass': {
@@ -64,7 +70,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
       { object: 'Person', operator: '>=', threshold: 1 },
       { object: 'Animal', operator: '>=', threshold: 1 }
     ],
-    description: 'Default trigger for trespass detection - alerts when person or animal enters restricted area'
+    description: 'Default trigger for trespass detection - alerts when person or animal enters restricted area',
+    tags: ['intrusion', 'restricted', 'security']
   },
   
   'loitering-detection': {
@@ -73,7 +80,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
       { object: 'Person', operator: '>=', threshold: 1 },
       { object: 'Group', operator: '>=', threshold: 1 }
     ],
-    description: 'Default trigger for loitering detection - alerts when person or group loiters in area'
+    description: 'Default trigger for loitering detection - alerts when person or group loiters in area',
+    tags: ['loitering', 'dwell', 'security']
   },
   
   'tailgating-detection': {
@@ -82,7 +90,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
       { object: 'Person', operator: '>=', threshold: 2 },
       { object: 'Vehicle', operator: '>=', threshold: 1 }
     ],
-    description: 'Default trigger for tailgating detection - alerts when multiple people or vehicles detected'
+    description: 'Default trigger for tailgating detection - alerts when multiple people or vehicles detected',
+    tags: ['access', 'security', 'door', 'entry']
   },
   
   // Object Detection Events
@@ -93,7 +102,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
       { object: 'Box', operator: '>=', threshold: 1 },
       { object: 'Suitcase', operator: '>=', threshold: 1 }
     ],
-    description: 'Default trigger for left object detection - alerts when bags, boxes, or suitcases are left unattended'
+    description: 'Default trigger for left object detection - alerts when bags, boxes, or suitcases are left unattended',
+    tags: ['abandoned', 'object', 'bag', 'security']
   },
   
   'missing-object-detection': {
@@ -103,7 +113,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
       { object: 'Chair', operator: '>=', threshold: 1 },
       { object: 'TV', operator: '>=', threshold: 1 }
     ],
-    description: 'Default trigger for missing object detection - alerts when laptops, chairs, or TVs are missing'
+    description: 'Default trigger for missing object detection - alerts when laptops, chairs, or TVs are missing',
+    tags: ['missing', 'theft', 'asset']
   },
   
   // Camera Events
@@ -113,7 +124,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
       { object: 'Camera Covered', operator: '>=', threshold: 1 },
       { object: 'Camera Moved', operator: '>=', threshold: 1 }
     ],
-    description: 'Default trigger for camera tampering - alerts when camera is covered or moved'
+    description: 'Default trigger for camera tampering - alerts when camera is covered or moved',
+    tags: ['tampering', 'camera', 'sabotage']
   },
   
   // PTZ Events
@@ -123,7 +135,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
       { object: 'Person', operator: '>=', threshold: 1 },
       { object: 'Car', operator: '>=', threshold: 1 }
     ],
-    description: 'Default trigger for continuous PTZ tracking - alerts when person or car is tracked'
+    description: 'Default trigger for continuous PTZ tracking - alerts when person or car is tracked',
+    tags: ['ptz', 'tracking', 'auto']
   },
   
   'ptz-handoff': {
@@ -131,7 +144,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
     conditions: [
       { object: 'Person', operator: '>=', threshold: 1 }
     ],
-    description: 'Default trigger for PTZ handoff - alerts when person is handed off between cameras'
+    description: 'Default trigger for PTZ handoff - alerts when person is handed off between cameras',
+    tags: ['ptz', 'handoff', 'tracking']
   },
   
   'ptz-preset-position-analytics': {
@@ -140,7 +154,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
       { object: 'Vehicle', operator: '>=', threshold: 1 },
       { object: 'Bicycle', operator: '>=', threshold: 1 }
     ],
-    description: 'Default trigger for PTZ preset analytics - alerts when vehicles or bicycles are detected at preset positions'
+    description: 'Default trigger for PTZ preset analytics - alerts when vehicles or bicycles are detected at preset positions',
+    tags: ['ptz', 'preset', 'analytics']
   },
   
   // Safety Events
@@ -149,7 +164,8 @@ export const DEFAULT_EVENT_TRIGGERS = {
     conditions: [
       { object: 'Person', operator: '>=', threshold: 1 }
     ],
-    description: 'Default trigger for slip and fall detection - alerts when person is detected in fall position'
+    description: 'Default trigger for slip and fall detection - alerts when person is detected in fall position',
+    tags: ['safety', 'fall', 'health']
   }
 };
 
@@ -167,4 +183,7 @@ export const getAllDefaultTriggers = () => {
 export const hasDefaultTriggers = (eventType) => {
   return eventType in DEFAULT_EVENT_TRIGGERS;
 };
+
+
+
 

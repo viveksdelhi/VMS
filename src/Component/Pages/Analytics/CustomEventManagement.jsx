@@ -1,28 +1,54 @@
-import React, { useState } from 'react';
-import { useCustomEvents } from '../../../contexts/CustomEventContext';
-import { useNavigate } from 'react-router-dom';
-import { getAllDefaultTriggers } from '../../../config/defaultEventTriggers';
+import React, { useState } from "react";
+import { useCustomEvents } from "../../../contexts/CustomEventContext";
+import { useNavigate } from "react-router-dom";
+import { getAllDefaultTriggers } from "../../../config/defaultEventTriggers";
 
 const OBJECT_OPTIONS = [
-  'Person', 'Vehicle', 'Bicycle', 'Car', 'Dog', 'Animal', 'Bag', 'Box', 
-  'Suitcase', 'Laptop', 'Chair', 'TV', 'Artwork', 'Group', 'Children', 
-  'Adult', 'Bus', 'Smoke', 'Fire', 'Flame', 'Steam', 'Unknown Object',
-  'Camera Covered', 'Camera Moved'
+  "Person",
+  "Vehicle",
+  "Bicycle",
+  "Car",
+  "Dog",
+  "Animal",
+  "Bag",
+  "Box",
+  "Suitcase",
+  "Laptop",
+  "Chair",
+  "TV",
+  "Artwork",
+  "Group",
+  "Children",
+  "Adult",
+  "Bus",
+  "Smoke",
+  "Fire",
+  "Flame",
+  "Steam",
+  "Unknown Object",
+  "Camera Covered",
+  "Camera Moved",
 ];
 
-const OPERATORS = ['>', '>=', '==', '<', '<='];
+const OPERATORS = [">", ">=", "==", "<", "<="];
 
 const CustomEventManagement = () => {
-  const { customEvents, addCustomEvent, removeCustomEvent, updateCustomEvent, clearAllCustomEvents } = useCustomEvents();
+  const {
+    customEvents,
+    addCustomEvent,
+    removeCustomEvent,
+    updateCustomEvent,
+    clearAllCustomEvents,
+  } = useCustomEvents();
   const navigate = useNavigate();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
   const CAMERA_LIST = [
-    { id: 1, name: 'Camera 1' },
-    { id: 2, name: 'Camera 2' },
-    { id: 3, name: 'Camera 3' },
+    { id: 1, name: "Camera 1" },
+    { id: 2, name: "Camera 2" },
+    { id: 3, name: "Camera 3" },
   ];
 
   const handleDeleteEvent = (eventId) => {
@@ -37,7 +63,9 @@ const CustomEventManagement = () => {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-[#9357c9]">Custom Event Management</h1>
+        <h1 className="text-3xl font-bold text-[#9357c9]">
+          Custom Event Management
+        </h1>
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowCreateForm(true)}
@@ -48,7 +76,11 @@ const CustomEventManagement = () => {
           </button>
           <button
             onClick={() => {
-              if (confirm('Are you sure you want to clear all custom events? This cannot be undone.')) {
+              if (
+                confirm(
+                  "Are you sure you want to clear all custom events? This cannot be undone."
+                )
+              ) {
                 clearAllCustomEvents();
               }
             }}
@@ -59,14 +91,18 @@ const CustomEventManagement = () => {
         </div>
       </div>
 
-
       {/* Custom Events List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {customEvents.map((event) => (
-          <div key={event.id} className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <div
+            key={event.id}
+            className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+          >
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">{event.name}</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {event.name}
+                </h3>
                 <div className="flex space-x-2">
                   <button
                     onClick={() => handleViewEvent(event.id)}
@@ -88,25 +124,54 @@ const CustomEventManagement = () => {
                   </button>
                 </div>
               </div>
-              
+
               <div className="space-y-3">
+                {event.tags && event.tags.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-600 mb-2">
+                      Tags:
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {event.tags.map((t, idx) => (
+                        <span
+                          key={`${t}-${idx}`}
+                          className="inline-flex items-center bg-purple-50 text-purple-800 px-2 py-1 rounded-full text-xs border border-purple-200"
+                        >
+                          #{t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div>
-                  <h4 className="text-sm font-medium text-gray-600 mb-2">Conditions:</h4>
+                  <h4 className="text-sm font-medium text-gray-600 mb-2">
+                    Conditions:
+                  </h4>
                   <div className="space-y-1 flex flex-wrap gap-2 overflow-x-scroll">
                     {event.conditions.map((condition, index) => (
-                      <div key={index} className="text-sm text-gray-900 bg-gray-100 px-2 py-1 rounded-xl">
-                        {condition.object} {condition.operator} {condition.threshold}
+                      <div
+                        key={index}
+                        className="text-sm text-gray-900 bg-gray-100 px-2 py-1 rounded-xl"
+                      >
+                        {condition.object} {condition.operator}{" "}
+                        {condition.threshold}
                       </div>
                     ))}
                   </div>
                 </div>
-                
+
                 <div>
-                  <h4 className="text-sm font-medium text-gray-600 mb-2">Cameras:</h4>
+                  <h4 className="text-sm font-medium text-gray-600 mb-2">
+                    Cameras:
+                  </h4>
                   <div className="text-sm text-gray-700">
-                    {event.cameras.map(camId => 
-                      CAMERA_LIST.find(c => c.id === camId)?.name || `Camera ${camId}`
-                    ).join(', ')}
+                    {event.cameras
+                      .map(
+                        (camId) =>
+                          CAMERA_LIST.find((c) => c.id === camId)?.name ||
+                          `Camera ${camId}`
+                      )
+                      .join(", ")}
                   </div>
                 </div>
               </div>
@@ -117,8 +182,12 @@ const CustomEventManagement = () => {
 
       {customEvents.length === 0 && (
         <div className="text-center py-12">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Custom Events</h3>
-          <p className="text-gray-500 mb-4">Create your first custom event to get started.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No Custom Events
+          </h3>
+          <p className="text-gray-500 mb-4">
+            Create your first custom event to get started.
+          </p>
           <button
             onClick={() => setShowCreateForm(true)}
             className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
@@ -130,7 +199,7 @@ const CustomEventManagement = () => {
 
       {/* Create Form Modal */}
       {showCreateForm && (
-        <CreateCustomEventForm 
+        <CreateCustomEventForm
           onClose={() => setShowCreateForm(false)}
           onSuccess={() => setShowCreateForm(false)}
         />
@@ -138,7 +207,7 @@ const CustomEventManagement = () => {
 
       {/* Edit Form Modal */}
       {showEditForm && (
-        <EditCustomEventForm 
+        <EditCustomEventForm
           event={showEditForm}
           onClose={() => setShowEditForm(null)}
           onSuccess={() => setShowEditForm(null)}
@@ -147,13 +216,40 @@ const CustomEventManagement = () => {
 
       {/* Delete Confirmation Dialog */}
       {showDeleteConfirm && (
-        <div style={{ position: 'fixed', left: 65, top: 0, width: 'calc(100vw - 65px)', height: '100vh', zIndex: 99999, background: 'rgba(0,0,0,0.38)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px #9164d966', padding: 32, minWidth: 600, maxWidth: '80vw', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div
+          style={{
+            position: "fixed",
+            left: 65,
+            top: 0,
+            width: "calc(100vw - 65px)",
+            height: "100vh",
+            zIndex: 99999,
+            background: "rgba(0,0,0,0.38)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 16,
+              boxShadow: "0 4px 24px #9164d966",
+              padding: 32,
+              minWidth: 600,
+              maxWidth: "80vw",
+              maxHeight: "90vh",
+              overflowY: "auto",
+            }}
+          >
             <div className="flex items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Delete Custom Event</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Delete Custom Event
+              </h3>
             </div>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this custom event? This action cannot be undone.
+              Are you sure you want to delete this custom event? This action
+              cannot be undone.
             </p>
             <div className="flex justify-end space-x-3">
               <button
@@ -178,76 +274,93 @@ const CustomEventManagement = () => {
 
 // Create Custom Event Form Component
 const CreateCustomEventForm = ({ onClose, onSuccess }) => {
-  const { addCustomEvent } = useCustomEvents();
-  const [eventName, setEventName] = useState('');
-  const [description, setDescription] = useState('');
+  const { addCustomEvent, customEvents } = useCustomEvents();
+  const [eventName, setEventName] = useState("");
+  const [description, setDescription] = useState("");
+  const [tags, setTags] = useState([]);
+  const [tagInput, setTagInput] = useState("");
   const [selectedPresetEvents, setSelectedPresetEvents] = useState([]);
   const [conditions, setConditions] = useState([]);
   const [currentCondition, setCurrentCondition] = useState({
-    object: 'Person',
-    operator: '>',
-    threshold: 1
+    object: "Person",
+    operator: ">",
+    threshold: 1,
   });
   const [step, setStep] = useState(1);
   const [selectedCameras, setSelectedCameras] = useState([]);
   const [scheduling, setScheduling] = useState({
     dateRange: {
-      startDate: '',
-      endDate: ''
+      startDate: "",
+      endDate: "",
     },
     specificDays: [],
     timeRange: {
-      startTime: '',
-      endTime: ''
+      startTime: "",
+      endTime: "",
     },
-    isEnabled: false
+    isEnabled: false,
   });
 
-  // Get all preset events for dropdown
-  const presetEvents = getAllDefaultTriggers();
+  // Get default presets and merge user custom events as selectable presets
+  const defaultPresets = getAllDefaultTriggers();
+  const customPresetMap = Object.fromEntries(
+    (customEvents || []).map((e) => [
+      `custom_${e.id}`,
+      {
+        name: e.name,
+        description: e.description || "User-defined custom event",
+        conditions: e.conditions || [],
+        tags: e.tags || [],
+      },
+    ])
+  );
+  const presetEvents = { ...defaultPresets, ...customPresetMap };
 
   const CAMERA_LIST = [
-    { id: 1, name: 'Camera 1' },
-    { id: 2, name: 'Camera 2' },
-    { id: 3, name: 'Camera 3' },
+    { id: 1, name: "Camera 1" },
+    { id: 2, name: "Camera 2" },
+    { id: 3, name: "Camera 3" },
   ];
 
   // Handle preset event selection
   const handlePresetEventToggle = (eventType) => {
-    setSelectedPresetEvents(prev => {
+    setSelectedPresetEvents((prev) => {
       if (prev.includes(eventType)) {
         // Remove preset event and its conditions
         const presetEvent = presetEvents[eventType];
-        const newConditions = conditions.filter(condition => 
-          !presetEvent.conditions.some(presetCondition => 
-            presetCondition.object === condition.object &&
-            presetCondition.operator === condition.operator &&
-            presetCondition.threshold === condition.threshold
-          )
+        const newConditions = conditions.filter(
+          (condition) =>
+            !presetEvent.conditions.some(
+              (presetCondition) =>
+                presetCondition.object === condition.object &&
+                presetCondition.operator === condition.operator &&
+                presetCondition.threshold === condition.threshold
+            )
         );
         setConditions(newConditions);
-        return prev.filter(type => type !== eventType);
+        return prev.filter((type) => type !== eventType);
       } else {
         // Add preset event and its conditions
         const presetEvent = presetEvents[eventType];
         const newConditions = [...conditions];
-        
-        presetEvent.conditions.forEach(presetCondition => {
+
+        presetEvent.conditions.forEach((presetCondition) => {
           // Check if condition already exists
-          const exists = newConditions.some(condition => 
-            condition.object === presetCondition.object &&
-            condition.operator === presetCondition.operator &&
-            condition.threshold === presetCondition.threshold
+          const exists = newConditions.some(
+            (condition) =>
+              condition.object === presetCondition.object &&
+              condition.operator === presetCondition.operator &&
+              condition.threshold === presetCondition.threshold
           );
-          
+
           if (!exists) {
             newConditions.push({
               ...presetCondition,
-              id: Date.now() + Math.random() // Unique ID
+              id: Date.now() + Math.random(), // Unique ID
             });
           }
         });
-        
+
         setConditions(newConditions);
         return [...prev, eventType];
       }
@@ -257,45 +370,45 @@ const CreateCustomEventForm = ({ onClose, onSuccess }) => {
   const addCondition = () => {
     if (currentCondition.object && currentCondition.threshold >= 0) {
       setConditions([...conditions, { ...currentCondition, id: Date.now() }]);
-      setCurrentCondition({ object: 'Person', operator: '>', threshold: 1 });
+      setCurrentCondition({ object: "Person", operator: ">", threshold: 1 });
     }
   };
 
   const removeCondition = (id) => {
-    setConditions(conditions.filter(c => c.id !== id));
+    setConditions(conditions.filter((c) => c.id !== id));
   };
 
   const toggleCamera = (cameraId) => {
-    setSelectedCameras(prev => 
-      prev.includes(cameraId) 
-        ? prev.filter(id => id !== cameraId)
+    setSelectedCameras((prev) =>
+      prev.includes(cameraId)
+        ? prev.filter((id) => id !== cameraId)
         : [...prev, cameraId]
     );
   };
 
   const toggleSpecificDay = (day) => {
-    setScheduling(prev => ({
+    setScheduling((prev) => ({
       ...prev,
       specificDays: prev.specificDays.includes(day)
-        ? prev.specificDays.filter(d => d !== day)
-        : [...prev.specificDays, day]
+        ? prev.specificDays.filter((d) => d !== day)
+        : [...prev.specificDays, day],
     }));
   };
 
   const updateScheduling = (field, value) => {
-    setScheduling(prev => ({
+    setScheduling((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const updateSchedulingNested = (parentField, childField, value) => {
-    setScheduling(prev => ({
+    setScheduling((prev) => ({
       ...prev,
       [parentField]: {
         ...prev[parentField],
-        [childField]: value
-      }
+        [childField]: value,
+      },
     }));
   };
 
@@ -312,18 +425,43 @@ const CreateCustomEventForm = ({ onClose, onSuccess }) => {
       addCustomEvent({
         name: eventName,
         description: description.trim() || null,
+        tags,
         presetEvents: selectedPresetEvents,
         conditions,
         cameras: selectedCameras,
-        scheduling: scheduling.isEnabled ? scheduling : null
+        scheduling: scheduling.isEnabled ? scheduling : null,
       });
       onSuccess();
     }
   };
 
   return (
-    <div style={{ position: 'fixed', left: 65, top: 0, width: 'calc(100vw - 65px)', height: '100vh', zIndex: 99999, background: 'rgba(0,0,0,0.38)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px #9164d966', padding: 32, minWidth: 600, maxWidth: '80vw', maxHeight: '90vh', overflowY: 'auto' }}>
+    <div
+      style={{
+        position: "fixed",
+        left: 65,
+        top: 0,
+        width: "calc(100vw - 65px)",
+        height: "100vh",
+        zIndex: 99999,
+        background: "rgba(0,0,0,0.38)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          boxShadow: "0 4px 24px #9164d966",
+          padding: 32,
+          minWidth: 600,
+          maxWidth: "80vw",
+          maxHeight: "90vh",
+          overflowY: "auto",
+        }}
+      >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold">Create Custom Event</h2>
           <button
@@ -337,7 +475,9 @@ const CreateCustomEventForm = ({ onClose, onSuccess }) => {
         {step === 1 && (
           <div>
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2 text-gray-700">Event Name</label>
+              <label className="block text-sm font-medium mb-2 text-gray-700">
+                Event Name
+              </label>
               <input
                 type="text"
                 value={eventName}
@@ -348,7 +488,9 @@ const CreateCustomEventForm = ({ onClose, onSuccess }) => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2 text-gray-700">Description (Optional)</label>
+              <label className="block text-sm font-medium mb-2 text-gray-700">
+                Description (Optional)
+              </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -359,64 +501,186 @@ const CreateCustomEventForm = ({ onClose, onSuccess }) => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2 text-gray-700">Select Preset Events (Optional)</label>
-              <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2 bg-gray-50">
-                {Object.entries(presetEvents).map(([eventType, eventData]) => (
-                  <label key={eventType} className="flex items-start space-x-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedPresetEvents.includes(eventType)}
-                      onChange={() => handlePresetEventToggle(eventType)}
-                      className="mt-1 rounded"
-                    />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-900">{eventData.name}</div>
-                      <div className="text-xs text-gray-600">{eventData.description}</div>
-                      <div className="text-xs text-purple-600 mt-1">
-                        Conditions: {eventData.conditions.map(c => `${c.object} ${c.operator} ${c.threshold}`).join(', ')}
-                      </div>
-                    </div>
-                  </label>
-                ))}
+              <label className="block text-sm font-medium mb-2 text-gray-700">
+                Tags (Optional)
+              </label>
+              <div className="w-full px-2 py-2 border border-gray-300 rounded-md focus-within:ring-2 focus-within:ring-purple-500 bg-white">
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((t, idx) => (
+                    <span
+                      key={`${t}-${idx}`}
+                      className="inline-flex items-center gap-1 bg-purple-50 text-purple-800 px-2 py-1 rounded-full border border-purple-200 text-xs"
+                    >
+                      {t}
+                      <button
+                        type="button"
+                        className="text-purple-600 hover:text-purple-800"
+                        onClick={() =>
+                          setTags(tags.filter((_, i) => i !== idx))
+                        }
+                        aria-label="Remove tag"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                  <input
+                    type="text"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === ",") {
+                        e.preventDefault();
+                        const raw = tagInput.trim().replace(/,$/, "");
+                        if (raw) {
+                          const newTags = raw
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter(Boolean);
+                          const merged = [...tags, ...newTags]
+                            .map((t) => t.toLowerCase())
+                            .filter((t, i, arr) => arr.indexOf(t) === i);
+                          setTags(merged);
+                        }
+                        setTagInput("");
+                      }
+                    }}
+                    onBlur={() => {
+                      const raw = tagInput.trim().replace(/,$/, "");
+                      if (raw) {
+                        const newTags = raw
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean);
+                        const merged = [...tags, ...newTags]
+                          .map((t) => t.toLowerCase())
+                          .filter((t, i, arr) => arr.indexOf(t) === i);
+                        setTags(merged);
+                      }
+                      setTagInput("");
+                    }}
+                    placeholder="Type and press Enter to add"
+                    className="flex-1 min-w-[140px] px-2 py-1 outline-none text-gray-900"
+                  />
+                </div>
               </div>
-              {selectedPresetEvents.length > 0 && (
-                <div className="mt-2 text-sm text-green-600">
-                  ✓ {selectedPresetEvents.length} preset event(s) selected - conditions added automatically
+              {tags.length > 0 && (
+                <div className="mt-1 text-xs text-gray-500">
+                  {tags.length} tag(s) added
                 </div>
               )}
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2 text-gray-700">Add Conditions</label>
+              <label className="block text-sm font-medium mb-2 text-gray-700">
+                Select Preset Events (Optional)
+              </label>
+              <div className="max-h-40 w-150 overflow-y-auto border border-gray-300 rounded-md p-2 bg-gray-50">
+                {Object.entries(presetEvents)
+                  .filter(([_, eventData]) => {
+                    if (!tags || tags.length === 0) return true;
+                    const presetTags = (eventData.tags || []).map((t) =>
+                      String(t).toLowerCase()
+                    );
+                    return tags.some((t) =>
+                      presetTags.includes(String(t).toLowerCase())
+                    );
+                  })
+                  .map(([eventType, eventData]) => (
+                    <label
+                      key={eventType}
+                      className="flex items-start space-x-2 p-2 hover:bg-gray-100 rounded cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedPresetEvents.includes(eventType)}
+                        onChange={() => handlePresetEventToggle(eventType)}
+                        className="mt-1 rounded"
+                      />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-900">
+                          {eventData.name}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          {eventData.description}
+                        </div>
+                        {eventData.tags && eventData.tags.length > 0 && (
+                          <div className="text-xs text-purple-600 mt-1">
+                            Tags: {eventData.tags.join(", ")}
+                          </div>
+                        )}
+                        <div className="text-xs text-purple-600 mt-1">
+                          Conditions:{" "}
+                          {eventData.conditions
+                            .map(
+                              (c) => `${c.object} ${c.operator} ${c.threshold}`
+                            )
+                            .join(", ")}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+              </div>
+              {selectedPresetEvents.length > 0 && (
+                <div className="mt-2 text-sm text-green-600">
+                  ✓ {selectedPresetEvents.length} preset event(s) selected -
+                  conditions added automatically
+                </div>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2 text-gray-700">
+                Add Conditions
+              </label>
               <div className="flex gap-2 mb-2">
                 <select
                   value={currentCondition.object}
-                  onChange={(e) => setCurrentCondition({...currentCondition, object: e.target.value})}
+                  onChange={(e) =>
+                    setCurrentCondition({
+                      ...currentCondition,
+                      object: e.target.value,
+                    })
+                  }
                   className="px-3 py-2 border border-gray-300 rounded-md text-gray-900"
                 >
-                  {OBJECT_OPTIONS.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
+                  {OBJECT_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
                   ))}
                 </select>
-                
+
                 <select
                   value={currentCondition.operator}
-                  onChange={(e) => setCurrentCondition({...currentCondition, operator: e.target.value})}
+                  onChange={(e) =>
+                    setCurrentCondition({
+                      ...currentCondition,
+                      operator: e.target.value,
+                    })
+                  }
                   className="px-3 py-2 border border-gray-300 rounded-md text-gray-900"
                 >
-                  {OPERATORS.map(op => (
-                    <option key={op} value={op}>{op}</option>
+                  {OPERATORS.map((op) => (
+                    <option key={op} value={op}>
+                      {op}
+                    </option>
                   ))}
                 </select>
-                
+
                 <input
                   type="number"
                   value={currentCondition.threshold}
-                  onChange={(e) => setCurrentCondition({...currentCondition, threshold: parseInt(e.target.value) || 0})}
+                  onChange={(e) =>
+                    setCurrentCondition({
+                      ...currentCondition,
+                      threshold: parseInt(e.target.value) || 0,
+                    })
+                  }
                   className="px-3 py-2 border border-gray-300 rounded-md w-20 text-gray-900"
                   min="0"
                 />
-                
+
                 <button
                   onClick={addCondition}
                   className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600"
@@ -427,9 +691,15 @@ const CreateCustomEventForm = ({ onClose, onSuccess }) => {
 
               <div className="max-h-32 max-w-165 overflow-y-auto border border-gray-200 rounded-md bg-gray-50 p-2">
                 <div className="flex flex-wrap gap-2">
-                  {conditions.map(condition => (
-                    <div key={condition.id} className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-gray-300 text-sm">
-                      <span className="text-gray-700">{condition.object} {condition.operator} {condition.threshold}</span>
+                  {conditions.map((condition) => (
+                    <div
+                      key={condition.id}
+                      className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-gray-300 text-sm"
+                    >
+                      <span className="text-gray-700">
+                        {condition.object} {condition.operator}{" "}
+                        {condition.threshold}
+                      </span>
                       <button
                         onClick={() => removeCondition(condition.id)}
                         className="text-red-500 hover:text-red-700 ml-1 text-xs font-bold"
@@ -440,7 +710,9 @@ const CreateCustomEventForm = ({ onClose, onSuccess }) => {
                     </div>
                   ))}
                   {conditions.length === 0 && (
-                    <span className="text-gray-500 text-sm italic">No conditions added yet</span>
+                    <span className="text-gray-500 text-sm italic">
+                      No conditions added yet
+                    </span>
                   )}
                 </div>
               </div>
@@ -466,10 +738,12 @@ const CreateCustomEventForm = ({ onClose, onSuccess }) => {
 
         {step === 2 && (
           <div>
-            <h3 className="text-lg font-medium mb-4 text-gray-700">Select Cameras for "{eventName}"</h3>
-            
+            <h3 className="text-lg font-medium mb-4 text-gray-700">
+              Select Cameras for "{eventName}"
+            </h3>
+
             <div className="space-y-2 mb-4">
-              {CAMERA_LIST.map(camera => (
+              {CAMERA_LIST.map((camera) => (
                 <label key={camera.id} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
@@ -502,17 +776,23 @@ const CreateCustomEventForm = ({ onClose, onSuccess }) => {
 
         {step === 3 && (
           <div>
-            <h3 className="text-lg font-medium mb-4 text-gray-700">Configure Event Scheduling (Optional)</h3>
-            
+            <h3 className="text-lg font-medium mb-4 text-gray-700">
+              Configure Event Scheduling (Optional)
+            </h3>
+
             <div className="mb-6">
               <label className="flex items-center space-x-2 mb-4">
                 <input
                   type="checkbox"
                   checked={scheduling.isEnabled}
-                  onChange={(e) => updateScheduling('isEnabled', e.target.checked)}
+                  onChange={(e) =>
+                    updateScheduling("isEnabled", e.target.checked)
+                  }
                   className="rounded"
                 />
-                <span className="text-gray-900 font-medium">Enable scheduling for this event</span>
+                <span className="text-gray-900 font-medium">
+                  Enable scheduling for this event
+                </span>
               </label>
             </div>
 
@@ -520,23 +800,41 @@ const CreateCustomEventForm = ({ onClose, onSuccess }) => {
               <div className="space-y-6">
                 {/* Date Range */}
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Date Range (Optional)</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Date Range (Optional)
+                  </label>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Start Date</label>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        Start Date
+                      </label>
                       <input
                         type="date"
                         value={scheduling.dateRange.startDate}
-                        onChange={(e) => updateSchedulingNested('dateRange', 'startDate', e.target.value)}
+                        onChange={(e) =>
+                          updateSchedulingNested(
+                            "dateRange",
+                            "startDate",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">End Date</label>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        End Date
+                      </label>
                       <input
                         type="date"
                         value={scheduling.dateRange.endDate}
-                        onChange={(e) => updateSchedulingNested('dateRange', 'endDate', e.target.value)}
+                        onChange={(e) =>
+                          updateSchedulingNested(
+                            "dateRange",
+                            "endDate",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
                       />
                     </div>
@@ -545,17 +843,32 @@ const CreateCustomEventForm = ({ onClose, onSuccess }) => {
 
                 {/* Specific Days */}
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Specific Days (Optional)</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Specific Days (Optional)
+                  </label>
                   <div className="grid grid-cols-7 gap-2">
-                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
-                      <label key={day} className="flex flex-col items-center space-y-1">
+                    {[
+                      "Monday",
+                      "Tuesday",
+                      "Wednesday",
+                      "Thursday",
+                      "Friday",
+                      "Saturday",
+                      "Sunday",
+                    ].map((day, index) => (
+                      <label
+                        key={day}
+                        className="flex flex-col items-center space-y-1"
+                      >
                         <input
                           type="checkbox"
                           checked={scheduling.specificDays.includes(day)}
                           onChange={() => toggleSpecificDay(day)}
                           className="rounded"
                         />
-                        <span className="text-xs text-gray-700">{day.substring(0, 3)}</span>
+                        <span className="text-xs text-gray-700">
+                          {day.substring(0, 3)}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -563,23 +876,41 @@ const CreateCustomEventForm = ({ onClose, onSuccess }) => {
 
                 {/* Time Range */}
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Time Range (Optional)</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Time Range (Optional)
+                  </label>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Start Time</label>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        Start Time
+                      </label>
                       <input
                         type="time"
                         value={scheduling.timeRange.startTime}
-                        onChange={(e) => updateSchedulingNested('timeRange', 'startTime', e.target.value)}
+                        onChange={(e) =>
+                          updateSchedulingNested(
+                            "timeRange",
+                            "startTime",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">End Time</label>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        End Time
+                      </label>
                       <input
                         type="time"
                         value={scheduling.timeRange.endTime}
-                        onChange={(e) => updateSchedulingNested('timeRange', 'endTime', e.target.value)}
+                        onChange={(e) =>
+                          updateSchedulingNested(
+                            "timeRange",
+                            "endTime",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
                       />
                     </div>
@@ -588,22 +919,38 @@ const CreateCustomEventForm = ({ onClose, onSuccess }) => {
 
                 {/* Schedule Summary */}
                 <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                  <h4 className="text-sm font-medium text-purple-800 mb-2">Schedule Summary</h4>
+                  <h4 className="text-sm font-medium text-purple-800 mb-2">
+                    Schedule Summary
+                  </h4>
                   <div className="text-sm text-purple-700">
-                    {scheduling.dateRange.startDate || scheduling.dateRange.endDate ? (
-                      <p>Date Range: {scheduling.dateRange.startDate || 'No start date'} to {scheduling.dateRange.endDate || 'No end date'}</p>
+                    {scheduling.dateRange.startDate ||
+                    scheduling.dateRange.endDate ? (
+                      <p>
+                        Date Range:{" "}
+                        {scheduling.dateRange.startDate || "No start date"} to{" "}
+                        {scheduling.dateRange.endDate || "No end date"}
+                      </p>
                     ) : null}
                     {scheduling.specificDays.length > 0 && (
-                      <p>Days: {scheduling.specificDays.join(', ')}</p>
+                      <p>Days: {scheduling.specificDays.join(", ")}</p>
                     )}
-                    {scheduling.timeRange.startTime || scheduling.timeRange.endTime ? (
-                      <p>Time: {scheduling.timeRange.startTime || 'No start time'} to {scheduling.timeRange.endTime || 'No end time'}</p>
+                    {scheduling.timeRange.startTime ||
+                    scheduling.timeRange.endTime ? (
+                      <p>
+                        Time:{" "}
+                        {scheduling.timeRange.startTime || "No start time"} to{" "}
+                        {scheduling.timeRange.endTime || "No end time"}
+                      </p>
                     ) : null}
-                    {!scheduling.dateRange.startDate && !scheduling.dateRange.endDate && 
-                     scheduling.specificDays.length === 0 && 
-                     !scheduling.timeRange.startTime && !scheduling.timeRange.endTime && (
-                      <p className="text-gray-500">No specific scheduling constraints set</p>
-                    )}
+                    {!scheduling.dateRange.startDate &&
+                      !scheduling.dateRange.endDate &&
+                      scheduling.specificDays.length === 0 &&
+                      !scheduling.timeRange.startTime &&
+                      !scheduling.timeRange.endTime && (
+                        <p className="text-gray-500">
+                          No specific scheduling constraints set
+                        </p>
+                      )}
                   </div>
                 </div>
               </div>
@@ -632,76 +979,95 @@ const CreateCustomEventForm = ({ onClose, onSuccess }) => {
 
 // Edit Custom Event Form Component
 const EditCustomEventForm = ({ event, onClose, onSuccess }) => {
-  const { updateCustomEvent } = useCustomEvents();
+  const { updateCustomEvent, customEvents } = useCustomEvents();
   const [eventName, setEventName] = useState(event.name);
-  const [description, setDescription] = useState(event.description || '');
-  const [selectedPresetEvents, setSelectedPresetEvents] = useState(event.presetEvents || []);
+  const [description, setDescription] = useState(event.description || "");
+  const [tags, setTags] = useState(event.tags || []);
+  const [tagInput, setTagInput] = useState("");
+  const [selectedPresetEvents, setSelectedPresetEvents] = useState(
+    event.presetEvents || []
+  );
   const [conditions, setConditions] = useState([...event.conditions]);
   const [currentCondition, setCurrentCondition] = useState({
-    object: 'Person',
-    operator: '>',
-    threshold: 1
+    object: "Person",
+    operator: ">",
+    threshold: 1,
   });
   const [step, setStep] = useState(1);
   const [selectedCameras, setSelectedCameras] = useState([...event.cameras]);
   const [scheduling, setScheduling] = useState({
     dateRange: {
-      startDate: event.scheduling?.dateRange?.startDate || '',
-      endDate: event.scheduling?.dateRange?.endDate || ''
+      startDate: event.scheduling?.dateRange?.startDate || "",
+      endDate: event.scheduling?.dateRange?.endDate || "",
     },
     specificDays: event.scheduling?.specificDays || [],
     timeRange: {
-      startTime: event.scheduling?.timeRange?.startTime || '',
-      endTime: event.scheduling?.timeRange?.endTime || ''
+      startTime: event.scheduling?.timeRange?.startTime || "",
+      endTime: event.scheduling?.timeRange?.endTime || "",
     },
-    isEnabled: !!event.scheduling
+    isEnabled: !!event.scheduling,
   });
 
-  // Get all preset events for dropdown
-  const presetEvents = getAllDefaultTriggers();
+  // Get default presets and merge user custom events as selectable presets
+  const defaultPresets = getAllDefaultTriggers();
+  const customPresetMap = Object.fromEntries(
+    (customEvents || []).map((e) => [
+      `custom_${e.id}`,
+      {
+        name: e.name,
+        description: e.description || "User-defined custom event",
+        conditions: e.conditions || [],
+        tags: e.tags || [],
+      },
+    ])
+  );
+  const presetEvents = { ...defaultPresets, ...customPresetMap };
 
   const CAMERA_LIST = [
-    { id: 1, name: 'Camera 1' },
-    { id: 2, name: 'Camera 2' },
-    { id: 3, name: 'Camera 3' },
+    { id: 1, name: "Camera 1" },
+    { id: 2, name: "Camera 2" },
+    { id: 3, name: "Camera 3" },
   ];
 
   // Handle preset event selection
   const handlePresetEventToggle = (eventType) => {
-    setSelectedPresetEvents(prev => {
+    setSelectedPresetEvents((prev) => {
       if (prev.includes(eventType)) {
         // Remove preset event and its conditions
         const presetEvent = presetEvents[eventType];
-        const newConditions = conditions.filter(condition => 
-          !presetEvent.conditions.some(presetCondition => 
-            presetCondition.object === condition.object &&
-            presetCondition.operator === condition.operator &&
-            presetCondition.threshold === condition.threshold
-          )
+        const newConditions = conditions.filter(
+          (condition) =>
+            !presetEvent.conditions.some(
+              (presetCondition) =>
+                presetCondition.object === condition.object &&
+                presetCondition.operator === condition.operator &&
+                presetCondition.threshold === condition.threshold
+            )
         );
         setConditions(newConditions);
-        return prev.filter(type => type !== eventType);
+        return prev.filter((type) => type !== eventType);
       } else {
         // Add preset event and its conditions
         const presetEvent = presetEvents[eventType];
         const newConditions = [...conditions];
-        
-        presetEvent.conditions.forEach(presetCondition => {
+
+        presetEvent.conditions.forEach((presetCondition) => {
           // Check if condition already exists
-          const exists = newConditions.some(condition => 
-            condition.object === presetCondition.object &&
-            condition.operator === presetCondition.operator &&
-            condition.threshold === presetCondition.threshold
+          const exists = newConditions.some(
+            (condition) =>
+              condition.object === presetCondition.object &&
+              condition.operator === presetCondition.operator &&
+              condition.threshold === presetCondition.threshold
           );
-          
+
           if (!exists) {
             newConditions.push({
               ...presetCondition,
-              id: Date.now() + Math.random() // Unique ID
+              id: Date.now() + Math.random(), // Unique ID
             });
           }
         });
-        
+
         setConditions(newConditions);
         return [...prev, eventType];
       }
@@ -711,45 +1077,45 @@ const EditCustomEventForm = ({ event, onClose, onSuccess }) => {
   const addCondition = () => {
     if (currentCondition.object && currentCondition.threshold >= 0) {
       setConditions([...conditions, { ...currentCondition, id: Date.now() }]);
-      setCurrentCondition({ object: 'Person', operator: '>', threshold: 1 });
+      setCurrentCondition({ object: "Person", operator: ">", threshold: 1 });
     }
   };
 
   const removeCondition = (id) => {
-    setConditions(conditions.filter(c => c.id !== id));
+    setConditions(conditions.filter((c) => c.id !== id));
   };
 
   const toggleCamera = (cameraId) => {
-    setSelectedCameras(prev => 
-      prev.includes(cameraId) 
-        ? prev.filter(id => id !== cameraId)
+    setSelectedCameras((prev) =>
+      prev.includes(cameraId)
+        ? prev.filter((id) => id !== cameraId)
         : [...prev, cameraId]
     );
   };
 
   const toggleSpecificDay = (day) => {
-    setScheduling(prev => ({
+    setScheduling((prev) => ({
       ...prev,
       specificDays: prev.specificDays.includes(day)
-        ? prev.specificDays.filter(d => d !== day)
-        : [...prev.specificDays, day]
+        ? prev.specificDays.filter((d) => d !== day)
+        : [...prev.specificDays, day],
     }));
   };
 
   const updateScheduling = (field, value) => {
-    setScheduling(prev => ({
+    setScheduling((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const updateSchedulingNested = (parentField, childField, value) => {
-    setScheduling(prev => ({
+    setScheduling((prev) => ({
       ...prev,
       [parentField]: {
         ...prev[parentField],
-        [childField]: value
-      }
+        [childField]: value,
+      },
     }));
   };
 
@@ -766,18 +1132,43 @@ const EditCustomEventForm = ({ event, onClose, onSuccess }) => {
       updateCustomEvent(event.id, {
         name: eventName,
         description: description.trim() || null,
+        tags,
         presetEvents: selectedPresetEvents,
         conditions,
         cameras: selectedCameras,
-        scheduling: scheduling.isEnabled ? scheduling : null
+        scheduling: scheduling.isEnabled ? scheduling : null,
       });
       onSuccess();
     }
   };
 
   return (
-    <div style={{ position: 'fixed', left: 65, top: 0, width: 'calc(100vw - 65px)', height: '100vh', zIndex: 99999, background: 'rgba(0,0,0,0.38)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px #9164d966', padding: 32, minWidth: 600, maxWidth: '80vw', maxHeight: '90vh', overflowY: 'auto' }}>
+    <div
+      style={{
+        position: "fixed",
+        left: 65,
+        top: 0,
+        width: "calc(100vw - 65px)",
+        height: "100vh",
+        zIndex: 99999,
+        background: "rgba(0,0,0,0.38)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          boxShadow: "0 4px 24px #9164d966",
+          padding: 32,
+          minWidth: 600,
+          maxWidth: "80vw",
+          maxHeight: "90vh",
+          overflowY: "auto",
+        }}
+      >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold">Edit Custom Event</h2>
           <button
@@ -791,7 +1182,9 @@ const EditCustomEventForm = ({ event, onClose, onSuccess }) => {
         {step === 1 && (
           <div>
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2 text-gray-700">Event Name</label>
+              <label className="block text-sm font-medium mb-2 text-gray-700">
+                Event Name
+              </label>
               <input
                 type="text"
                 value={eventName}
@@ -802,7 +1195,9 @@ const EditCustomEventForm = ({ event, onClose, onSuccess }) => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2 text-gray-700">Description (Optional)</label>
+              <label className="block text-sm font-medium mb-2 text-gray-700">
+                Description (Optional)
+              </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -813,64 +1208,186 @@ const EditCustomEventForm = ({ event, onClose, onSuccess }) => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2 text-gray-700">Select Preset Events (Optional)</label>
-              <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2 bg-gray-50">
-                {Object.entries(presetEvents).map(([eventType, eventData]) => (
-                  <label key={eventType} className="flex items-start space-x-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedPresetEvents.includes(eventType)}
-                      onChange={() => handlePresetEventToggle(eventType)}
-                      className="mt-1 rounded"
-                    />
-                    <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-900">{eventData.name}</div>
-                      <div className="text-xs text-gray-600">{eventData.description}</div>
-                      <div className="text-xs text-purple-600 mt-1">
-                        Conditions: {eventData.conditions.map(c => `${c.object} ${c.operator} ${c.threshold}`).join(', ')}
-                      </div>
-                    </div>
-                  </label>
-                ))}
+              <label className="block text-sm font-medium mb-2 text-gray-700">
+                Tags (Optional)
+              </label>
+              <div className="w-full px-2 py-2 border border-gray-300 rounded-md focus-within:ring-2 focus-within:ring-purple-500 bg-white">
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((t, idx) => (
+                    <span
+                      key={`${t}-${idx}`}
+                      className="inline-flex items-center gap-1 bg-purple-50 text-purple-800 px-2 py-1 rounded-full border border-purple-200 text-xs"
+                    >
+                      {t}
+                      <button
+                        type="button"
+                        className="text-purple-600 hover:text-purple-800"
+                        onClick={() =>
+                          setTags(tags.filter((_, i) => i !== idx))
+                        }
+                        aria-label="Remove tag"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                  <input
+                    type="text"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === ",") {
+                        e.preventDefault();
+                        const raw = tagInput.trim().replace(/,$/, "");
+                        if (raw) {
+                          const newTags = raw
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter(Boolean);
+                          const merged = [...tags, ...newTags]
+                            .map((t) => t.toLowerCase())
+                            .filter((t, i, arr) => arr.indexOf(t) === i);
+                          setTags(merged);
+                        }
+                        setTagInput("");
+                      }
+                    }}
+                    onBlur={() => {
+                      const raw = tagInput.trim().replace(/,$/, "");
+                      if (raw) {
+                        const newTags = raw
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean);
+                        const merged = [...tags, ...newTags]
+                          .map((t) => t.toLowerCase())
+                          .filter((t, i, arr) => arr.indexOf(t) === i);
+                        setTags(merged);
+                      }
+                      setTagInput("");
+                    }}
+                    placeholder="Type and press Enter to add"
+                    className="flex-1 min-w-[140px] px-2 py-1 outline-none text-gray-900"
+                  />
+                </div>
               </div>
-              {selectedPresetEvents.length > 0 && (
-                <div className="mt-2 text-sm text-green-600">
-                  ✓ {selectedPresetEvents.length} preset event(s) selected - conditions added automatically
+              {tags.length > 0 && (
+                <div className="mt-1 text-xs text-gray-500">
+                  {tags.length} tag(s) added
                 </div>
               )}
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2 text-gray-700">Edit Conditions</label>
+              <label className="block text-sm font-medium mb-2 text-gray-700">
+                Select Preset Events (Optional)
+              </label>
+              <div className="max-h-40 w-150 overflow-y-auto border border-gray-300 rounded-md p-2 bg-gray-50">
+                {Object.entries(presetEvents)
+                  .filter(([_, eventData]) => {
+                    if (!tags || tags.length === 0) return true;
+                    const presetTags = (eventData.tags || []).map((t) =>
+                      String(t).toLowerCase()
+                    );
+                    return tags.some((t) =>
+                      presetTags.includes(String(t).toLowerCase())
+                    );
+                  })
+                  .map(([eventType, eventData]) => (
+                    <label
+                      key={eventType}
+                      className="flex items-start space-x-2 p-2 hover:bg-gray-100 rounded cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedPresetEvents.includes(eventType)}
+                        onChange={() => handlePresetEventToggle(eventType)}
+                        className="mt-1 rounded"
+                      />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-900">
+                          {eventData.name}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          {eventData.description}
+                        </div>
+                        {eventData.tags && eventData.tags.length > 0 && (
+                          <div className="text-xs text-purple-600 mt-1">
+                            Tags: {eventData.tags.join(", ")}
+                          </div>
+                        )}
+                        <div className="text-xs text-purple-600 mt-1">
+                          Conditions:{" "}
+                          {eventData.conditions
+                            .map(
+                              (c) => `${c.object} ${c.operator} ${c.threshold}`
+                            )
+                            .join(", ")}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+              </div>
+              {selectedPresetEvents.length > 0 && (
+                <div className="mt-2 text-sm text-green-600">
+                  ✓ {selectedPresetEvents.length} preset event(s) selected -
+                  conditions added automatically
+                </div>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2 text-gray-700">
+                Edit Conditions
+              </label>
               <div className="flex gap-2 mb-2">
                 <select
                   value={currentCondition.object}
-                  onChange={(e) => setCurrentCondition({...currentCondition, object: e.target.value})}
+                  onChange={(e) =>
+                    setCurrentCondition({
+                      ...currentCondition,
+                      object: e.target.value,
+                    })
+                  }
                   className="px-3 py-2 border border-gray-300 rounded-md text-gray-900"
                 >
-                  {OBJECT_OPTIONS.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
+                  {OBJECT_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
                   ))}
                 </select>
-                
+
                 <select
                   value={currentCondition.operator}
-                  onChange={(e) => setCurrentCondition({...currentCondition, operator: e.target.value})}
+                  onChange={(e) =>
+                    setCurrentCondition({
+                      ...currentCondition,
+                      operator: e.target.value,
+                    })
+                  }
                   className="px-3 py-2 border border-gray-300 rounded-md text-gray-900"
                 >
-                  {OPERATORS.map(op => (
-                    <option key={op} value={op}>{op}</option>
+                  {OPERATORS.map((op) => (
+                    <option key={op} value={op}>
+                      {op}
+                    </option>
                   ))}
                 </select>
-                
+
                 <input
                   type="number"
                   value={currentCondition.threshold}
-                  onChange={(e) => setCurrentCondition({...currentCondition, threshold: parseInt(e.target.value) || 0})}
+                  onChange={(e) =>
+                    setCurrentCondition({
+                      ...currentCondition,
+                      threshold: parseInt(e.target.value) || 0,
+                    })
+                  }
                   className="px-3 py-2 border border-gray-300 rounded-md w-20 text-gray-900"
                   min="0"
                 />
-                
+
                 <button
                   onClick={addCondition}
                   className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600"
@@ -881,9 +1398,15 @@ const EditCustomEventForm = ({ event, onClose, onSuccess }) => {
 
               <div className="max-h-32 max-w-165 overflow-y-auto border border-gray-200 rounded-md bg-gray-50 p-2">
                 <div className="flex flex-wrap gap-2">
-                  {conditions.map(condition => (
-                    <div key={condition.id} className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-gray-300 text-sm">
-                      <span className="text-gray-700">{condition.object} {condition.operator} {condition.threshold}</span>
+                  {conditions.map((condition) => (
+                    <div
+                      key={condition.id}
+                      className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-gray-300 text-sm"
+                    >
+                      <span className="text-gray-700">
+                        {condition.object} {condition.operator}{" "}
+                        {condition.threshold}
+                      </span>
                       <button
                         onClick={() => removeCondition(condition.id)}
                         className="text-red-500 hover:text-red-700 ml-1 text-xs font-bold"
@@ -894,7 +1417,9 @@ const EditCustomEventForm = ({ event, onClose, onSuccess }) => {
                     </div>
                   ))}
                   {conditions.length === 0 && (
-                    <span className="text-gray-500 text-sm italic">No conditions added yet</span>
+                    <span className="text-gray-500 text-sm italic">
+                      No conditions added yet
+                    </span>
                   )}
                 </div>
               </div>
@@ -920,10 +1445,12 @@ const EditCustomEventForm = ({ event, onClose, onSuccess }) => {
 
         {step === 2 && (
           <div>
-            <h3 className="text-lg font-medium mb-4 text-gray-700">Update Cameras for "{eventName}"</h3>
-            
+            <h3 className="text-lg font-medium mb-4 text-gray-700">
+              Update Cameras for "{eventName}"
+            </h3>
+
             <div className="space-y-2 mb-4">
-              {CAMERA_LIST.map(camera => (
+              {CAMERA_LIST.map((camera) => (
                 <label key={camera.id} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
@@ -956,17 +1483,23 @@ const EditCustomEventForm = ({ event, onClose, onSuccess }) => {
 
         {step === 3 && (
           <div>
-            <h3 className="text-lg font-medium mb-4 text-gray-700">Configure Event Scheduling (Optional)</h3>
-            
+            <h3 className="text-lg font-medium mb-4 text-gray-700">
+              Configure Event Scheduling (Optional)
+            </h3>
+
             <div className="mb-6">
               <label className="flex items-center space-x-2 mb-4">
                 <input
                   type="checkbox"
                   checked={scheduling.isEnabled}
-                  onChange={(e) => updateScheduling('isEnabled', e.target.checked)}
+                  onChange={(e) =>
+                    updateScheduling("isEnabled", e.target.checked)
+                  }
                   className="rounded"
                 />
-                <span className="text-gray-900 font-medium">Enable scheduling for this event</span>
+                <span className="text-gray-900 font-medium">
+                  Enable scheduling for this event
+                </span>
               </label>
             </div>
 
@@ -974,23 +1507,41 @@ const EditCustomEventForm = ({ event, onClose, onSuccess }) => {
               <div className="space-y-6">
                 {/* Date Range */}
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Date Range (Optional)</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Date Range (Optional)
+                  </label>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Start Date</label>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        Start Date
+                      </label>
                       <input
                         type="date"
                         value={scheduling.dateRange.startDate}
-                        onChange={(e) => updateSchedulingNested('dateRange', 'startDate', e.target.value)}
+                        onChange={(e) =>
+                          updateSchedulingNested(
+                            "dateRange",
+                            "startDate",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">End Date</label>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        End Date
+                      </label>
                       <input
                         type="date"
                         value={scheduling.dateRange.endDate}
-                        onChange={(e) => updateSchedulingNested('dateRange', 'endDate', e.target.value)}
+                        onChange={(e) =>
+                          updateSchedulingNested(
+                            "dateRange",
+                            "endDate",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
                       />
                     </div>
@@ -999,17 +1550,32 @@ const EditCustomEventForm = ({ event, onClose, onSuccess }) => {
 
                 {/* Specific Days */}
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Specific Days (Optional)</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Specific Days (Optional)
+                  </label>
                   <div className="grid grid-cols-7 gap-2">
-                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
-                      <label key={day} className="flex flex-col items-center space-y-1">
+                    {[
+                      "Monday",
+                      "Tuesday",
+                      "Wednesday",
+                      "Thursday",
+                      "Friday",
+                      "Saturday",
+                      "Sunday",
+                    ].map((day, index) => (
+                      <label
+                        key={day}
+                        className="flex flex-col items-center space-y-1"
+                      >
                         <input
                           type="checkbox"
                           checked={scheduling.specificDays.includes(day)}
                           onChange={() => toggleSpecificDay(day)}
                           className="rounded"
                         />
-                        <span className="text-xs text-gray-700">{day.substring(0, 3)}</span>
+                        <span className="text-xs text-gray-700">
+                          {day.substring(0, 3)}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -1017,23 +1583,41 @@ const EditCustomEventForm = ({ event, onClose, onSuccess }) => {
 
                 {/* Time Range */}
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">Time Range (Optional)</label>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Time Range (Optional)
+                  </label>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Start Time</label>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        Start Time
+                      </label>
                       <input
                         type="time"
                         value={scheduling.timeRange.startTime}
-                        onChange={(e) => updateSchedulingNested('timeRange', 'startTime', e.target.value)}
+                        onChange={(e) =>
+                          updateSchedulingNested(
+                            "timeRange",
+                            "startTime",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">End Time</label>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        End Time
+                      </label>
                       <input
                         type="time"
                         value={scheduling.timeRange.endTime}
-                        onChange={(e) => updateSchedulingNested('timeRange', 'endTime', e.target.value)}
+                        onChange={(e) =>
+                          updateSchedulingNested(
+                            "timeRange",
+                            "endTime",
+                            e.target.value
+                          )
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900"
                       />
                     </div>
@@ -1042,22 +1626,38 @@ const EditCustomEventForm = ({ event, onClose, onSuccess }) => {
 
                 {/* Schedule Summary */}
                 <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                  <h4 className="text-sm font-medium text-purple-800 mb-2">Schedule Summary</h4>
+                  <h4 className="text-sm font-medium text-purple-800 mb-2">
+                    Schedule Summary
+                  </h4>
                   <div className="text-sm text-purple-700">
-                    {scheduling.dateRange.startDate || scheduling.dateRange.endDate ? (
-                      <p>Date Range: {scheduling.dateRange.startDate || 'No start date'} to {scheduling.dateRange.endDate || 'No end date'}</p>
+                    {scheduling.dateRange.startDate ||
+                    scheduling.dateRange.endDate ? (
+                      <p>
+                        Date Range:{" "}
+                        {scheduling.dateRange.startDate || "No start date"} to{" "}
+                        {scheduling.dateRange.endDate || "No end date"}
+                      </p>
                     ) : null}
                     {scheduling.specificDays.length > 0 && (
-                      <p>Days: {scheduling.specificDays.join(', ')}</p>
+                      <p>Days: {scheduling.specificDays.join(", ")}</p>
                     )}
-                    {scheduling.timeRange.startTime || scheduling.timeRange.endTime ? (
-                      <p>Time: {scheduling.timeRange.startTime || 'No start time'} to {scheduling.timeRange.endTime || 'No end time'}</p>
+                    {scheduling.timeRange.startTime ||
+                    scheduling.timeRange.endTime ? (
+                      <p>
+                        Time:{" "}
+                        {scheduling.timeRange.startTime || "No start time"} to{" "}
+                        {scheduling.timeRange.endTime || "No end time"}
+                      </p>
                     ) : null}
-                    {!scheduling.dateRange.startDate && !scheduling.dateRange.endDate && 
-                     scheduling.specificDays.length === 0 && 
-                     !scheduling.timeRange.startTime && !scheduling.timeRange.endTime && (
-                      <p className="text-gray-500">No specific scheduling constraints set</p>
-                    )}
+                    {!scheduling.dateRange.startDate &&
+                      !scheduling.dateRange.endDate &&
+                      scheduling.specificDays.length === 0 &&
+                      !scheduling.timeRange.startTime &&
+                      !scheduling.timeRange.endTime && (
+                        <p className="text-gray-500">
+                          No specific scheduling constraints set
+                        </p>
+                      )}
                   </div>
                 </div>
               </div>

@@ -248,8 +248,8 @@ const EventReportPage = ({ eventType }) => {
         </div>
       )}
       
-      <AnalyticsTable />
-      <div style={{marginTop:18, marginBottom:6}}>
+      {/* <AnalyticsTable /> */}
+      {/* <div style={{marginTop:18, marginBottom:6}}>
         <h5 className="text-[15px] font-medium mb-2 text-[#b17ef3]">Payload preview (all cameras with any selections)</h5>
         <pre className="bg-[#f4f3fa] text-sm rounded px-4 py-3 border border-[#ece5fa] text-[#402d57]">
           {JSON.stringify(livePayload, null, 2)}
@@ -260,7 +260,7 @@ const EventReportPage = ({ eventType }) => {
         <pre className="bg-[#f4f3fa] text-sm rounded px-4 py-3 border border-[#e1defa] text-[#402d57]">
           {JSON.stringify(payloadList, null, 2)}
         </pre>
-      </div>
+      </div> */}
       {popupOpen && (
         <div style={{ position: 'fixed', left: 65, top: 0, width: 'calc(100vw - 65px)', height: '100vh', zIndex: 99999, background: 'rgba(0,0,0,0.38)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ display: 'flex', minWidth: 800, minHeight: 440, width: '64vw', background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px #9164d966', overflow: 'hidden' }}>

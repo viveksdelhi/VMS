@@ -65,14 +65,14 @@ const CustomEventReportPage = ({ customEventId }) => {
   const handleSubmit = () => {
     const payload = Object.entries(cameraSelections)
       .filter(([_, arr]) => arr.length)
-      .map(([id, arr]) => ({ cameraId: Number(id), eventselect: arr }));
+      .map(([id, arr]) => ({ cameraId: Number(id), eventselect: arr, tags: customEvent.tags || [] }));
     setPayloadList(payload);
     setPopupOpen(false);
   };
 
   const livePayload = Object.entries(cameraSelections)
     .filter(([_, arr]) => arr.length)
-    .map(([id, arr]) => ({ cameraId: Number(id), eventselect: arr }));
+    .map(([id, arr]) => ({ cameraId: Number(id), eventselect: arr, tags: customEvent.tags || [] }));
 
   // The events for camera in focus
   const selectedEvents = cameraSelections[activeCamera] || [];
@@ -109,6 +109,15 @@ const CustomEventReportPage = ({ customEventId }) => {
       {/* Custom Event Conditions Display */}
       <div className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
         <h3 className="text-lg font-semibold text-purple-800 mb-3">Custom Event Conditions</h3>
+        {customEvent.tags && customEvent.tags.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-2">
+            {customEvent.tags.map((t, idx) => (
+              <span key={`${t}-${idx}`} className="inline-flex items-center bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs border border-purple-200">
+                #{t}
+              </span>
+            ))}
+          </div>
+        )}
         <div className="flex flex-wrap gap-2 mb-3">
           {customEvent.conditions.map((condition, index) => (
             <div key={index} className="flex items-center gap-2">
@@ -131,7 +140,7 @@ const CustomEventReportPage = ({ customEventId }) => {
         </div>
       </div>
 
-      <AnalyticsTable />
+      {/* <AnalyticsTable /> */}
       
       {/* Custom Event Detection Payload */}
       <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
@@ -225,6 +234,7 @@ const CustomEventReportPage = ({ customEventId }) => {
 {`{
   "eventId": ${customEvent.id},
   "eventName": "${customEvent.name}",
+  "tags": ${JSON.stringify(customEvent.tags || [])},
   "conditions": [
 ${customEvent.conditions.map(c => `    {
       "object": "${c.object}",

@@ -11,6 +11,10 @@ import debounce from "lodash/debounce";
 import Cookies from "js-cookie";
 import { deviceApi } from "../../../utils/axiosInstance";
 import { ANALYTICS_API_URL } from "../../../config";
+import { saveAs } from "file-saver";
+import Papa from "papaparse";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 
 const columnHelper = createColumnHelper();
@@ -33,7 +37,7 @@ const AnalyticsTable = () => {
   const [draft, setDraft] = useState({ id: null, objectKey: "person", operator: ">", threshold: 1 });
   // ✅ Define table columns
   const columns = [
-    columnHelper.accessor("id", { header: "ID" }),
+    columnHelper.accessor("id", { header: "ID" }), 
     columnHelper.accessor("objectName", {
       header: "Objects",
       cell: (info) => {
@@ -58,7 +62,8 @@ const AnalyticsTable = () => {
         }
       },
     }),
-    columnHelper.accessor("objectCount", { header: "Count" }),
+    columnHelper.accessor("eventType", { header: "Event Type" }),
+    // columnHelper.accessor("objectCount", { header: "Count" }),
     // Alert Severity Mapping
     columnHelper.accessor("alertStatus", {
       header: "Severity",
@@ -98,6 +103,7 @@ const AnalyticsTable = () => {
         );
       },
     }),
+    columnHelper.accessor("Accuracy", { header: "Accuracy" }),
     columnHelper.accessor("regDate", {
       header: "Timestamp",
       cell: (info) =>
@@ -123,6 +129,7 @@ const AnalyticsTable = () => {
         );
       },
     }),
+    columnHelper.accessor("videoPlayback", { header: "Video Playback" }),
   ];
 
   // ✅ Fetch cameras for filter dropdown
@@ -234,6 +241,108 @@ const AnalyticsTable = () => {
     []
   );
 
+  const severityLabel = (code) => {
+    switch (code) {
+      case "B":
+        return "Basic";
+      case "C":
+        return "Critical";
+      case "S":
+        return "Severe";
+      case "N":
+        return "Normal";
+      default:
+        return "Unknown";
+    }
+  };
+
+  const formatObjects = (raw) => {
+    if (!raw || typeof raw !== "string") return String(raw ?? "");
+    try {
+      const cleaned = raw.replace(/'/g, '"');
+      const parsed = JSON.parse(cleaned);
+      if (parsed && typeof parsed === "object") {
+        return Object.entries(parsed)
+          .map(([k, v]) => `${k}:${v}`)
+          .join(", ");
+      }
+      return raw;
+    } catch {
+      return raw;
+    }
+  };
+
+  const getExportRows = () => {
+    const rows = table.getRowModel().rows || [];
+    return rows.map((r) => {
+      const original = r.original || {};
+      return {
+        ID: original.id,
+        Objects: formatObjects(original.objectName),
+        "Event Type": original.eventType,
+        Severity: severityLabel(original.alertStatus),
+        Accuracy: original.Accuracy,
+        Timestamp: original.regDate
+          ? new Date(original.regDate).toLocaleString("en-IN", {
+              dateStyle: "short",
+              timeStyle: "medium",
+            })
+          : "",
+        "Video Playback": original.videoPlayback ?? "",
+      };
+    });
+  };
+
+  const handleExportCSV = () => {
+    try {
+      const rows = getExportRows();
+      const csv = Papa.unparse(rows);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      saveAs(blob, `analytics_alerts_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`);
+    } catch (e) {
+      console.error("CSV export failed:", e);
+    }
+  };
+
+  const handleExportPDF = () => {
+    try {
+      const rows = getExportRows();
+      const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "A4" });
+      const title = "Video Analytics Alerts";
+      doc.setFontSize(14);
+      doc.text(title, 40, 30);
+      const head = [["ID", "Objects", "Event Type", "Severity", "Accuracy", "Timestamp", "Video Playback"]];
+      const body = rows.map((r) => [
+        r["ID"],
+        r["Objects"],
+        r["Event Type"],
+        r["Severity"],
+        r["Accuracy"],
+        r["Timestamp"],
+        r["Video Playback"],
+      ]);
+      autoTable(doc, {
+        head,
+        body,
+        startY: 50,
+        styles: { fontSize: 8, cellPadding: 4, overflow: "linebreak" },
+        headStyles: { fillColor: [152, 100, 219] },
+        columnStyles: {
+          0: { cellWidth: 50 },
+          1: { cellWidth: 220 },
+          2: { cellWidth: 110 },
+          3: { cellWidth: 90 },
+          4: { cellWidth: 80 },
+          5: { cellWidth: 160 },
+          6: { cellWidth: 120 },
+        },
+      });
+      doc.save(`analytics_alerts_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.pdf`);
+    } catch (e) {
+      console.error("PDF export failed:", e);
+    }
+  };
+
   return (
     <div className="p-4 space-y-4 max-w-full">
       {/* Header */}
@@ -301,11 +410,25 @@ const AnalyticsTable = () => {
             <option value="AND" className="text-black">AND</option>
             <option value="OR" className="text-black">OR</option>
           </select>
+          <button
+            onClick={handleExportCSV}
+            className="px-3 py-1 border rounded bg-white text-[#2c028d] hover:bg-green-50 text-sm"
+            title="Export visible rows to CSV"
+          >
+            Export CSV
+          </button>
+          <button
+            onClick={handleExportPDF}
+            className="px-3 py-1 border rounded bg-white text-[#2c028d] hover:bg-green-50 text-sm"
+            title="Export visible rows to PDF"
+          >
+            Export PDF
+          </button>
         </div>
       </div>
 
       {/* Rules table */}
-      <div className="w-full bg-white border rounded-md p-3 shadow-sm">
+      {/* <div className="w-full bg-white border rounded-md p-3 shadow-sm">
         <div className="flex gap-2 flex-wrap items-end">
           <input
             className="px-2 py-1 border rounded text-sm w-36"
@@ -397,7 +520,7 @@ const AnalyticsTable = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </div> */}
 
       {/* Table */}
       <div className="overflow-x-auto rounded-md border-[#e7e5ec] shadow">

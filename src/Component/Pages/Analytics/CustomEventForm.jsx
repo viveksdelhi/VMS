@@ -12,9 +12,11 @@ const OBJECT_OPTIONS = [
 const OPERATORS = ['>', '>=', '==', '<', '<='];
 
 const CustomEventForm = ({ onClose }) => {
-  const { addCustomEvent } = useCustomEvents();
+  const { addCustomEvent, customEvents } = useCustomEvents();
   const [eventName, setEventName] = useState('');
   const [description, setDescription] = useState('');
+  const [tags, setTags] = useState([]);
+  const [tagInput, setTagInput] = useState('');
   const [selectedPresetEvents, setSelectedPresetEvents] = useState([]);
   const [conditions, setConditions] = useState([]);
   const [currentCondition, setCurrentCondition] = useState({
@@ -37,8 +39,20 @@ const CustomEventForm = ({ onClose }) => {
     isEnabled: false
   });
 
-  // Get all preset events for dropdown
-  const presetEvents = getAllDefaultTriggers();
+  // Get default presets and merge user custom events as selectable presets
+  const defaultPresets = getAllDefaultTriggers();
+  const customPresetMap = Object.fromEntries(
+    (customEvents || []).map(e => [
+      `custom_${e.id}`,
+      {
+        name: e.name,
+        description: e.description || 'User-defined custom event',
+        conditions: e.conditions || [],
+        tags: e.tags || []
+      }
+    ])
+  );
+  const presetEvents = { ...defaultPresets, ...customPresetMap };
 
   const CAMERA_LIST = [
     { id: 1, name: 'Camera 1' },
@@ -147,6 +161,7 @@ const CustomEventForm = ({ onClose }) => {
       const newEvent = addCustomEvent({
         name: eventName,
         description: description.trim() || null,
+        tags,
         presetEvents: selectedPresetEvents,
         conditions,
         cameras: selectedCameras,
@@ -172,14 +187,6 @@ const CustomEventForm = ({ onClose }) => {
 
   return (
     <div>
-      {/* Test button - remove this later */}
-      {/* <div className="mb-4 p-2 bg-yellow-100 border border-yellow-300 rounded">
-        <button onClick={createTestEvent} className="px-3 py-1 bg-yellow-500 text-white rounded text-sm">
-          Create Test Event
-        </button>
-        <span className="ml-2 text-sm text-gray-600">(For testing - creates "Test Custom Event")</span>
-      </div> */}
-      
       {step === 1 && (
         <div>
           <div className="mb-4">
@@ -205,9 +212,71 @@ const CustomEventForm = ({ onClose }) => {
           </div>
 
           <div className="mb-4">
+            <label className="block text-sm font-medium mb-2 text-gray-700">Tags (Optional)</label>
+            <div className="w-full px-2 py-2 border border-gray-300 rounded-md focus-within:ring-2 focus-within:ring-purple-500 bg-white">
+              <div className="flex flex-wrap gap-2">
+                {tags.map((t, idx) => (
+                  <span key={`${t}-${idx}`} className="inline-flex items-center gap-1 bg-purple-50 text-purple-800 px-2 py-1 rounded-full border border-purple-200 text-xs">
+                    {t}
+                    <button
+                      type="button"
+                      className="text-purple-600 hover:text-purple-800"
+                      onClick={() => setTags(tags.filter((_, i) => i !== idx))}
+                      aria-label="Remove tag"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ',') {
+                      e.preventDefault();
+                      const raw = tagInput.trim().replace(/,$/, '');
+                      if (raw) {
+                        const newTags = raw.split(',').map(s => s.trim()).filter(Boolean);
+                        const merged = [...tags, ...newTags]
+                          .map(t => t.toLowerCase())
+                          .filter((t, i, arr) => arr.indexOf(t) === i);
+                        setTags(merged);
+                      }
+                      setTagInput('');
+                    }
+                  }}
+                  onBlur={() => {
+                    const raw = tagInput.trim().replace(/,$/, '');
+                    if (raw) {
+                      const newTags = raw.split(',').map(s => s.trim()).filter(Boolean);
+                      const merged = [...tags, ...newTags]
+                        .map(t => t.toLowerCase())
+                        .filter((t, i, arr) => arr.indexOf(t) === i);
+                      setTags(merged);
+                    }
+                    setTagInput('');
+                  }}
+                  placeholder="Type and press Enter to add"
+                  className="flex-1 min-w-[140px] px-2 py-1 outline-none text-gray-900"
+                />
+              </div>
+            </div>
+            {tags.length > 0 && (
+              <div className="mt-1 text-xs text-gray-500">{tags.length} tag(s) added</div>
+            )}
+          </div>
+
+          <div className="mb-4">
             <label className="block text-sm font-medium mb-2 text-gray-700">Select Preset Events (Optional)</label>
-            <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2 bg-gray-50">
-              {Object.entries(presetEvents).map(([eventType, eventData]) => (
+            <div className="max-h-40 w-150 overflow-y-auto border border-gray-300 rounded-md p-2 bg-gray-50">
+              {Object.entries(presetEvents)
+                .filter(([_, eventData]) => {
+                  if (!tags || tags.length === 0) return true;
+                  const presetTags = (eventData.tags || []).map(t => String(t).toLowerCase());
+                  return tags.some(t => presetTags.includes(String(t).toLowerCase()));
+                })
+                .map(([eventType, eventData]) => (
                 <label key={eventType} className="flex items-start space-x-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
                   <input
                     type="checkbox"
@@ -218,6 +287,9 @@ const CustomEventForm = ({ onClose }) => {
                   <div className="flex-1">
                     <div className="text-sm font-medium text-gray-900">{eventData.name}</div>
                     <div className="text-xs text-gray-600">{eventData.description}</div>
+                    {eventData.tags && eventData.tags.length > 0 && (
+                      <div className="text-xs text-purple-600 mt-1">Tags: {eventData.tags.join(', ')}</div>
+                    )}
                     <div className="text-xs text-purple-600 mt-1">
                       Conditions: {eventData.conditions.map(c => `${c.object} ${c.operator} ${c.threshold}`).join(', ')}
                     </div>

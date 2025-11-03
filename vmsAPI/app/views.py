@@ -265,10 +265,10 @@ class VideoanalyticsViewSet(viewsets.ModelViewSet):
             return Videoanalytics.objects.filter(userid=user_id)
         return Videoanalytics.objects.all()
 
-class VideoanalyticsCountViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = VideoanalyticsSerializer
+class CameraalertsCountViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = CameraalertsSerializer
     pagination_class = StandardResultsSetPagination
-    queryset = Videoanalytics.objects.all()
+    queryset = Cameraalerts.objects.all()
 
     def list(self, request, *args, **kwargs):
         user_id = request.query_params.get('user_id')

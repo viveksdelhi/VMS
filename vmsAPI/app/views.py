@@ -7,6 +7,9 @@ from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
+from django.db.models.functions import TruncDate
+from django.db.models import Count
+
 
 from django.contrib.auth.hashers import make_password, check_password
 
@@ -262,6 +265,41 @@ class VideoanalyticsViewSet(viewsets.ModelViewSet):
             return Videoanalytics.objects.filter(userid=user_id)
         return Videoanalytics.objects.all()
 
+class VideoanalyticsCountViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = VideoanalyticsSerializer
+    pagination_class = StandardResultsSetPagination
+    queryset = Videoanalytics.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        user_id = request.query_params.get('user_id')
+        from_date = request.query_params.get('from_date')
+        to_date = request.query_params.get('to_date')
+
+        queryset = self.get_queryset()
+
+        # Filter by user ID (optional)
+        if user_id:
+            queryset = queryset.filter(userid=user_id)
+
+        # Date range filters
+        if from_date and to_date:
+            queryset = queryset.filter(regDate__date__range=[from_date, to_date])
+        elif from_date:
+            queryset = queryset.filter(regDate__date__gte=from_date)
+        elif to_date:
+            queryset = queryset.filter(regDate__date__lte=to_date)
+        # else: no date filter → include all data
+
+        # Group and count per day
+        daily_counts = (
+            queryset
+            .annotate(date=TruncDate('regDate'))
+            .values('date')
+            .annotate(count=Count('id'))
+            .order_by('date')
+        )
+
+        return Response(daily_counts)
 
 class LoginView(APIView):
     

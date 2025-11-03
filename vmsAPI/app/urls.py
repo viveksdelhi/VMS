@@ -20,7 +20,8 @@ router.register(r'Role', RolesViewSet, basename='roles')
 router.register(r'user', UsersViewSet, basename='users')
 router.register(r'VehicleDetection', VehicledetectionsViewSet, basename='vehicledetections')
 router.register(r'VideoAnalytic', VideoanalyticsViewSet, basename='videoanalytics')
-router.register(r'VideoAnalyticCount', VideoanalyticsCountViewSet, basename='videoanalyticscount')
+router.register(r'CameraalertsCount', Cameraalerts, basename='Cameraalertscount')
+
 
 
 urlpatterns = router.urls +[

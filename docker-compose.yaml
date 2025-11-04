@@ -1,0 +1,193 @@
+# Define custom network for inter-container communication
+networks:
+  ajeevitech-new:
+
+
+
+volumes:
+  analytics_media:
+    driver: local
+    driver_opts:
+      type: none
+      device: E:/Doceker Folders/analytics_media
+      o: bind
+
+
+  recordings:
+    driver: local
+    driver_opts:
+      type: none
+      device: E:/Recording Folders/recordings
+      o: bind
+
+  mysql_data:   # <-- added for persistent DB storage
+    driver: local
+
+services:
+
+  # RabbitMQ message broker with management interface
+  rabbitmq:
+    image: rabbitmq:4.0-management
+    container_name: new-rabbitmq
+    ports:
+      - "9972:15672"   # Management UI
+      - "9672:5672"     # AMQP messaging
+    networks:
+      - ajeevitech-new
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    restart: always
+
+
+  # Frontend React UI container
+  vms_ui1:
+    image: ajeevi32189/vms_1.0:vms_ui5
+    container_name: new-vms_ui5
+    ports:
+      - "9010:80"  
+    restart: always
+    networks:
+      - ajeevitech-new
+    environment:
+      - API_URL=http://127.0.0.1:3036/api
+      - CAMERA_API_URL=http://127.0.0.1:9006/api
+      - STREAMING_API_URL=http://127.0.0.1:9015
+      - ONVIF_API_URL=http://127.0.0.1:9002
+      - RECORDING_API_URL=http://127.0.0.1:9004
+      - ANALYTICS_API_URL=http://127.0.0.1:9001
+
+
+  # ONVIF Camera Discovery & Management
+  onvif:
+    image: ajeevi32189/vms_1.0:onvif
+    container_name: new-onvif
+    ports:
+      - "9002:7002" 
+    networks:
+      - ajeevitech-new
+    restart: always
+
+
+  # VMS API backend (core service)
+  vmsapi:
+    image: ajeevi32189/vms_1.0:vmsapi-latest1
+    container_name: new-vmsapi
+    ports:
+      - "9006:7006" 
+    networks:
+      - ajeevitech-new
+    restart: always
+
+
+
+
+  # Stream API service for live camera feeds
+  videostreamingservice:
+    image: ajeevi32189/vms_1.0:videostreamingservice
+    container_name: new-videostreamingservice
+    restart: always
+    ports:
+      - "9015:8080"  
+    networks:
+      - ajeevitech-new
+    
+
+
+
+  # Recording API for storing camera streams
+  videorecordingservice:
+    image: ajeevi32189/videorecordingservice:latest
+    container_name: new-videorecordingservice
+    restart: always
+    ports:
+      - "9004:8080"  
+    networks:
+      - ajeevitech-new
+    
+    volumes:
+      - "E:/recordings:/app/wwwroot/recordings"
+
+
+  
+
+
+  # Analytics API - for events like object detection, motion, etc.
+  analytics_api:
+    image: ajeevi32189/vms_1.0:analyticsapi
+    container_name: new-analytics_api
+    ports:
+      - "9001:7001"  # Used by: vms_ui1
+    volumes:
+      # - analytics_media:/app/media
+      - "E:/analytics_media:/app/media"
+    networks:
+      - ajeevitech-new
+    restart: always
+
+  
+
+  # VMS Framer - for frame extraction from video feeds
+  vms_framer:
+    image: ajeevi32189/vms_1.0:vmsframer
+    container_name: new-vms_framer
+    networks:
+      - ajeevitech-new
+    restart: always
+
+
+  # VMS Analytics - performs analytics on VMS video feeds
+  vms_analytics:
+    image: ajeevi32189/vms_1.0:vmsvideo
+    container_name: new-vms_analytics
+    networks:
+      - ajeevitech-new
+    restart: always
+
+
+
+  # Writes analytics results to database
+  vms_writer:
+    image: ajeevi32189/vms_1.0:vmswritedb1
+    container_name: new-vms_writer
+    networks:
+      - ajeevitech-new
+    environment:
+      - API_URL=http://vmsapi:9006  # refers to vmsapi
+      # - CREDIT_URL=http://14.195.152.244:9007 
+    volumes:
+      # - analytics_media:/app/media
+      - "E:/analytics_media:/app/media"
+    restart: always
+
+  
+  mydb:
+    image: ajeevi32189/vms_1.0:new-vms-sqldb
+    container_name: sqldb
+    restart: always
+    networks:
+      - ajeevitech-new
+    ports:
+      - "3010:3306"
+    
+    volumes:
+      - mysql_data:/var/lib/mysql
+  
+
+
+
+  #usermanagement API-----------------------
+
+  usermanagement-api:
+    image: ajeevi32189/demoauth:latest
+    container_name: usermanagement
+    ports:
+      - "3036:8080"  # Host port 3136 → container port 8080
+    environment:
+       ConnectionString: "server=192.168.0.8;port=3010;database=DemoAuthDB;user=root;password=root;SslMode=none;AllowPublicKeyRetrieval=True;"
+       IsMSSQL: "false"
+    restart: always
+    networks:
+      - ajeevitech-new  # (optional if other containers communicate with it)

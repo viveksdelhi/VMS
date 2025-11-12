@@ -87,7 +87,11 @@ class VideoanalyticsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Videoanalytics
         fields = '__all__'
-        
+
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = '__all__'
         
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)

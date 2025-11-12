@@ -290,3 +290,20 @@ class Videoanalytics(models.Model):
         managed = False
         db_table = 'videoanalytics'
         ordering = ['-id']
+
+class Event(models.Model):
+    eventId = models.AutoField(primary_key=True)
+    eventName = models.CharField(max_length=255)
+    tags = models.JSONField(default=list, blank=True)
+    conditions = models.JSONField(default=list, blank=True)
+    cameras = models.JSONField(default=list, blank=True)
+    scheduling = models.JSONField(default=dict, blank=True)
+    userid = models.CharField(db_column='userid', max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.eventName
+
+    class Meta:
+        managed = False
+        db_table = 'event'
+        ordering = ['-eventId']

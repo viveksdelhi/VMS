@@ -9,6 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from django.db.models.functions import TruncDate
 from django.db.models import Count
+from django.conf import settings
+
 
 
 from django.contrib.auth.hashers import make_password, check_password
@@ -81,13 +83,16 @@ class CameraiplistsViewSet(viewsets.ModelViewSet):
             return Cameraiplists.objects.filter(cameraIP=cameraIP)
         return Cameraiplists.objects.all()
 
-class CamerasViewSet(viewsets.ModelViewSet): 
+class CamerasViewSet(viewsets.ModelViewSet):
     serializer_class = CamerasSerializer
     pagination_class = StandardResultsSetPagination
-    permission_classes = [IsAuthenticated,  require_claims({
+    permission_classes = [
+        IsAuthenticated,
+        require_claims({
             "SAFE_METHODS": "camera.read",   # GET, HEAD, OPTIONS
             "UNSAFE_METHODS": "camera.write" # POST, PUT, PATCH, DELETE
-        })]
+        })
+    ]
 
     def get_queryset(self):
         user_id = self.request.query_params.get('user_id')
@@ -105,11 +110,10 @@ class CamerasViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-
     def live_stream(self, id, public_url, credit_id):
         """Start live stream by sending a POST request to STREAM_URL service."""
-        credit_id = 0 if credit_id == None else 0
-        stream_url = "http://14.195.152.244:9015/Streaming/add_camera"
+        credit_id = 0 if credit_id is None else credit_id
+        stream_url = settings.STREAM_URL 
         try:
             payload = {
                 "cameraId": id,
@@ -128,14 +132,21 @@ class CamerasViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Called when a new camera is created."""
-        camera = serializer.save()  # Save the camera first
+        # ✅ Limit total camera entries to 20
+        if Cameras.objects.count() >= 20:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"error": "Maximum of 20 camera entries allowed."})
 
-        # Now automatically call live_stream
+        # Save the camera
+        camera = serializer.save()
+
+        # Automatically start live stream if details available
         public_url = camera.rtspurl
         credit_id = self.request.data.get("creditId", None)
         if public_url and credit_id:
             self.live_stream(camera.id, public_url, credit_id)
- 
+
+
 class LocationViewSet(viewsets.ModelViewSet):
     serializer_class = LocationSerializer
     pagination_class = StandardResultsSetPagination
@@ -155,6 +166,16 @@ class ZoneViewSet(viewsets.ModelViewSet):
         if user_id:
             return Zone.objects.filter(userid=user_id)
         return Zone.objects.all()
+    
+class EventViewSet(viewsets.ModelViewSet):
+    serializer_class = EventSerializer
+    pagination_class = StandardResultsSetPagination  # optional
+
+    def get_queryset(self):
+        user_id = self.request.query_params.get('user_id', None)
+        if user_id:
+            return Event.objects.filter(userid=user_id)
+        return Event.objects.all()
 
 class GroupsViewSet(viewsets.ModelViewSet):
     serializer_class = GroupsSerializer

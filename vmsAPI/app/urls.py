@@ -21,7 +21,7 @@ router.register(r'user', UsersViewSet, basename='users')
 router.register(r'VehicleDetection', VehicledetectionsViewSet, basename='vehicledetections')
 router.register(r'VideoAnalytic', VideoanalyticsViewSet, basename='videoanalytics')
 router.register(r'CameraalertsCount', CameraalertsCountViewSet, basename='Cameraalertscount')
-
+router.register(r'event', EventViewSet, basename='event')
 
 
 urlpatterns = router.urls +[

@@ -5,6 +5,8 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Streaming service URL
+STREAM_URL = "http://14.195.152.244:9015/Streaming/add_camera"
 
 
 SECRET_KEY = "django-insecure-jx4u%wv&xx*kqasijum!mmxz8u179s!%mo1m)io#r+_v9tt6_t"
@@ -69,10 +71,10 @@ DATABASES = {
     "default": {
             'ENGINE': 'django.db.backends.mysql',  # Or 'postgresql', 'sqlite3', etc.
             'NAME': 'new_vms',
-            'USER': 'root',
-            'PASSWORD': 'root',
+            'USER': 'vms',
+            'PASSWORD': 'Ajeevi@#321890',
             'HOST': '14.195.152.244',  # Or your DB host
-            'PORT': '3307',
+            'PORT': '3010',
     }
 }
 

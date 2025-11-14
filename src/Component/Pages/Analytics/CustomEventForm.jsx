@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useCustomEvents } from '../../../contexts/CustomEventContext';
 import { getAllDefaultTriggers } from '../../../config/defaultEventTriggers';
+import { useEvents } from '../../../hooks/useEvents';
 
 const OBJECT_OPTIONS = [
   'Person', 'Vehicle', 'Bicycle', 'Car', 'Dog', 'Animal', 'Bag', 'Box', 
@@ -13,6 +14,7 @@ const OPERATORS = ['>', '>=', '==', '<', '<='];
 
 const CustomEventForm = ({ onClose }) => {
   const { addCustomEvent, customEvents } = useCustomEvents();
+  const { events: apiEvents } = useEvents();
   const [eventName, setEventName] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState([]);
@@ -39,8 +41,22 @@ const CustomEventForm = ({ onClose }) => {
     isEnabled: false
   });
 
-  // Get default presets and merge user custom events as selectable presets
+  // Get default presets and merge API events and user custom events as selectable presets
   const defaultPresets = getAllDefaultTriggers();
+  
+  // Map API events to preset format
+  const apiPresetMap = Object.fromEntries(
+    (apiEvents || []).map((e) => [
+      `api_event_${e.eventId}`,
+      {
+        name: e.eventName || `Event ${e.eventId}`,
+        description: `Default event: ${e.eventName || `Event ${e.eventId}`}`,
+        conditions: e.conditions || [],
+        tags: e.tags || [],
+      },
+    ])
+  );
+  
   const customPresetMap = Object.fromEntries(
     (customEvents || []).map(e => [
       `custom_${e.id}`,
@@ -52,7 +68,7 @@ const CustomEventForm = ({ onClose }) => {
       }
     ])
   );
-  const presetEvents = { ...defaultPresets, ...customPresetMap };
+  const presetEvents = { ...defaultPresets, ...apiPresetMap, ...customPresetMap };
 
   const CAMERA_LIST = [
     { id: 1, name: 'Camera 1' },

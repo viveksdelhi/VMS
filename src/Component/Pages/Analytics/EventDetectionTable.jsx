@@ -46,11 +46,16 @@ const EVENT_LABELS = {
   'slip-fall-detection': 'Slip & Fall Detection',
 };
 
-const getEventOptions = (eventType) => {
+const getEventOptions = (eventType, eventData) => {
+  // If eventData is provided (from API), extract objects from conditions
+  if (eventData && eventData.conditions && Array.isArray(eventData.conditions)) {
+    return eventData.conditions.map(condition => condition.object);
+  }
+  // Otherwise, use legacy mapping
   return EVENT_OPTIONS_MAP[eventType] || ['Person', 'Vehicle', 'Bag'];
 };
 
-const EventReportPage = ({ eventType }) => {
+const EventReportPage = ({ eventType, eventId, eventData }) => {
   const [popupOpen, setPopupOpen] = useState(false);
   // Add a state for custom event popup
   const [activeCamera, setActiveCamera] = useState(CAMERA_LIST[0].id); // First camera active by default
@@ -63,30 +68,76 @@ const EventReportPage = ({ eventType }) => {
   // New states for camera selection popup and scheduling
   const [cameraSelectionPopupOpen, setCameraSelectionPopupOpen] = useState(false);
   const [selectedCameras, setSelectedCameras] = useState([]);
-  const [scheduling, setScheduling] = useState({
-    dateRange: {
-      startDate: '',
-      endDate: ''
-    },
-    specificDays: [],
-    timeRange: {
-      startTime: '',
-      endTime: ''
-    },
-    isEnabled: false
-  });
+  const [scheduling, setScheduling] = useState(
+    eventData?.scheduling || {
+      dateRange: {
+        startDate: '',
+        endDate: ''
+      },
+      specificDays: [],
+      timeRange: {
+        startTime: '',
+        endTime: ''
+      },
+      isEnabled: false
+    }
+  );
 
-  const eventOptions = getEventOptions(eventType);
-  const eventLabel = EVENT_LABELS[eventType] || (eventType.charAt(0).toUpperCase() + eventType.slice(1).replace(/-/g, ' '));
+  // Determine event options and label based on whether we have API data or legacy eventType
+  const eventOptions = getEventOptions(eventType, eventData);
+  const eventLabel = eventData?.eventName || EVENT_LABELS[eventType] || (eventType ? eventType.charAt(0).toUpperCase() + eventType.slice(1).replace(/-/g, ' ') : 'Event Configuration');
 
-  // Load default triggers for this event type
+  // Initialize cameras, scheduling, and camera selections from API event data if available
   useEffect(() => {
-    if (hasDefaultTriggers(eventType)) {
+    if (eventData) {
+      // Initialize cameras
+      if (eventData.cameras && Array.isArray(eventData.cameras)) {
+        setSelectedCameras(eventData.cameras);
+        // Initialize camera selections with conditions from API
+        const initialSelections = {};
+        eventData.cameras.forEach(cameraId => {
+          if (eventData.conditions && Array.isArray(eventData.conditions)) {
+            initialSelections[cameraId] = eventData.conditions.map(c => c.object);
+          }
+        });
+        setCameraSelections(initialSelections);
+      }
+      
+      // Initialize scheduling from API event data
+      if (eventData.scheduling) {
+        setScheduling({
+          dateRange: {
+            startDate: eventData.scheduling.dateRange?.startDate || '',
+            endDate: eventData.scheduling.dateRange?.endDate || '',
+          },
+          specificDays: eventData.scheduling.specificDays || [],
+          timeRange: {
+            startTime: eventData.scheduling.timeRange?.startTime || '',
+            endTime: eventData.scheduling.timeRange?.endTime || '',
+          },
+          isEnabled: eventData.scheduling.isEnabled || false
+        });
+      }
+    }
+  }, [eventData]);
+
+  // Load default triggers for this event type (only for legacy eventType)
+  useEffect(() => {
+    if (eventType && hasDefaultTriggers(eventType)) {
       const triggers = getDefaultTriggers(eventType);
       setDefaultTriggers(triggers);
       setShowDefaultTriggers(true);
+    } else if (eventData) {
+      // For API events, use the event data directly
+      setDefaultTriggers({
+        name: eventData.eventName,
+        conditions: eventData.conditions || [],
+        description: `Event configuration for ${eventData.eventName}`,
+        tags: eventData.tags || []
+      });
+      setShowDefaultTriggers(true);
     }
-  }, [eventType]);
+  }, [eventType, eventData]);
 
   // Click to focus a camera
   const handleCameraFocus = (camId) => {
@@ -230,19 +281,88 @@ const EventReportPage = ({ eventType }) => {
           </p>
           
           {showDefaultTriggers && (
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-gray-800">Trigger Conditions:</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                {defaultTriggers.conditions.map((condition, index) => (
-                  <div key={index} className="bg-white p-3 rounded border border-gray-200">
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-medium text-gray-800">{condition.object}</span>
-                      <span className="text-gray-500">{condition.operator}</span>
-                      <span className="font-bold text-blue-600">{condition.threshold}</span>
-                    </div>
+            <div className="space-y-4">
+              {/* Tags Section */}
+              {eventData?.tags && eventData.tags.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-800 mb-2">Tags:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {eventData.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center bg-purple-50 text-purple-800 px-2 py-1 rounded-full text-xs border border-purple-200"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
                   </div>
-                ))}
+                </div>
+              )}
+              
+              {/* Trigger Conditions */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-800 mb-2">Trigger Conditions:</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {defaultTriggers.conditions.map((condition, index) => (
+                    <div key={index} className="bg-white p-3 rounded border border-gray-200">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="font-medium text-gray-800">{condition.object}</span>
+                        <span className="text-gray-500">{condition.operator}</span>
+                        <span className="font-bold text-blue-600">{condition.threshold}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
+              
+              {/* Assigned Cameras */}
+              {eventData?.cameras && eventData.cameras.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-800 mb-2">Assigned Cameras:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {eventData.cameras.map((cameraId) => {
+                      const camera = CAMERA_LIST.find(c => c.id === cameraId);
+                      return (
+                        <span
+                          key={cameraId}
+                          className="inline-flex items-center bg-green-50 text-green-800 px-3 py-1 rounded-md text-sm border border-green-200"
+                        >
+                          {camera ? camera.name : `Camera ${cameraId}`}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              
+              {/* Scheduling Information */}
+              {eventData?.scheduling && eventData.scheduling.isEnabled && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <h4 className="text-sm font-medium text-gray-800 mb-2">Scheduling:</h4>
+                  <div className="space-y-1 text-sm text-gray-700">
+                    {eventData.scheduling.dateRange?.startDate || eventData.scheduling.dateRange?.endDate ? (
+                      <p>
+                        <span className="font-medium">Date Range:</span>{' '}
+                        {eventData.scheduling.dateRange.startDate || 'No start date'} to{' '}
+                        {eventData.scheduling.dateRange.endDate || 'No end date'}
+                      </p>
+                    ) : null}
+                    {eventData.scheduling.specificDays && eventData.scheduling.specificDays.length > 0 && (
+                      <p>
+                        <span className="font-medium">Days:</span>{' '}
+                        {eventData.scheduling.specificDays.join(', ')}
+                      </p>
+                    )}
+                    {eventData.scheduling.timeRange?.startTime || eventData.scheduling.timeRange?.endTime ? (
+                      <p>
+                        <span className="font-medium">Time Range:</span>{' '}
+                        {eventData.scheduling.timeRange.startTime || 'No start time'} to{' '}
+                        {eventData.scheduling.timeRange.endTime || 'No end time'}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

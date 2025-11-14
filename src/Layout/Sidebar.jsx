@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   FaVideo,
@@ -20,16 +20,20 @@ import {
 import { MdMenu, MdMenuOpen, MdExpandLess, MdExpandMore } from "react-icons/md";
 import Logo from "../assets/logo.jpg";
 import { useCustomEvents } from "../contexts/CustomEventContext";
+import { useEvents } from "../hooks/useEvents";
+import { slugify } from "../utils/slugify";
 
 const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [openMenus, setOpenMenus] = useState({});
   const { getCustomEventsForSidebar, customEvents } = useCustomEvents();
+  const { events: apiEvents } = useEvents();
   
   // Debug logging
   console.log('Sidebar - customEvents:', customEvents);
   console.log('Sidebar - getCustomEventsForSidebar():', getCustomEventsForSidebar());
+  console.log('Sidebar - apiEvents:', apiEvents);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -37,8 +41,20 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ✅ Full VMS Menu - make it reactive to custom events
-  const menuItems = [
+  // Map API events to sidebar menu items
+  const apiEventMenuItems = useMemo(() => {
+    if (!apiEvents || apiEvents.length === 0) return [];
+    
+    return apiEvents.map((event) => ({
+      key: `event_${event.eventId}`,
+      label: event.eventName || `Event ${event.eventId}`,
+      path: `/analytics/event/${slugify(event.eventName || `event-${event.eventId}`)}`,
+      eventData: event,
+    }));
+  }, [apiEvents]);
+
+  // ✅ Full VMS Menu - make it reactive to custom events and API events
+  const menuItems = useMemo(() => [
     {
       key: "video-management",
       label: "Video Management",
@@ -60,25 +76,11 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
     },
     {
       key: "event-reports",
-      label: "Event reports",
+      label: "Event configuration",
       icon: <FaBug />,
       children: [
-        { key: "tripwire", label: "Tripwire", path: "/analytics/tripwire" },
-        { key: "trespass", label: "Trespass", path: "/analytics/trespass" },
-        { key: "camera_tampering", label: "Camera Tampering", path: "/analytics/camera-tampering" },
-        { key: "loitering_detection", label: "Loitering Detection", path: "/analytics/loitering-detection" },
-        { key: "tailgating_detection", label: "Tailgating Detection", path: "/analytics/tailgating-detection" },
-        { key: "left_object_detection", label: "Left Object Detection", path: "/analytics/left-object-detection" },
-        { key: "missing_object_detection", label: "Missing Object Detection", path: "/analytics/missing-object-detection" },
-        { key: "continuous_auto_ptz_tracking", label: "Continuous Auto PTZ Tracking", path: "/analytics/continuous-auto-ptz-tracking" },
-        { key: "ptz_handoff", label: "PTZ Handoff", path: "/analytics/ptz-handoff" },
-        { key: "ptz_preset_position_analytics", label: "PTZ Pre-set Position Analytics", path: "/analytics/ptz-preset-position-analytics" },
-        { key: "crowding_detection", label: "Crowding Detection", path: "/analytics/crowding-detection" },
-        { key: "crowd_counting", label: "Crowd Counting", path: "/analytics/crowd-counting" },
-        { key: "crowd_flow_detection", label: "Crowd Flow Detection", path: "/analytics/crowd-flow-detection" },
-        { key: "video_smoke_detection", label: "Video Smoke Detection", path: "/analytics/video-smoke-detection" },
-        { key: "video_fire_detection", label: "Video Fire Detection", path: "/analytics/video-fire-detection" },
-        { key: "slip_fall_detection", label: "Slip & Fall Detection", path: "/analytics/slip-fall-detection" },
+        // Add API events dynamically (non-deletable defaults)
+        ...apiEventMenuItems,
         // Add custom events dynamically
         ...getCustomEventsForSidebar(),
         { key: "custom_event_management", label: "Manage Custom Events", icon: <FaCogs />, path: "/analytics/custom-events" },
@@ -136,7 +138,7 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
         { key: "overview", label: "Overview", icon: <FaInfoCircle />, path: "/about/overview" },
       ],
     },
-  ];
+  ], [apiEventMenuItems, customEvents]);
 
   useEffect(() => {
     if (!collapsed) {

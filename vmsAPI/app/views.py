@@ -66,7 +66,7 @@ class CameraalertsViewSet(viewsets.ModelViewSet):
     serializer_class = CameraalertsSerializer
     pagination_class = StandardResultsSetPagination
     search_fields = [
-        'objectName', 'objectCount', 'alertStatus', 'regDate',
+        'objectName', 'objectCount', 'alertStatus', 'regDate','cameraId'
         'cameraId__name', 'cameraId__location', 'cameraId__area'
     ]
     filter_backends = (filters.SearchFilter, DjangoFilterBackend,)

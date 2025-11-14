@@ -64,15 +64,34 @@ class CameraalertsFilter(django_filters.FilterSet):
         
 class CameraalertsViewSet(viewsets.ModelViewSet):
     serializer_class = CameraalertsSerializer
-    pagination_class = StandardResultsSetPagination 
-    search_fields = ['objectName', 'objectCount', 'alertStatus', 'regDate', 'cameraId__name', 'cameraId__location', 'cameraId__area']
-    filter_backends = (filters.SearchFilter, DjangoFilterBackend, )
-    filterset_class = CameraalertsFilter 
-    
+    pagination_class = StandardResultsSetPagination
+    search_fields = [
+        'objectName', 'objectCount', 'alertStatus', 'regDate',
+        'cameraId__name', 'cameraId__location', 'cameraId__area'
+    ]
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend,)
+    filterset_class = CameraalertsFilter
+
     def get_queryset(self):
         queryset = Cameraalerts.objects.all()
-        return queryset
 
+        params = self.request.query_params  # all filters from URL
+
+        for key, value in params.items():
+
+            # Ignore built-in params
+            if key in ["page", "search", "ordering"]:
+                continue
+
+            try:
+                # Add __icontains for flexible matching
+                lookup = {f"{key}__icontains": value}
+                queryset = queryset.filter(**lookup)
+            except Exception:
+                pass  # ignore invalid fields
+
+        return queryset
+    
 class CameraiplistsViewSet(viewsets.ModelViewSet):
     serializer_class = CameraiplistsSerializer
     pagination_class = StandardResultsSetPagination

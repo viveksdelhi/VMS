@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom'; // ✅ Import Navigate
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'; // ✅ Import Navigate
 import Dashboard from '../Component/Dashboard/Dashboard';
 import AnalyticsData from '../Component/Pages/Analytics/AnalyticsData';
 import Unauthorized from '../Component/Pages/Unauthorized/Unauthorized';
@@ -27,6 +27,8 @@ import LocationDetailsTable from '../Component/Pages/Devices/Location/LocationDe
 import EventReportPage from '../Component/Pages/Analytics/EventDetectionTable';
 import CustomEventReportPage from '../Component/Pages/Analytics/CustomEventReportPage';
 import CustomEventManagement from '../Component/Pages/Analytics/CustomEventManagement';
+import { useEvents } from '../hooks/useEvents';
+import { slugify } from '../utils/slugify';
 
 const routeConfig = [
   { path: '/dashboard', element: <Dashboard />, roles: ['Admin'] },
@@ -56,27 +58,61 @@ const routeConfig = [
 ];
 
 const eventReportRoutes = [
-  { path: '/analytics/tripwire', eventType: 'tripwire' },
-  { path: '/analytics/trespass', eventType: 'trespass' },
-  { path: '/analytics/camera-tampering', eventType: 'camera-tampering' },
-  { path: '/analytics/loitering-detection', eventType: 'loitering-detection' },
-  { path: '/analytics/tailgating-detection', eventType: 'tailgating-detection' },
-  { path: '/analytics/left-object-detection', eventType: 'left-object-detection' },
-  { path: '/analytics/missing-object-detection', eventType: 'missing-object-detection' },
-  { path: '/analytics/continuous-auto-ptz-tracking', eventType: 'continuous-auto-ptz-tracking' },
-  { path: '/analytics/ptz-handoff', eventType: 'ptz-handoff' },
-  { path: '/analytics/ptz-preset-position-analytics', eventType: 'ptz-preset-position-analytics' },
-  { path: '/analytics/crowding-detection', eventType: 'crowding-detection' },
-  { path: '/analytics/crowd-counting', eventType: 'crowd-counting' },
-  { path: '/analytics/crowd-flow-detection', eventType: 'crowd-flow-detection' },
-  { path: '/analytics/video-smoke-detection', eventType: 'video-smoke-detection' },
-  { path: '/analytics/video-fire-detection', eventType: 'video-fire-detection' },
-  { path: '/analytics/slip-fall-detection', eventType: 'slip-fall-detection' },
+  
 ];
 
+// Component to handle API event routes with slug matching
+const ApiEventRoute = () => {
+  const { eventSlug } = useParams();
+  const { events: apiEvents, loading, error } = useEvents();
+  
+  // Wait for events to load before trying to match
+  if (loading) {
+    return <div>Loading event...</div>;
+  }
+  
+  if (error) {
+    console.error('Error loading events:', error);
+    return <Navigate to="/analytics" replace />;
+  }
+  
+  // Find event by matching slug
+  const event = apiEvents.find(e => {
+    const eventSlugified = slugify(e.eventName || `event-${e.eventId}`);
+    return eventSlugified === eventSlug;
+  });
+  
+  if (!event) {
+    console.warn(`Event not found for slug: ${eventSlug}`, {
+      availableSlugs: apiEvents.map(e => slugify(e.eventName || `event-${e.eventId}`)),
+      availableEvents: apiEvents.map(e => ({ id: e.eventId, name: e.eventName }))
+    });
+    return <Navigate to="/analytics" replace />;
+  }
+  
+  return (
+    <EventReportPage 
+      eventId={event.eventId} 
+      eventData={event} 
+    />
+  );
+};
+
 const AppRoutes = () => {
+  console.log('AppRoutes - Rendering AppRoutes component');
+  const { events: apiEvents } = useEvents();
+  
   return (
     <Routes>
+      {/* API Event routes - Dynamic (using slugified event names) - Must come before /analytics route */}
+      <Route
+        path="/analytics/event/:eventSlug"
+        element={
+          <ProtectedRoute allowedRoles={["Admin", "user"]}>
+            <ApiEventRoute />
+          </ProtectedRoute>
+        }
+      />
       {routeConfig.map(({ path, element, roles }) => (
         <Route
           key={path}
@@ -90,26 +126,38 @@ const AppRoutes = () => {
           }
         />
       ))}
-      {/* Event report routes */}
+      {/* Legacy Event report routes - kept for backward compatibility */}
       {eventReportRoutes.map(r => (
         <Route
           key={r.path}
           path={r.path}
-          element={<EventReportPage eventType={r.eventType} />}
+          element={
+            <ProtectedRoute allowedRoles={["Admin", "user"]}>
+              <EventReportPage eventType={r.eventType} />
+            </ProtectedRoute>
+          }
         />
       ))}
       {/* Custom Event Management */}
       <Route
         path="/analytics/custom-events"
-        element={<CustomEventManagement />}
+        element={
+          <ProtectedRoute allowedRoles={["Admin", "user"]}>
+            <CustomEventManagement />
+          </ProtectedRoute>
+        }
       />
       {/* Custom event routes - Dynamic */}
       <Route
         path="/analytics/custom/:customEventId"
-        element={<CustomEventReportPage />}
+        element={
+          <ProtectedRoute allowedRoles={["Admin", "user"]}>
+            <CustomEventReportPage />
+          </ProtectedRoute>
+        }
       />
-      {/* Fallback: Redirect any undefined route to dashboard */}
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {/* Fallback: Redirect any undefined route to login */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 };

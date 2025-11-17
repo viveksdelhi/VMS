@@ -3,7 +3,9 @@ import DashboardCards from "./DashboardCards";
 import RecentActivity from "./RecentActivity";
 import MapComponent from "./MapComponent";
 import WeeklyAlertGraph from "./WeeklyAlertGraph";
+
 const Dashboard = () => {
+  console.log('Dashboard - Component rendering');
 
   return (
     <div>

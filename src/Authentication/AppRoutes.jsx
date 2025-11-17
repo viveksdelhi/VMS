@@ -100,7 +100,12 @@ const ApiEventRoute = () => {
 
 const AppRoutes = () => {
   console.log('AppRoutes - Rendering AppRoutes component');
-  const { events: apiEvents } = useEvents();
+  const { events: apiEvents, loading: eventsLoading, error: eventsError } = useEvents();
+  
+  // Only use events for the ApiEventRoute, don't block other routes
+  if (eventsError) {
+    console.warn('AppRoutes - Events API error (non-blocking):', eventsError);
+  }
   
   return (
     <Routes>

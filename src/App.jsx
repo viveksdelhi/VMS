@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './Authentication/AuthContext';
+import { CustomEventProvider } from './contexts/CustomEventContext';
 import Layout from './Layout/Layout';
 import AppRoutes from './Authentication/AppRoutes';
 import LoginPage from './Authentication/Login';
@@ -8,31 +9,31 @@ import ProtectedRoute from './Authentication/ProtectedRoute';
 
 
 const App = () => {
-  const [collapsed, setCollapsed] = useState(false);
-
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          {/* Redirect root (/) to /login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+      <CustomEventProvider>
+        <Router>
+          <Routes>
+            {/* Redirect root (/) to /login */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
 
-          {/* Public Login Route */}
-          <Route path="/login" element={<LoginPage />} />
+            {/* Public Login Route */}
+            <Route path="/login" element={<LoginPage />} />
 
-          {/* Protected Routes */}
-          <Route
-            path="/*"
-            element={
-              <ProtectedRoute>
-                <Layout collapsed={collapsed} setCollapsed={setCollapsed}>
-                  <AppRoutes />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Router>
+            {/* Protected Routes */}
+            <Route
+              path="/*"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AppRoutes />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Router>
+      </CustomEventProvider>
     </AuthProvider>
   );
 };

@@ -14,19 +14,26 @@ export const AuthProvider = ({ children }) => {
     const token = Cookies.get('token');
     const savedRole = Cookies.get('role'); // 👈 Read role from cookies
 
+    console.log('AuthContext - Initializing:', { hasToken: !!token, role: savedRole });
+
     if (token) {
       setIsAuthenticated(true);
       setRole(savedRole || null); // Set role if available
+      console.log('AuthContext - Authenticated with role:', savedRole);
+    } else {
+      console.log('AuthContext - No token found');
     }
 
     setLoading(false);
   }, []);
 
   const login = (token, role) => {
+    console.log('AuthContext - Login called:', { hasToken: !!token, role });
     Cookies.set('token', token);
     Cookies.set('role', role); // 👈 Save role in cookies
     setIsAuthenticated(true);
     setRole(role);
+    console.log('AuthContext - Login complete, authenticated:', true, 'role:', role);
   };
 
   const logout = () => {

@@ -293,7 +293,7 @@ class Videoanalytics(models.Model):
 
 class Event(models.Model):
     eventId = models.AutoField(primary_key=True)
-    eventName = models.CharField(max_length=255)
+    eventName = models.CharField(max_length=255, unique=True)
     tags = models.JSONField(default=list, blank=True)
     conditions = models.JSONField(default=list, blank=True)
     cameras = models.JSONField(default=list, blank=True)

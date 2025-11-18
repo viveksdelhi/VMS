@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import AnalyticsTable from './AnalyticsData';
 import { useCustomEvents } from '../../../contexts/CustomEventContext';
 
-const CustomEventReportPage = ({ customEventId }) => {
-  // Get customEventId from props or URL params as fallback
+const CustomEventReportPage = ({ eventSlug: propEventSlug }) => {
+  // Get eventSlug from props or URL params as fallback
   const urlParams = useParams();
-  const eventId = customEventId || urlParams.customEventId;
-  const { customEvents, removeCustomEvent } = useCustomEvents();
+  const eventSlug = propEventSlug || urlParams.eventSlug;
+  const { getCustomEventBySlug, removeCustomEvent } = useCustomEvents();
+  const navigate = useNavigate();
   
   const [popupOpen, setPopupOpen] = useState(false);
   const [activeCamera, setActiveCamera] = useState(null);
@@ -15,8 +16,8 @@ const CustomEventReportPage = ({ customEventId }) => {
   const [payloadList, setPayloadList] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Find the custom event by ID
-  const customEvent = customEvents.find(event => event.id === parseInt(eventId));
+  // Find the custom event by slug
+  const customEvent = getCustomEventBySlug(eventSlug);
   
   if (!customEvent) {
     return (
@@ -24,8 +25,7 @@ const CustomEventReportPage = ({ customEventId }) => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-600 mb-4">Custom Event Not Found</h2>
           <p className="text-gray-600">The requested custom event could not be found.</p>
-          <p className="text-sm text-gray-500 mt-2">Looking for ID: {eventId}</p>
-          <p className="text-sm text-gray-500">Available events: {customEvents.map(e => `${e.name} (${e.id})`).join(', ')}</p>
+          <p className="text-sm text-gray-500 mt-2">Looking for slug: {eventSlug}</p>
         </div>
       </div>
     );
@@ -79,9 +79,9 @@ const CustomEventReportPage = ({ customEventId }) => {
 
   // Delete custom event
   const handleDeleteEvent = () => {
-    removeCustomEvent(parseInt(eventId));
+    removeCustomEvent(customEvent.id);
     // Redirect to analytics page after deletion
-    window.location.href = '/analytics';
+    navigate('/analytics');
   };
 
   return (

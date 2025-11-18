@@ -76,7 +76,7 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
     },
     {
       key: "event-reports",
-      label: "Event configuration",
+      label: "Event Configuration",
       icon: <FaBug />,
       children: [
         // Add API events dynamically (non-deletable defaults)

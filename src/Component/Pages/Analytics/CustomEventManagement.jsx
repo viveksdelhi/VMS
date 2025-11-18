@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useCustomEvents } from "../../../contexts/CustomEventContext";
 import { useNavigate } from "react-router-dom";
 import { useEvents } from "../../../hooks/useEvents";
+import { slugify } from "../../../utils/slugify";
 
 const OBJECT_OPTIONS = [
   "Person",
@@ -58,7 +59,10 @@ const CustomEventManagement = () => {
   };
 
   const handleViewEvent = (eventId) => {
-    navigate(`/analytics/custom/${eventId}`);
+    const event = customEvents.find(e => e.id === eventId);
+    if (event) {
+      navigate(`/analytics/event/${slugify(event.name)}`);
+    }
   };
 
   return (

@@ -28,6 +28,7 @@ import EventReportPage from '../Component/Pages/Analytics/EventDetectionTable';
 import CustomEventReportPage from '../Component/Pages/Analytics/CustomEventReportPage';
 import CustomEventManagement from '../Component/Pages/Analytics/CustomEventManagement';
 import { useEvents } from '../hooks/useEvents';
+import { useCustomEvents } from '../contexts/CustomEventContext';
 import { slugify } from '../utils/slugify';
 
 const routeConfig = [
@@ -61,39 +62,46 @@ const eventReportRoutes = [
   
 ];
 
-// Component to handle API event routes with slug matching
-const ApiEventRoute = () => {
+// Unified component to handle both API and custom event routes with slug matching
+const EventRoute = () => {
   const { eventSlug } = useParams();
   const { events: apiEvents, loading, error } = useEvents();
+  const { getCustomEventBySlug } = useCustomEvents();
   
+  // First check if it's a custom event
+  const customEvent = getCustomEventBySlug(eventSlug);
+  
+  if (customEvent) {
+    return <CustomEventReportPage eventSlug={eventSlug} />;
+  }
+  
+  // If not a custom event, check API events
   if (loading) {
     return <div>Loading event...</div>;
   }
   
   if (error) {
     console.error('Error loading events:', error);
-    return <Navigate to="/analytics" replace />;
+    // Don't redirect immediately, might be a custom event
   }
   
-  const event = apiEvents.find(e => {
+  const apiEvent = apiEvents?.find(e => {
     const eventSlugified = slugify(e.eventName || `event-${e.eventId}`);
     return eventSlugified === eventSlug;
   });
   
-  if (!event) {
-    console.warn(`Event not found for slug: ${eventSlug}`, {
-      availableSlugs: apiEvents.map(e => slugify(e.eventName || `event-${e.eventId}`)),
-      availableEvents: apiEvents.map(e => ({ id: e.eventId, name: e.eventName }))
-    });
-    return <Navigate to="/analytics" replace />;
+  if (apiEvent) {
+    return (
+      <EventReportPage 
+        eventId={apiEvent.eventId} 
+        eventData={apiEvent} 
+      />
+    );
   }
   
-  return (
-    <EventReportPage 
-      eventId={event.eventId} 
-      eventData={event} 
-    />
-  );
+  // Event not found in either API or custom events
+  console.warn(`Event not found for slug: ${eventSlug}`);
+  return <Navigate to="/analytics" replace />;
 };
 
 const AppRoutes = () => {
@@ -106,12 +114,12 @@ const AppRoutes = () => {
   
   return (
     <Routes>
-      {/* API Event routes - Dynamic (using slugified event names) - Must come before /analytics route */}
+      {/* Unified Event routes - Dynamic (using slugified event names) - Handles both API and custom events */}
       <Route
         path="/analytics/event/:eventSlug"
         element={
           <ProtectedRoute allowedRoles={["Admin", "user"]}>
-            <ApiEventRoute />
+            <EventRoute />
           </ProtectedRoute>
         }
       />
@@ -146,15 +154,6 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={["Admin", "user"]}>
             <CustomEventManagement />
-          </ProtectedRoute>
-        }
-      />
-      {/* Custom event routes - Dynamic */}
-      <Route
-        path="/analytics/custom/:customEventId"
-        element={
-          <ProtectedRoute allowedRoles={["Admin", "user"]}>
-            <CustomEventReportPage />
           </ProtectedRoute>
         }
       />

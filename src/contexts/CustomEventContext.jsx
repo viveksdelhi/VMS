@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { slugify } from '../utils/slugify';
 
 const CustomEventContext = createContext();
 
@@ -155,9 +156,13 @@ export const CustomEventProvider = ({ children }) => {
     return customEvents.map(event => ({
       key: `custom_${event.id}`,
       label: event.name,
-      path: `/analytics/custom/${event.id}`,
+      path: `/analytics/event/${slugify(event.name)}`,
       isCustom: true
     }));
+  };
+
+  const getCustomEventBySlug = (slug) => {
+    return customEvents.find(event => slugify(event.name) === slug);
   };
 
   return (
@@ -167,7 +172,8 @@ export const CustomEventProvider = ({ children }) => {
       removeCustomEvent,
       updateCustomEvent,
       clearAllCustomEvents,
-      getCustomEventsForSidebar
+      getCustomEventsForSidebar,
+      getCustomEventBySlug
     }}>
       {children}
     </CustomEventContext.Provider>

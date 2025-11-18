@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useCustomEvents } from '../../../contexts/CustomEventContext';
-import { getAllDefaultTriggers } from '../../../config/defaultEventTriggers';
 import { useEvents } from '../../../hooks/useEvents';
 
 const OBJECT_OPTIONS = [
@@ -41,8 +40,6 @@ const CustomEventForm = ({ onClose }) => {
     isEnabled: false
   });
 
-  // Get default presets and merge API events and user custom events as selectable presets
-  const defaultPresets = getAllDefaultTriggers();
   
   // Map API events to preset format
   const apiPresetMap = Object.fromEntries(
@@ -68,7 +65,7 @@ const CustomEventForm = ({ onClose }) => {
       }
     ])
   );
-  const presetEvents = { ...defaultPresets, ...apiPresetMap, ...customPresetMap };
+  const presetEvents = { ...apiPresetMap, ...customPresetMap };
 
   const CAMERA_LIST = [
     { id: 1, name: 'Camera 1' },

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import AnalyticsTable from './AnalyticsData';
-import { getDefaultTriggers, hasDefaultTriggers } from '../../../config/defaultEventTriggers';
 
 const CAMERA_LIST = [
   { id: 1, name: 'Camera 1' },
@@ -123,11 +122,7 @@ const EventReportPage = ({ eventType, eventId, eventData }) => {
 
   // Load default triggers for this event type (only for legacy eventType)
   useEffect(() => {
-    if (eventType && hasDefaultTriggers(eventType)) {
-      const triggers = getDefaultTriggers(eventType);
-      setDefaultTriggers(triggers);
-      setShowDefaultTriggers(true);
-    } else if (eventData) {
+    if (eventData) {
       // For API events, use the event data directly
       setDefaultTriggers({
         name: eventData.eventName,

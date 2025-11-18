@@ -14,7 +14,6 @@ import Papa from "papaparse";
 
 const columnHelper = createColumnHelper();
 
-// ✅ Add more fields relevant to analytics
 const columns = [
   columnHelper.accessor("id", { header: "ID" }),
   columnHelper.accessor("camera", { header: "Camera" }),

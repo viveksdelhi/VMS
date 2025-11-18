@@ -66,7 +66,6 @@ const ApiEventRoute = () => {
   const { eventSlug } = useParams();
   const { events: apiEvents, loading, error } = useEvents();
   
-  // Wait for events to load before trying to match
   if (loading) {
     return <div>Loading event...</div>;
   }
@@ -76,7 +75,6 @@ const ApiEventRoute = () => {
     return <Navigate to="/analytics" replace />;
   }
   
-  // Find event by matching slug
   const event = apiEvents.find(e => {
     const eventSlugified = slugify(e.eventName || `event-${e.eventId}`);
     return eventSlugified === eventSlug;
@@ -102,7 +100,6 @@ const AppRoutes = () => {
   console.log('AppRoutes - Rendering AppRoutes component');
   const { events: apiEvents, loading: eventsLoading, error: eventsError } = useEvents();
   
-  // Only use events for the ApiEventRoute, don't block other routes
   if (eventsError) {
     console.warn('AppRoutes - Events API error (non-blocking):', eventsError);
   }

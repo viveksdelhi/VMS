@@ -1,14 +1,19 @@
 import React, { useEffect, useState, useRef } from "react";
 import Cookies from "js-cookie";
-import { message, Skeleton, Badge } from "antd";
+import { message, Skeleton, Badge, Modal, Image } from "antd";
 import { deviceApi } from "../utils/axiosInstance";
+import { ANALYTICS_API_URL } from "../config";
 import { MdClose, MdNotificationsActive, MdNotificationsOff } from "react-icons/md";
 
-const LiveEventsSidebar = () => {
+const LiveEventsSidebar = ({
+  isCollapsed = true,
+  onCollapseChange = () => {},
+}) => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [wasOpenedByHover, setWasOpenedByHover] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const userId = Cookies.get("userId");
   const intervalRef = useRef(null);
 
@@ -85,11 +90,24 @@ const LiveEventsSidebar = () => {
     return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
   };
 
+  const handleMouseEnter = () => {
+    if (isCollapsed) {
+      setWasOpenedByHover(true);
+      onCollapseChange(false);
+    }
+  };
+
+  const handleClose = () => {
+    setWasOpenedByHover(false);
+    onCollapseChange(true);
+  };
+
   return (
     <div
+      onMouseEnter={handleMouseEnter}
       className={`
-        fixed right-0 top-0 h-full z-40
-        bg-white shadow-2xl border-l border-gray-200
+        fixed right-0 top-16 h-full z-40
+        bg-white shadow-2xl border-l border-t border-2 border-gray-200
         transition-all duration-300 ease-in-out
         ${isCollapsed ? "w-12" : "w-80"}
         flex flex-col
@@ -122,9 +140,9 @@ const LiveEventsSidebar = () => {
             </button>
           )}
           <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={handleClose}
             className="p-1.5 rounded-md hover:bg-purple-200 transition-colors"
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title="Close sidebar"
           >
             <MdClose className="text-gray-600 text-lg" />
           </button>
@@ -157,8 +175,7 @@ const LiveEventsSidebar = () => {
                   ${getEventTypeColor(event.objectName)}
                 `}
                 onClick={() => {
-                  // Could navigate to event details or camera view
-                  console.log("Event clicked:", event);
+                  setSelectedEvent(event);
                 }}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -200,11 +217,7 @@ const LiveEventsSidebar = () => {
       {/* Collapsed View */}
       {isCollapsed && (
         <div className="flex flex-col items-center justify-center h-full p-2">
-          <button
-            onClick={() => setIsCollapsed(false)}
-            className="relative p-2 rounded-md hover:bg-purple-100 transition-colors"
-            title="Expand sidebar"
-          >
+          <div className="relative p-2 rounded-md hover:bg-purple-100 transition-colors">
             <MdNotificationsActive className="text-purple-600 text-2xl" />
             {events.length > 0 && (
               <Badge
@@ -212,7 +225,7 @@ const LiveEventsSidebar = () => {
                 className="absolute -top-1 -right-1"
               />
             )}
-          </button>
+          </div>
           {isPaused && (
             <div className="mt-2 w-2 h-2 rounded-full bg-yellow-400" title="Updates paused" />
           )}
@@ -230,6 +243,78 @@ const LiveEventsSidebar = () => {
           </div>
         </div>
       )}
+
+      <Modal
+        open={!!selectedEvent}
+        onCancel={() => setSelectedEvent(null)}
+        footer={null}
+        centered
+        width={520}
+        destroyOnClose
+        title={
+          <div className="flex items-center space-x-4">
+            <span className="text-lg font-semibold text-gray-800">
+              Live Event #{selectedEvent?.id}
+            </span>
+            <span className="text-xs text-gray-500">
+              {selectedEvent
+                ? new Date(selectedEvent.regDate).toLocaleString()
+                : ""}
+            </span>
+          </div>
+        }
+      >
+        {selectedEvent && (
+          <div className="space-y-4">
+            {selectedEvent.framePath && (
+              <Image
+                src={`${ANALYTICS_API_URL}${selectedEvent.framePath}`}
+                alt="Event frame"
+                className="rounded-md border"
+                fallback="https://via.placeholder.com/480x270?text=No+Image"
+              />
+            )}
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-gray-500">Camera</p>
+                <p className="font-medium text-gray-800">
+                  {selectedEvent.camera_name || "Unknown"}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500">Location</p>
+                <p className="font-medium text-gray-800">
+                  {selectedEvent.camera_location || "N/A"}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500">Object</p>
+                <p className="font-medium text-gray-800">
+                  {selectedEvent.objectName || "Unknown"}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500">Object Count</p>
+                <p className="font-medium text-gray-800">
+                  {selectedEvent.objectCount ?? "-"}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500">Status</p>
+                <p className="font-medium text-gray-800">
+                  {selectedEvent.alertStatus || selectedEvent.status || "-"}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500">Camera ID</p>
+                <p className="font-medium text-gray-800">
+                  {selectedEvent.cameraId ?? "-"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

@@ -8,6 +8,7 @@ const Layout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(true);
   const [showSidebar, setShowSidebar] = useState(false); // for mobile sidebar toggle
   const [customEventPopupOpen, setCustomEventPopupOpen] = useState(false);
+  const [isLiveSidebarCollapsed, setIsLiveSidebarCollapsed] = useState(true);
 
   const hideScrollbarStyle = {
     height: '100%',
@@ -61,7 +62,7 @@ const Layout = ({ children }) => {
       <div
         className={`flex flex-col flex-1 z-10 transition-all duration-300 ease-in-out bg-white text-[#E6E6FA] ${
           showSidebar ? 'blur-sm select-none pointer-events-none md:pointer-events-auto md:blur-0' : ''
-        }`}
+        } ${isLiveSidebarCollapsed ? 'md:pr-12' : 'md:pr-80'}`}
       >
         <Header onToggle={() => setShowSidebar(!showSidebar)} />
         <main className="flex-1 pl-1 overflow-y-auto bg-white text-black rounded-tl-md rounded-tr-md">
@@ -80,7 +81,10 @@ const Layout = ({ children }) => {
       </div>
 
       {/* Right Sidebar - Live Events */}
-      <LiveEventsSidebar />
+      <LiveEventsSidebar
+        isCollapsed={isLiveSidebarCollapsed}
+        onCollapseChange={setIsLiveSidebarCollapsed}
+      />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   FaVideo,
@@ -27,6 +27,8 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [openMenus, setOpenMenus] = useState({});
+  const [wasManuallyCollapsed, setWasManuallyCollapsed] = useState(false);
+  const manualCollapseTimeRef = useRef(0);
   const { getCustomEventsForSidebar, customEvents } = useCustomEvents();
   const { events: apiEvents } = useEvents();
   
@@ -143,6 +145,8 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
   useEffect(() => {
     if (!collapsed) {
       setOpenMenus(menuItems.reduce((acc, item) => ({ ...acc, [item.key]: true }), {}));
+      // Clear manual collapse flag when sidebar expands (either by hover or manual)
+      setWasManuallyCollapsed(false);
     }
   }, [collapsed]);
 
@@ -167,15 +171,41 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
   };
 
   const handleSidebarHover = () => {
-    if (collapsed) {
+    // Only auto-expand if collapsed and wasn't manually collapsed recently
+    const timeSinceManualCollapse = Date.now() - manualCollapseTimeRef.current;
+    if (collapsed && !wasManuallyCollapsed && timeSinceManualCollapse > 500) {
       onToggleCollapse();
     }
+  };
+
+  const handleSidebarLeave = () => {
+    // When mouse leaves, allow hover expansion again after a delay
+    if (collapsed && wasManuallyCollapsed) {
+      setTimeout(() => {
+        setWasManuallyCollapsed(false);
+        manualCollapseTimeRef.current = 0;
+      }, 300);
+    }
+  };
+
+  const handleManualToggle = () => {
+    // If currently expanded, we're about to collapse - mark as manually collapsed
+    if (!collapsed) {
+      setWasManuallyCollapsed(true);
+      manualCollapseTimeRef.current = Date.now();
+    } else {
+      // If currently collapsed, we're about to expand - clear the flag
+      setWasManuallyCollapsed(false);
+      manualCollapseTimeRef.current = 0;
+    }
+    onToggleCollapse();
   };
 
   return (
     <div
       className={`${collapsed ? "w-16" : "w-65"} h-screen bg-white text-gray-900 flex flex-col justify-between shadow-xl transition-all duration-300`}
       onMouseEnter={handleSidebarHover}
+      onMouseLeave={handleSidebarLeave}
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4">
@@ -188,7 +218,7 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onToggleCollapse();
+            handleManualToggle();
           }}
           className="p-2 rounded-full bg-gray-100 hover:bg-purple-300 transition-all"
         >

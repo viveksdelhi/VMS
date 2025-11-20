@@ -20,7 +20,6 @@ import {
 import { MdMenu, MdMenuOpen, MdExpandLess, MdExpandMore } from "react-icons/md";
 import Logo from "../assets/logo.jpg";
 import { useCustomEvents } from "../contexts/CustomEventContext";
-import { useEvents } from "../hooks/useEvents";
 import { slugify } from "../utils/slugify";
 
 const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
@@ -28,12 +27,10 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [openMenus, setOpenMenus] = useState({});
   const { getCustomEventsForSidebar, customEvents } = useCustomEvents();
-  const { events: apiEvents } = useEvents();
   
-  // Debug logging
+  // Debug logging - only custom events
   console.log('Sidebar - customEvents:', customEvents);
   console.log('Sidebar - getCustomEventsForSidebar():', getCustomEventsForSidebar());
-  console.log('Sidebar - apiEvents:', apiEvents);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -41,19 +38,7 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Map API events to sidebar menu items
-  const apiEventMenuItems = useMemo(() => {
-    if (!apiEvents || apiEvents.length === 0) return [];
-    
-    return apiEvents.map((event) => ({
-      key: `event_${event.eventId}`,
-      label: event.eventName || `Event ${event.eventId}`,
-      path: `/analytics/event/${slugify(event.eventName || `event-${event.eventId}`)}`,
-      eventData: event,
-    }));
-  }, [apiEvents]);
-
-  // ✅ Full VMS Menu - make it reactive to custom events and API events
+  // ✅ Full VMS Menu - only using custom events from context
   const menuItems = useMemo(() => [
     {
       key: "video-management",
@@ -71,7 +56,6 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
       icon: <FaBug />,
       children: [
         { key: "analytics", label: "Video Analytics", icon: <FaChartLine />, path: "/analytics" },
-        // { key: "event", label: "Event Detection", icon: <FaFire />, path: "/event" },
       ],
     },
     {
@@ -79,14 +63,10 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
       label: "Event Configuration",
       icon: <FaBug />,
       children: [
-        // Add API events dynamically (non-deletable defaults)
-        ...apiEventMenuItems,
-        // Add custom events dynamically
+        // Add custom events dynamically from context only
         ...getCustomEventsForSidebar(),
         { key: "custom_event_management", label: "Manage Custom Events", icon: <FaCogs />, path: "/analytics/custom-events" },
-        { key: "custom_event", label: "Create Custom Event", icon: <FaCogs />, path: "#custom-event" },
       ],
-      
     },
     {
       key: "device-management",
@@ -117,19 +97,8 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
       children: [
         { key: "alerts", label: "Event Reports", icon: <FaClipboardList />, path: "/reports/alerts" },
         { key: "analyticsreports", label: "Analytics Reports", icon: <FaClipboardList />, path: "/reports/analytics" },
-        // { key: "usagereports", label: "Usage Reports", icon: <FaClipboardList />, path: "/reports/usage" },
       ],
     },
-    // {
-    //   key: "settings",
-    //   label: "Settings",
-    //   icon: <FaCogs />,
-    //   children: [
-    //     { key: "system", label: "System Settings", icon: <FaCogs />, path: "/settings/system" },
-    //     { key: "network", label: "Network Settings", icon: <FaCogs />, path: "/settings/network" },
-    //     { key: "storage", label: "Storage Settings", icon: <FaCogs />, path: "/settings/storage" },
-    //   ],
-    // },
     {
       key: "about",
       label: "About VMS",
@@ -138,13 +107,13 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
         { key: "overview", label: "Overview", icon: <FaInfoCircle />, path: "/about/overview" },
       ],
     },
-  ], [apiEventMenuItems, customEvents]);
+  ], [getCustomEventsForSidebar, customEvents]); // Only depend on custom events
 
   useEffect(() => {
     if (!collapsed) {
       setOpenMenus(menuItems.reduce((acc, item) => ({ ...acc, [item.key]: true }), {}));
     }
-  }, [collapsed]);
+  }, [collapsed, menuItems]);
 
   // ✅ Active route logic
   const selectedKey = (() => {
@@ -246,8 +215,7 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
           </div>
         ))}
       </div>
-      {/* Popup logic placeholder */}
-      {/* REMOVE popup code for customEventPopupOpen here, we will show it elsewhere */}
+
       {/* Footer */}
       <div className="p-4">
         <div className="bg-gray-50 rounded-xl p-4 text-center shadow-inner">

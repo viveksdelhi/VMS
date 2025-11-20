@@ -65,7 +65,7 @@ const LiveEventsSidebar = () => {
     
     const name = objectName.toLowerCase();
     if (name.includes("fire")) return "bg-red-200 text-red-700 border-red-400";
-    if (name.includes("person") || name.includes("human")) return "bg-blue-200 text-blue-700 border-blue-400";
+    if (name.includes("person") || name.includes("human")) return "bg-purple-200 text-blue-700 border-purple-400";
     if (name.includes("vehicle") || name.includes("car")) return "bg-yellow-200 text-yellow-700 border-yellow-400";
     if (name.includes("rodent") || name.includes("animal")) return "bg-orange-200 text-orange-700 border-orange-400";
     return "bg-purple-200 text-purple-700 border-purple-400";

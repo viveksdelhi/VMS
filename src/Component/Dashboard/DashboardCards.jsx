@@ -127,7 +127,7 @@ const DashboardCards = () => {
         : cards.map((card, idx) => (
             <div
               key={idx}
-              className={`${card.bg} rounded-lg border border-purple-200 shadow-lg p-2 h-40 flex flex-col justify-between transition duration-300 hover:shadow-xl`}
+              className={`${card.bg} rounded-lg border border-purple-200 shadow-lg p-2 h-fit flex flex-col justify-between transition duration-300 hover:shadow-xl`}
             >
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-purple-900">

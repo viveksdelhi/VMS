@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import LiveEventsSidebar from './LiveEventsSidebar';
 import CustomEventForm from '../Component/Pages/Analytics/CustomEventForm';
 
 const Layout = ({ children }) => {
@@ -77,6 +78,9 @@ const Layout = ({ children }) => {
           </div>
         )}
       </div>
+
+      {/* Right Sidebar - Live Events */}
+      <LiveEventsSidebar />
     </div>
   );
 };

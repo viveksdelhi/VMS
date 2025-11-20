@@ -1,0 +1,11 @@
+node_modules
+dist
+build
+.vite
+*.log
+package-lock.json
+.env
+.env.local
+coverage
+.nyc_output
+

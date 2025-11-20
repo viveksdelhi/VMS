@@ -36,7 +36,7 @@ const CustomEventManagement = () => {
     try {
       await deviceApi.delete(`/event/${eventId}/`);
       message.success("Event deleted");
-      
+
       // Refresh all event data
       fetchEvents(); // Refresh custom events
       refreshEvents(); // Sidebar update
@@ -47,38 +47,37 @@ const CustomEventManagement = () => {
 
   return (
     <div className="p-8">
-
       {/* Page Heading */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">
-          🎛️ Custom Event Management
-        </h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-800">
+            Custom Event Management
+          </h1>
+
+          <Button
+            size="large"
+            icon={<PlusOutlined />}
+            style={{
+              background: "#B17EF3",
+              borderColor: "#B17EF3",
+              color: "white",
+              padding: "0 20px",
+              height: "45px",
+              borderRadius: "12px",
+              boxShadow: "0 6px 14px rgba(177, 126, 243, 0.4)",
+            }}
+            onClick={() => {
+              setEditingEvent(null);
+              setOpenForm(true);
+            }}
+          >
+            Add Custom Event
+          </Button>
+        </div>
+
         <p className="text-gray-500 mt-1">
           Manage all your video processing and AI detection events.
         </p>
-      </div>
-
-      {/* ADD EVENT BUTTON */}
-      <div className="flex justify-end mb-8">
-        <Button
-          size="large"
-          icon={<PlusOutlined />}
-          style={{
-            background: "#B17EF3",
-            borderColor: "#B17EF3",
-            color: "white",
-            padding: "0 20px",
-            height: "45px",
-            borderRadius: "12px",
-            boxShadow: "0 6px 14px rgba(177, 126, 243, 0.4)",
-          }}
-          onClick={() => {
-            setEditingEvent(null);
-            setOpenForm(true);
-          }}
-        >
-          Add Custom Event
-        </Button>
       </div>
 
       {/* EVENT LIST */}
@@ -86,42 +85,8 @@ const CustomEventManagement = () => {
         {events.map((ev) => (
           <Card
             key={ev.eventId}
-            bordered={false}
-            className="relative rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl bg-white/95 backdrop-blur-xl"
-            bodyStyle={{ paddingTop: "3.8rem", paddingBottom: "1.5rem" }}
+            className="relative border border-purple-200 rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl bg-white/95 backdrop-blur-xl"
           >
-            {/* Floating buttons */}
-            <div className="absolute top-4 right-4 flex gap-2 z-10">
-              <Button
-                size="small"
-                icon={<EditOutlined />}
-                style={{
-                  borderRadius: "50%",
-                  borderColor: "#B17EF3",
-                  color: "#B17EF3",
-                }}
-                onClick={() => {
-                  setEditingEvent(ev);
-                  setOpenForm(true);
-                }}
-              />
-
-              <Popconfirm
-                title="Delete this event?"
-                onConfirm={() => handleDelete(ev.eventId)}
-              >
-                <Button
-                  size="small"
-                  danger
-                  style={{
-                    borderRadius: "50%",
-                    borderColor: "#ff4d4f",
-                  }}
-                  icon={<DeleteOutlined />}
-                />
-              </Popconfirm>
-            </div>
-
             {/* Card Title */}
             <div className="flex items-center gap-3 mb-4">
               <VideoCameraOutlined
@@ -131,10 +96,40 @@ const CustomEventManagement = () => {
               <h2 className="text-xl font-semibold text-gray-900">
                 {ev.eventName}
               </h2>
+              <div className="absolute top-4 right-4 flex gap-2 z-10">
+                <Button
+                  size="small"
+                  icon={<EditOutlined />}
+                  style={{
+                    borderRadius: "50%",
+                    borderColor: "#B17EF3",
+                    color: "#B17EF3",
+                  }}
+                  onClick={() => {
+                    setEditingEvent(ev);
+                    setOpenForm(true);
+                  }}
+                />
+
+                <Popconfirm
+                  title="Delete this event?"
+                  onConfirm={() => handleDelete(ev.eventId)}
+                >
+                  <Button
+                    size="small"
+                    danger
+                    style={{
+                      borderRadius: "50%",
+                      borderColor: "#ff4d4f",
+                    }}
+                    icon={<DeleteOutlined />}
+                  />
+                </Popconfirm>
+              </div>
             </div>
 
             {/* Tags */}
-            <div className="mb-3">
+            <div className="mb-1 mt-1">
               <p className="font-medium">Tags:</p>
               {ev.tags?.map((tag, i) => (
                 <Tag key={i} color="#B17EF3" className="text-white">
@@ -173,9 +168,7 @@ const CustomEventManagement = () => {
                   ⏰ {ev.scheduling?.timeRange?.startTime} →{" "}
                   {ev.scheduling?.timeRange?.endTime}
                 </p>
-                <p>
-                  🗓 Days: {ev.scheduling?.specificDays?.join(", ") || "-"}
-                </p>
+                <p>🗓 Days: {ev.scheduling?.specificDays?.join(", ") || "-"}</p>
               </div>
             </div>
           </Card>
@@ -187,13 +180,25 @@ const CustomEventManagement = () => {
         open={openForm}
         footer={null}
         width={750}
-        onCancel={() => setOpenForm(false)}
+        onCancel={() => {
+          setOpenForm(false);
+          setEditingEvent(null);
+        }}
         destroyOnClose
+        style={{ top: 20 }}
+        styles={{
+          body: { 
+            maxHeight: 'calc(100vh - 100px)',
+            overflowY: 'auto',
+            padding: '20px'
+          }
+        }}
       >
         <CustomEventForm
           editingData={editingEvent}
           onClose={() => {
             setOpenForm(false);
+            setEditingEvent(null);
             fetchEvents();
           }}
         />

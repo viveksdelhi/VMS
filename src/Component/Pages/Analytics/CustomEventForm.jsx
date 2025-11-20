@@ -152,9 +152,11 @@ const CustomEventForm = ({ editingData, onClose }) => {
     ...apiPresetEventsMap 
   };
 
-  const addCondition = () => {
-    if (currentCondition.object && currentCondition.threshold >= 0) {
-      setConditions([...conditions, { ...currentCondition }]);
+  const addCondition = (e) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    if (currentCondition.object && currentCondition.operator && currentCondition.threshold !== undefined && currentCondition.threshold >= 0) {
+      setConditions(prev => [...prev, { ...currentCondition }]);
       setCurrentCondition({ object: 'Person', operator: '>', threshold: 1 });
     }
   };
@@ -321,10 +323,30 @@ const CustomEventForm = ({ editingData, onClose }) => {
     }
   };
 
+  // Reset form when modal opens fresh (no editingData)
+  useEffect(() => {
+    if (!editingData) {
+      setEventName('');
+      setTags([]);
+      setTagInput('');
+      setSelectedPresetEvents([]);
+      setConditions([]);
+      setCurrentCondition({ object: 'Person', operator: '>', threshold: 1 });
+      setStep(1);
+      setSelectedCameras([]);
+      setScheduling({
+        dateRange: { startDate: '', endDate: '' },
+        specificDays: [],
+        timeRange: { startTime: '', endTime: '' },
+        isEnabled: false
+      });
+    }
+  }, [editingData]);
+
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+    <div className="w-full max-w-2xl mx-auto bg-white">
       {/* Progress Indicator */}
-      <div className="flex justify-center mb-6">
+      <div className="flex justify-center mb-6 pt-0">
         <div className="flex items-center">
           {[1, 2, 3].map((stepNumber) => (
             <React.Fragment key={stepNumber}>
@@ -347,7 +369,7 @@ const CustomEventForm = ({ editingData, onClose }) => {
         </div>
       </div>
 
-      <div className="mb-4 text-center">
+      <div className="mb-0 text-center">
         <h2 className="text-2xl font-bold text-gray-800">
           {editingData ? 'Edit Custom Event' : 'Create Custom Event'}
         </h2>
@@ -437,7 +459,7 @@ const CustomEventForm = ({ editingData, onClose }) => {
                 <p className="text-gray-500 mt-2">Loading preset events...</p>
               </div>
             ) : (
-              <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2 bg-gray-50">
+              <div className="max-h-40 border border-gray-300 rounded-md p-2 bg-gray-50">
                 {Object.entries(presetEvents).length === 0 ? (
                   <div className="text-center py-4 text-gray-500">
                     No preset events available
@@ -511,13 +533,20 @@ const CustomEventForm = ({ editingData, onClose }) => {
                 type="number"
                 value={currentCondition.threshold}
                 onChange={(e) => setCurrentCondition({...currentCondition, threshold: parseInt(e.target.value) || 0})}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addCondition(e);
+                  }
+                }}
                 className="w-20 px-3 py-2 border border-gray-300 rounded-md text-gray-900"
                 min="0"
               />
               
               <button
+                type="button"
                 onClick={addCondition}
-                className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600"
+                className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors"
               >
                 Add
               </button>
@@ -529,6 +558,7 @@ const CustomEventForm = ({ editingData, onClose }) => {
                   <div key={index} className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-gray-300 text-sm">
                     <span className="text-gray-700">{condition.object} {condition.operator} {condition.threshold}</span>
                     <button
+                      type="button"
                       onClick={() => removeCondition(index)}
                       className="text-red-500 hover:text-red-700 ml-1 text-xs font-bold"
                       title="Remove condition"
@@ -546,15 +576,17 @@ const CustomEventForm = ({ editingData, onClose }) => {
 
           <div className="flex justify-end gap-2">
             <button
+              type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
             >
               Cancel
             </button>
             <button
+              type="button"
               onClick={handleNext}
               disabled={!eventName.trim() || conditions.length === 0}
-              className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50"
+              className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Next
             </button>
@@ -614,15 +646,17 @@ const CustomEventForm = ({ editingData, onClose }) => {
 
           <div className="flex justify-end gap-2">
             <button
+              type="button"
               onClick={() => setStep(1)}
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
             >
               Back
             </button>
             <button
+              type="button"
               onClick={handleNext}
               disabled={selectedCameras.length === 0}
-              className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50"
+              className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Next
             </button>
@@ -741,14 +775,16 @@ const CustomEventForm = ({ editingData, onClose }) => {
 
           <div className="flex justify-end gap-2 mt-6">
             <button
+              type="button"
               onClick={() => setStep(2)}
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors"
             >
               Back
             </button>
             <button
+              type="button"
               onClick={handleSave}
-              className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+              className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
             >
               {editingData ? 'Update Custom Event' : 'Save Custom Event'}
             </button>

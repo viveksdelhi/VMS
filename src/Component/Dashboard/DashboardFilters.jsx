@@ -1,71 +1,49 @@
 import React, { useEffect, useMemo, useState } from "react";
-import Cookies from "js-cookie";
-import { message, Select, Spin } from "antd";
-import { deviceApi } from "../../utils/axiosInstance";
+import { Select, Spin } from "antd";
+import { useDeviceInventory } from "../../contexts/DeviceInventoryContext";
 
 const DashboardFilters = () => {
-  const [sites, setSites] = useState([]);
-  const [zones, setZones] = useState([]);
-  const [nvrs, setNvrs] = useState([]);
-  const [cameras, setCameras] = useState([]);
+  const {
+    sites,
+    zones,
+    nvrs,
+    cameras,
+    loading: inventoryLoading,
+    refreshInventory,
+  } = useDeviceInventory();
   const [selected, setSelected] = useState({
     site: "",
     zone: "",
     nvr: "",
     camera: "",
   });
-  const [loading, setLoading] = useState(false);
-
-  const userId = Cookies.get("userId");
 
   useEffect(() => {
-    const fetchDropdowns = async () => {
-      if (!userId) return;
+    if (sites.length) {
+      setSelected((prev) => ({ ...prev, site: prev.site || sites[0]?.id || "" }));
+    }
+  }, [sites]);
 
-      try {
-        setLoading(true);
+  useEffect(() => {
+    if (zones.length) {
+      setSelected((prev) => ({ ...prev, zone: prev.zone || zones[0]?.id || "" }));
+    }
+  }, [zones]);
 
-        const [siteRes, zoneRes, nvrRes, cameraRes] = await Promise.all([
-          deviceApi.get("/Location/", {
-            params: { userid: userId, page: 1, pageSize: 100 },
-          }),
-          deviceApi.get("/Zone/", {
-            params: { userid: userId, page: 1, pageSize: 100 },
-          }),
-          deviceApi.get("/NVR/", {
-            params: { user_id: userId, page: 1, page_size: 100 },
-          }),
-          deviceApi.get("/Camera/", {
-            params: { user_id: userId, page: 1, pageSize: 100 },
-          }),
-        ]);
+  useEffect(() => {
+    if (nvrs.length) {
+      setSelected((prev) => ({ ...prev, nvr: prev.nvr || nvrs[0]?.id || "" }));
+    }
+  }, [nvrs]);
 
-        const siteOptions = siteRes.data.results || siteRes.data || [];
-        const zoneOptions = zoneRes.data.results || zoneRes.data || [];
-        const nvrOptions = nvrRes.data.results || nvrRes.data || [];
-        const cameraOptions = cameraRes.data.results || cameraRes.data || [];
-
-        setSites(Array.isArray(siteOptions) ? siteOptions : []);
-        setZones(Array.isArray(zoneOptions) ? zoneOptions : []);
-        setNvrs(Array.isArray(nvrOptions) ? nvrOptions : []);
-        setCameras(Array.isArray(cameraOptions) ? cameraOptions : []);
-
-        setSelected({
-          site: siteOptions[0]?.id || "",
-          zone: zoneOptions[0]?.id || "",
-          nvr: nvrOptions[0]?.id || "",
-          camera: cameraOptions[0]?.id || "",
-        });
-      } catch (error) {
-        console.error("Failed to load dashboard dropdowns:", error);
-        message.error("Unable to load filter options");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDropdowns();
-  }, [userId]);
+  useEffect(() => {
+    if (cameras.length) {
+      setSelected((prev) => ({
+        ...prev,
+        camera: prev.camera || cameras[0]?.id || "",
+      }));
+    }
+  }, [cameras]);
 
   const handleChange = (key, value) => {
     setSelected((prev) => ({ ...prev, [key]: value }));
@@ -130,18 +108,32 @@ const DashboardFilters = () => {
               placeholder={dropdown.placeholder}
               onChange={(value) => handleChange(dropdown.key, value)}
               options={dropdown.options}
-              loading={loading}
+              loading={inventoryLoading}
               size="large"
               allowClear
               showSearch
               className="w-full"
               optionFilterProp="label"
               notFoundContent={
-                loading ? <Spin size="small" /> : dropdown.emptyLabel
+                inventoryLoading ? (
+                  <Spin size="small" />
+                ) : (
+                  dropdown.emptyLabel
+                )
               }
             />
           </div>
         ))}
+      </div>
+      <div className="flex justify-end mt-4">
+        <button
+          type="button"
+          onClick={refreshInventory}
+          className="text-sm text-purple-600 underline"
+          disabled={inventoryLoading}
+        >
+          Refresh
+        </button>
       </div>
     </div>
   );

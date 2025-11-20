@@ -1,37 +1,9 @@
-import React, { useEffect, useState } from "react";
-import Cookies from "js-cookie";
-import { message, Skeleton } from "antd";
-import { deviceApi } from "../../utils/axiosInstance";
+import React from "react";
+import { Skeleton } from "antd";
+import { useAlertData } from "../../contexts/AlertDataContext";
 
 const RecentActivity = () => {
-  const [activities, setActivities] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const userId = Cookies.get("userId");
-
-  const fetchAlerts = async () => {
-    try {
-      setLoading(true);
-      const res = await deviceApi.get(`/CameraAlert/`, {
-        params: {
-          userid: userId,
-          page: 1,
-          pageSize: 10,
-          search: "",
-          camera_id: "",
-        },
-      });
-      setActivities(res.data.results || []);
-    } catch (error) {
-      console.error("Error fetching camera alerts:", error);
-      message.error("Failed to fetch recent alerts");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (userId) fetchAlerts();
-  }, [userId]);
+  const { alerts, loading } = useAlertData();
 
   return (
     <div className="p-4 bg-purple-100 rounded-md shadow-sm border border-gray-200">
@@ -53,8 +25,8 @@ const RecentActivity = () => {
         </div>
       ) : (
         <div className="space-y-2 max-h-64 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-          {activities.length > 0 ? (
-            activities.map((alert) => (
+          {alerts.length > 0 ? (
+            alerts.map((alert) => (
               <div
                 key={alert.id}
                 className="flex items-start justify-between p-3 rounded-md border-l-4 bg-purple-200 text-purple-700 shadow-sm"

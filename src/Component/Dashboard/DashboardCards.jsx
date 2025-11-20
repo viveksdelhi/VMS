@@ -1,49 +1,29 @@
-import React, { useEffect, useState } from "react";
-import { FaVideo, FaBell, FaChartLine, FaServer, FaLayerGroup, FaMapMarkerAlt, FaClipboardList } from "react-icons/fa";
+import React from "react";
+import {
+  FaVideo,
+  FaBell,
+  FaChartLine,
+  FaServer,
+  FaLayerGroup,
+  FaMapMarkerAlt,
+  FaClipboardList,
+} from "react-icons/fa";
 import { Link } from "react-router-dom";
-import Cookies from "js-cookie";
-import { deviceApi } from "../../utils/axiosInstance";
-import { Skeleton, message } from "antd";
+import { Skeleton } from "antd";
+import { useDeviceInventory } from "../../contexts/DeviceInventoryContext";
+import { useAlertData } from "../../contexts/AlertDataContext";
 
 const DashboardCards = () => {
-  const [cameraCount, setCameraCount] = useState(0);
-  const [eventCount, setEventCount] = useState(0);
-  const [nvrCount, setNvrCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [siteCount,setSiteCount] = useState(0);
-  const [zoneCount,setZoneCount] = useState(0);
-  const [alertCount,setAlertCount] = useState(0);
-  const [systemHealth,setSystemHealth] = useState("Healthy");
-  const userId = Cookies.get("userId"); // user ID from cookies
-
-  const fetchCounts = async () => {
-    try {
-      setLoading(true);
-
-      const [cameraRes, alertRes, nvrRes, locationRes, zoneRes] = await Promise.all([
-        deviceApi.get(`/Camera/`, { params: { user_id: userId } }),
-        deviceApi.get(`/CameraAlert/`, { params: { userid: userId } }),
-        deviceApi.get(`/NVR/`, { params: { user_id: userId } }),
-        deviceApi.get('/Location/', { params: { userid: userId } }),
-        deviceApi.get('/Zone/', { params: { userid: userId } })
-      ]);
-
-      setCameraCount(cameraRes.data.count || cameraRes.data.length || 0);
-      setEventCount(alertRes.data.count || alertRes.data.length || 0);
-      setNvrCount(nvrRes.data.count || nvrRes.data.length || 0);
-      setSiteCount(locationRes.data.count || locationRes.data.length || 0);
-      setZoneCount(zoneRes.data.count || zoneRes.data.length || 0);
-    } catch (error) {
-      console.error("Error fetching dashboard counts:", error);
-      message.error("Failed to load dashboard data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (userId) fetchCounts();
-  }, [userId]);
+  const {
+    cameraCount,
+    nvrCount,
+    siteCount,
+    zoneCount,
+    loading: inventoryLoading,
+  } = useDeviceInventory();
+  const { alertsCount, loading: alertLoading } = useAlertData();
+  const systemHealth = "Healthy";
+  const loading = inventoryLoading || alertLoading;
 
   const cards = [
     {
@@ -61,9 +41,10 @@ const DashboardCards = () => {
       icon: <FaMapMarkerAlt className="text-xl text-purple-500" />,
       link: "/devices/zones",
       bg: "bg-purple-100",
-    },{
+    },
+    {
       title: "Alerts",
-      count: alertCount,
+      count: alertsCount,
       subtitle: "All Alerts",
       icon: <FaClipboardList className="text-xl text-purple-500" />,
       link: "/reports/alerts",
@@ -71,7 +52,7 @@ const DashboardCards = () => {
     },
     {
       title: "Events",
-      count: eventCount,
+      count: alertsCount,
       subtitle: "Recent security & safety events",
       icon: <FaBell className="text-xl text-purple-500" />,
       link: "/analytics",
@@ -79,7 +60,7 @@ const DashboardCards = () => {
     },
     {
       title: "Analytics",
-      count: eventCount,
+      count: alertsCount,
       subtitle: "AI-driven insights",
       icon: <FaChartLine className="text-xl text-purple-500" />,
       link: "/analytics",

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -9,73 +9,26 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, Skeleton } from "antd";
-import Cookies from "js-cookie";
-import { deviceApi } from "../../utils/axiosInstance";
+import { useAlertData } from "../../contexts/AlertDataContext";
 
 const WeeklyAlertGraph = () => {
-  const [chartData, setChartData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const { weeklyCounts, loading } = useAlertData();
 
-  // Helper → convert JS Date → YYYY-MM-DD
-  const formatDate = (date) => date.toISOString().split("T")[0];
+  const chartData = useMemo(() => {
+    if (!weeklyCounts.length) return [];
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-
-        // ✅ Get user_id from cookies
-        const userId = Cookies.get("userId");
-        if (!userId) {
-          console.warn("⚠️ No userId found in cookies!");
-          return;
-        }
-
-        // 🗓️ Get previous 7 days (today inclusive)
-        const today = new Date();
-        const lastWeek = new Date();
-        lastWeek.setDate(today.getDate() - 6);
-
-        const fromDate = formatDate(lastWeek);
-        const toDate = formatDate(today);
-
-        // ✅ Build dynamic API endpoint
-        const url = `/CameraalertsCount/?user_id=${userId}&from_date=${fromDate}&to_date=${toDate}`;
-
-        // ✅ Fetch weekly alert counts
-        const res = await deviceApi.get(url);
-        const apiData = res.data || [];
-
-        // ✅ Map API data to day names
-        const dayMap = {};
-        apiData.forEach((item) => {
-          const dateObj = new Date(item.date);
-          const dayName = dateObj.toLocaleDateString("en-US", { weekday: "short" });
-          dayMap[dayName] = item.count;
-        });
-
-        // ✅ Build 7-day series (Sun → Sat)
-        const orderedDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        const todayIndex = today.getDay();
-
-        // Start from (today - 6) → today
-        const last7 = Array.from({ length: 7 }).map((_, i) => {
-          const date = new Date();
-          date.setDate(today.getDate() - (6 - i));
-          const dName = date.toLocaleDateString("en-US", { weekday: "short" });
-          return { day: dName, total: dayMap[dName] || 0 };
-        });
-
-        setChartData(last7);
-      } catch (err) {
-        console.error("❌ Error fetching weekly camera alerts:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+    const today = new Date();
+    return Array.from({ length: 7 }).map((_, idx) => {
+      const date = new Date();
+      date.setDate(today.getDate() - (6 - idx));
+      const key = date.toISOString().split("T")[0];
+      const match = weeklyCounts.find((item) => item.date === key);
+      return {
+        day: date.toLocaleDateString("en-US", { weekday: "short" }),
+        total: match?.count || 0,
+      };
+    });
+  }, [weeklyCounts]);
 
   return (
     <Card

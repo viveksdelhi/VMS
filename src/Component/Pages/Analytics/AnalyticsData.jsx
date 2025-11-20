@@ -62,8 +62,8 @@ const AnalyticsTable = () => {
         }
       },
     }),
-    columnHelper.accessor("eventType", { header: "Event Type" }),
-    // columnHelper.accessor("objectCount", { header: "Count" }),
+    // columnHelper.accessor("eventType", { header: "Event Type" }),
+    columnHelper.accessor("objectCount", { header: "Count" }),
     // Alert Severity Mapping
     columnHelper.accessor("alertStatus", {
       header: "Severity",
@@ -103,7 +103,7 @@ const AnalyticsTable = () => {
         );
       },
     }),
-    columnHelper.accessor("Accuracy", { header: "Accuracy" }),
+    // columnHelper.accessor("Accuracy", { header: "Accuracy" }),
     columnHelper.accessor("regDate", {
       header: "Timestamp",
       cell: (info) =>
@@ -129,7 +129,7 @@ const AnalyticsTable = () => {
         );
       },
     }),
-    columnHelper.accessor("videoPlayback", { header: "Video Playback" }),
+    // columnHelper.accessor("videoPlayback", { header: "Video Playback" }),
   ];
 
   // ✅ Fetch cameras for filter dropdown

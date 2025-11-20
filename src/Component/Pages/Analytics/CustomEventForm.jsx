@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCustomEvents } from '../../../contexts/CustomEventContext';
-import { useEvents } from '../../../hooks/useEvents';
+import Cookies from "js-cookie";
+import { deviceApi } from "../../../utils/axiosInstance";
 
 const OBJECT_OPTIONS = [
   'Person', 'Vehicle', 'Bicycle', 'Car', 'Dog', 'Animal', 'Bag', 'Box', 
@@ -11,84 +12,161 @@ const OBJECT_OPTIONS = [
 
 const OPERATORS = ['>', '>=', '==', '<', '<='];
 
-const CustomEventForm = ({ onClose }) => {
-  const { addCustomEvent, customEvents } = useCustomEvents();
-  const { events: apiEvents } = useEvents();
-  const [eventName, setEventName] = useState('');
-  const [description, setDescription] = useState('');
-  const [tags, setTags] = useState([]);
+const CustomEventForm = ({ editingData, onClose }) => {
+  const { refreshEvents } = useCustomEvents();
+  
+  // State initialization with editingData
+  const [eventName, setEventName] = useState(editingData?.eventName || '');
+  const [tags, setTags] = useState(editingData?.tags || []);
   const [tagInput, setTagInput] = useState('');
-  const [selectedPresetEvents, setSelectedPresetEvents] = useState([]);
-  const [conditions, setConditions] = useState([]);
+  const [selectedPresetEvents, setSelectedPresetEvents] = useState(editingData?.presetEvents || []);
+  const [conditions, setConditions] = useState(editingData?.conditions || []);
   const [currentCondition, setCurrentCondition] = useState({
     object: 'Person',
     operator: '>',
     threshold: 1
   });
-  const [step, setStep] = useState(1); // 1: Create conditions, 2: Select cameras, 3: Schedule
-  const [selectedCameras, setSelectedCameras] = useState([]);
+  const [step, setStep] = useState(1);
+  const [selectedCameras, setSelectedCameras] = useState(editingData?.cameras || []);
   const [scheduling, setScheduling] = useState({
     dateRange: {
-      startDate: '',
-      endDate: ''
+      startDate: editingData?.scheduling?.dateRange?.startDate || '',
+      endDate: editingData?.scheduling?.dateRange?.endDate || ''
     },
-    specificDays: [],
+    specificDays: editingData?.scheduling?.specificDays || [],
     timeRange: {
-      startTime: '',
-      endTime: ''
+      startTime: editingData?.scheduling?.timeRange?.startTime || '',
+      endTime: editingData?.scheduling?.timeRange?.endTime || ''
     },
-    isEnabled: false
+    isEnabled: !!editingData?.scheduling
   });
 
+  // New state for preset events from API
+  const [presetEventsFromAPI, setPresetEventsFromAPI] = useState([]);
+  const [loadingPresets, setLoadingPresets] = useState(false);
   
-  // Map API events to preset format
-  const apiPresetMap = Object.fromEntries(
-    (apiEvents || []).map((e) => [
-      `api_event_${e.eventId}`,
+  // New state for dynamic cameras
+  const [cameraList, setCameraList] = useState([]);
+  const [loadingCameras, setLoadingCameras] = useState(false);
+  const [cameraError, setCameraError] = useState(null);
+
+  // Effect to populate form when editingData changes
+  useEffect(() => {
+    if (editingData) {
+      setEventName(editingData.eventName || '');
+      setTags(editingData.tags || []);
+      setConditions(editingData.conditions || []);
+      setSelectedCameras(editingData.cameras || []);
+      
+      // Set scheduling data
+      if (editingData.scheduling) {
+        setScheduling({
+          dateRange: {
+            startDate: editingData.scheduling.dateRange?.startDate || '',
+            endDate: editingData.scheduling.dateRange?.endDate || ''
+          },
+          specificDays: editingData.scheduling.specificDays || [],
+          timeRange: {
+            startTime: editingData.scheduling.timeRange?.startTime || '',
+            endTime: editingData.scheduling.timeRange?.endTime || ''
+          },
+          isEnabled: true
+        });
+      } else {
+        setScheduling({
+          dateRange: { startDate: '', endDate: '' },
+          specificDays: [],
+          timeRange: { startTime: '', endTime: '' },
+          isEnabled: false
+        });
+      }
+    }
+  }, [editingData]);
+
+  const userId = Cookies.get('userId');
+
+  // Fetch preset events from API
+  useEffect(() => {
+    const fetchPresetEvents = async () => {
+      setLoadingPresets(true);
+      try {
+        const response = await deviceApi.get('/event/');
+        setPresetEventsFromAPI(response.data.results || []);
+      } catch (error) {
+        console.error('Error fetching preset events:', error);
+        setPresetEventsFromAPI([]);
+      } finally {
+        setLoadingPresets(false);
+      }
+    };
+
+    fetchPresetEvents();
+  }, []);
+
+  // Fetch cameras dynamically from API
+  useEffect(() => {
+    const fetchCameras = async () => {
+      setLoadingCameras(true);
+      setCameraError(null);
+      try {
+        const response = await deviceApi.get('/Camera/');
+        const cameras = response.data.results || response.data || [];
+        
+        if (Array.isArray(cameras)) {
+          setCameraList(cameras.map(camera => ({
+            id: camera.id || camera.cameraId,
+            name: camera.name || camera.cameraName || `Camera ${camera.id}`,
+            status: camera.status,
+            location: camera.location
+          })));
+        } else {
+          console.warn('Unexpected camera data format:', cameras);
+          setCameraList([]);
+        }
+      } catch (error) {
+        console.error('Error fetching cameras:', error);
+        setCameraError('Failed to load cameras');
+        setCameraList([]);
+      } finally {
+        setLoadingCameras(false);
+      }
+    };
+
+    fetchCameras();
+  }, []);
+
+  // Map preset events from API
+  const apiPresetEventsMap = Object.fromEntries(
+    presetEventsFromAPI.map((preset) => [
+      `preset_${preset.id || preset.presetId}`,
       {
-        name: e.eventName || `Event ${e.eventId}`,
-        description: `Default event: ${e.eventName || `Event ${e.eventId}`}`,
-        conditions: e.conditions || [],
-        tags: e.tags || [],
-      },
-    ])
-  );
-  
-  const customPresetMap = Object.fromEntries(
-    (customEvents || []).map(e => [
-      `custom_${e.id}`,
-      {
-        name: e.name,
-        description: e.description || 'User-defined custom event',
-        conditions: e.conditions || [],
-        tags: e.tags || []
+        eventName: preset.name || preset.eventName || `Preset ${preset.id}`,
+        conditions: preset.conditions || [],
+        tags: preset.tags || [],
+        description: preset.description || 'Predefined event template'
       }
     ])
   );
-  const presetEvents = { ...apiPresetMap, ...customPresetMap };
 
-  const CAMERA_LIST = [
-    { id: 1, name: 'Camera 1' },
-    { id: 2, name: 'Camera 2' },
-    { id: 3, name: 'Camera 3' },
-  ];
+  const presetEvents = { 
+    ...apiPresetEventsMap 
+  };
 
   const addCondition = () => {
     if (currentCondition.object && currentCondition.threshold >= 0) {
-      setConditions([...conditions, { ...currentCondition, id: Date.now() }]);
+      setConditions([...conditions, { ...currentCondition }]);
       setCurrentCondition({ object: 'Person', operator: '>', threshold: 1 });
     }
   };
 
-  const removeCondition = (id) => {
-    setConditions(conditions.filter(c => c.id !== id));
+  const removeCondition = (index) => {
+    setConditions(conditions.filter((_, i) => i !== index));
   };
 
   // Handle preset event selection
   const handlePresetEventToggle = (eventType) => {
     setSelectedPresetEvents(prev => {
       if (prev.includes(eventType)) {
-        // Remove preset event and its conditions
         const presetEvent = presetEvents[eventType];
         const newConditions = conditions.filter(condition => 
           !presetEvent.conditions.some(presetCondition => 
@@ -100,12 +178,10 @@ const CustomEventForm = ({ onClose }) => {
         setConditions(newConditions);
         return prev.filter(type => type !== eventType);
       } else {
-        // Add preset event and its conditions
         const presetEvent = presetEvents[eventType];
         const newConditions = [...conditions];
         
         presetEvent.conditions.forEach(presetCondition => {
-          // Check if condition already exists
           const exists = newConditions.some(condition => 
             condition.object === presetCondition.object &&
             condition.operator === presetCondition.operator &&
@@ -114,8 +190,7 @@ const CustomEventForm = ({ onClose }) => {
           
           if (!exists) {
             newConditions.push({
-              ...presetCondition,
-              id: Date.now() + Math.random() // Unique ID
+              ...presetCondition
             });
           }
         });
@@ -168,43 +243,127 @@ const CustomEventForm = ({ onClose }) => {
     }
   };
 
-  const handleSave = () => {
+  // Format data according to API specification
+  const formatEventData = () => {
+    const eventData = {
+      eventName: eventName.trim(),
+      tags: tags,
+      conditions: conditions.map(condition => ({
+        object: condition.object,
+        operator: condition.operator,
+        threshold: condition.threshold
+      })),
+      cameras: selectedCameras,
+    };
+
+    // Add scheduling only if enabled and has some configuration
+    if (scheduling.isEnabled) {
+      eventData.scheduling = {
+        dateRange: {
+          startDate: scheduling.dateRange.startDate || '',
+          endDate: scheduling.dateRange.endDate || ''
+        },
+        specificDays: scheduling.specificDays,
+        timeRange: {
+          startTime: scheduling.timeRange.startTime || '',
+          endTime: scheduling.timeRange.endTime || ''
+        },
+        isEnabled: true
+      };
+    }
+
+    return eventData;
+  };
+
+  const handleSave = async () => {
     if (step === 3) {
-      // Save custom event using context
-      const newEvent = addCustomEvent({
-        name: eventName,
-        description: description.trim() || null,
-        tags,
-        presetEvents: selectedPresetEvents,
-        conditions,
-        cameras: selectedCameras,
-        scheduling: scheduling.isEnabled ? scheduling : null
-      });
-      console.log('CustomEventForm - Created new event:', newEvent);
-      onClose();
+      const eventData = formatEventData();
+
+      try {
+        if (editingData) {
+          // UPDATE existing event
+          await deviceApi.put(
+            `/event/${editingData.eventId}/`,
+            { userId: userId, ...eventData },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          console.log("Event updated successfully");
+        } else {
+          // CREATE new event
+          await deviceApi.post(
+            `/event/`,
+            { userId: userId, ...eventData },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          console.log("Event created successfully");
+        }
+
+        // Refresh events in context - this will update the sidebar
+        if (refreshEvents) {
+          await refreshEvents();
+        }
+
+        // Notify other components
+        window.dispatchEvent(new CustomEvent('customEventsUpdated'));
+
+        onClose();
+      } catch (error) {
+        console.error("Error saving event:", error);
+      }
     }
   };
 
-  // Test function to create a sample custom event
-  const createTestEvent = () => {
-    const newEvent = addCustomEvent({
-      name: 'Test Custom Event',
-      conditions: [
-        { object: 'Person', operator: '>', threshold: 2 },
-        { object: 'Vehicle', operator: '>=', threshold: 1 }
-      ],
-      cameras: [1, 2]
-    });
-    console.log('Test event created with ID:', newEvent.id);
-  };
-
   return (
-    <div>
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+      {/* Progress Indicator */}
+      <div className="flex justify-center mb-6">
+        <div className="flex items-center">
+          {[1, 2, 3].map((stepNumber) => (
+            <React.Fragment key={stepNumber}>
+              <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                step === stepNumber 
+                  ? 'bg-purple-500 text-white' 
+                  : step > stepNumber 
+                    ? 'bg-green-500 text-white' 
+                    : 'bg-gray-300 text-gray-600'
+              }`}>
+                {stepNumber}
+              </div>
+              {stepNumber < 3 && (
+                <div className={`w-12 h-1 ${
+                  step > stepNumber ? 'bg-green-500' : 'bg-gray-300'
+                }`} />
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-4 text-center">
+        <h2 className="text-2xl font-bold text-gray-800">
+          {editingData ? 'Edit Custom Event' : 'Create Custom Event'}
+        </h2>
+        <p className="text-gray-600 mt-2">
+          {step === 1 && 'Define event conditions'}
+          {step === 2 && 'Select cameras'}
+          {step === 3 && 'Configure scheduling'}
+        </p>
+      </div>
+
       {step === 1 && (
         <div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2 text-gray-700">Event Name</label>
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2 text-gray-700">Event Name *</label>
             <input
+              name='eventName'
               type="text"
               value={eventName}
               onChange={(e) => setEventName(e.target.value)}
@@ -213,24 +372,13 @@ const CustomEventForm = ({ onClose }) => {
             />
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2 text-gray-700">Description (Optional)</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter event description..."
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-900 resize-none"
-            />
-          </div>
-
-          <div className="mb-4">
+          <div className="mb-6">
             <label className="block text-sm font-medium mb-2 text-gray-700">Tags (Optional)</label>
             <div className="w-full px-2 py-2 border border-gray-300 rounded-md focus-within:ring-2 focus-within:ring-purple-500 bg-white">
               <div className="flex flex-wrap gap-2">
-                {tags.map((t, idx) => (
-                  <span key={`${t}-${idx}`} className="inline-flex items-center gap-1 bg-purple-50 text-purple-800 px-2 py-1 rounded-full border border-purple-200 text-xs">
-                    {t}
+                {tags.map((tag, idx) => (
+                  <span key={idx} className="inline-flex items-center gap-1 bg-purple-50 text-purple-800 px-2 py-1 rounded-full border border-purple-200 text-xs">
+                    {tag}
                     <button
                       type="button"
                       className="text-purple-600 hover:text-purple-800"
@@ -280,36 +428,53 @@ const CustomEventForm = ({ onClose }) => {
             )}
           </div>
 
-          <div className="mb-4">
+          <div className="mb-6">
             <label className="block text-sm font-medium mb-2 text-gray-700">Select Preset Events (Optional)</label>
-            <div className="max-h-40 w-150 overflow-y-auto border border-gray-300 rounded-md p-2 bg-gray-50">
-              {Object.entries(presetEvents)
-                .filter(([_, eventData]) => {
-                  if (!tags || tags.length === 0) return true;
-                  const presetTags = (eventData.tags || []).map(t => String(t).toLowerCase());
-                  return tags.some(t => presetTags.includes(String(t).toLowerCase()));
-                })
-                .map(([eventType, eventData]) => (
-                <label key={eventType} className="flex items-start space-x-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedPresetEvents.includes(eventType)}
-                    onChange={() => handlePresetEventToggle(eventType)}
-                    className="mt-1 rounded"
-                  />
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-900">{eventData.name}</div>
-                    <div className="text-xs text-gray-600">{eventData.description}</div>
-                    {eventData.tags && eventData.tags.length > 0 && (
-                      <div className="text-xs text-purple-600 mt-1">Tags: {eventData.tags.join(', ')}</div>
-                    )}
-                    <div className="text-xs text-purple-600 mt-1">
-                      Conditions: {eventData.conditions.map(c => `${c.object} ${c.operator} ${c.threshold}`).join(', ')}
-                    </div>
+            
+            {loadingPresets ? (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
+                <p className="text-gray-500 mt-2">Loading preset events...</p>
+              </div>
+            ) : (
+              <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2 bg-gray-50">
+                {Object.entries(presetEvents).length === 0 ? (
+                  <div className="text-center py-4 text-gray-500">
+                    No preset events available
                   </div>
-                </label>
-              ))}
-            </div>
+                ) : (
+                  Object.entries(presetEvents)
+                    .filter(([_, eventData]) => {
+                      if (!tags || tags.length === 0) return true;
+                      const presetTags = (eventData.tags || []).map(t => String(t).toLowerCase());
+                      return tags.some(t => presetTags.includes(String(t).toLowerCase()));
+                    })
+                    .map(([eventType, eventData]) => (
+                      <label key={eventType} className="flex items-start space-x-2 p-2 hover:bg-gray-100 rounded cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedPresetEvents.includes(eventType)}
+                          onChange={() => handlePresetEventToggle(eventType)}
+                          className="mt-1 rounded"
+                        />
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-gray-900">{eventData.eventName}</div>
+                          {eventData.description && (
+                            <div className="text-xs text-gray-600">{eventData.description}</div>
+                          )}
+                          {eventData.tags && eventData.tags.length > 0 && (
+                            <div className="text-xs text-purple-600 mt-1">Tags: {eventData.tags.join(', ')}</div>
+                          )}
+                          <div className="text-xs text-purple-600 mt-1">
+                            Conditions: {eventData.conditions.map(c => `${c.object} ${c.operator} ${c.threshold}`).join(', ')}
+                          </div>
+                        </div>
+                      </label>
+                    ))
+                )}
+              </div>
+            )}
+            
             {selectedPresetEvents.length > 0 && (
               <div className="mt-2 text-sm text-green-600">
                 ✓ {selectedPresetEvents.length} preset event(s) selected - conditions added automatically
@@ -317,13 +482,15 @@ const CustomEventForm = ({ onClose }) => {
             )}
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2 text-gray-700">Add Conditions</label>
-            <div className="flex gap-2 mb-2">
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2 text-gray-700">
+              {editingData ? 'Edit Conditions' : 'Add Conditions'} *
+            </label>
+            <div className="flex gap-2 mb-3">
               <select
                 value={currentCondition.object}
                 onChange={(e) => setCurrentCondition({...currentCondition, object: e.target.value})}
-                className="px-3 py-2 border border-gray-300 rounded-md text-gray-900"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-gray-900"
               >
                 {OBJECT_OPTIONS.map(opt => (
                   <option key={opt} value={opt}>{opt}</option>
@@ -344,7 +511,7 @@ const CustomEventForm = ({ onClose }) => {
                 type="number"
                 value={currentCondition.threshold}
                 onChange={(e) => setCurrentCondition({...currentCondition, threshold: parseInt(e.target.value) || 0})}
-                className="px-3 py-2 border border-gray-300 rounded-md w-20 text-gray-900"
+                className="w-20 px-3 py-2 border border-gray-300 rounded-md text-gray-900"
                 min="0"
               />
               
@@ -356,13 +523,13 @@ const CustomEventForm = ({ onClose }) => {
               </button>
             </div>
 
-            <div className="max-h-32 max-w-165 overflow-y-auto border border-gray-200 rounded-md bg-gray-50 p-2">
+            <div className="border border-gray-200 rounded-md bg-gray-50 p-3">
               <div className="flex flex-wrap gap-2">
-                {conditions.map(condition => (
-                  <div key={condition.id} className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-gray-300 text-sm">
+                {conditions.map((condition, index) => (
+                  <div key={index} className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-gray-300 text-sm">
                     <span className="text-gray-700">{condition.object} {condition.operator} {condition.threshold}</span>
                     <button
-                      onClick={() => removeCondition(condition.id)}
+                      onClick={() => removeCondition(index)}
                       className="text-red-500 hover:text-red-700 ml-1 text-xs font-bold"
                       title="Remove condition"
                     >
@@ -397,37 +564,69 @@ const CustomEventForm = ({ onClose }) => {
 
       {step === 2 && (
         <div>
-          <h3 className="text-lg font-medium mb-4 text-gray-700">Select Cameras for "{eventName}"</h3>
+          <h3 className="text-lg font-medium mb-4 text-gray-700">
+            {editingData ? 'Update Cameras for' : 'Select Cameras for'} "{eventName}"
+          </h3>
           
-          <div className="space-y-2 mb-4">
-            {CAMERA_LIST.map(camera => (
-              <label key={camera.id} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={selectedCameras.includes(camera.id)}
-                  onChange={() => toggleCamera(camera.id)}
-                  className="rounded"
-                />
-                <span className="text-gray-900">{camera.name}</span>
-              </label>
-            ))}
-          </div>
-
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setStep(1)}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-              >
-                Back
-              </button>
-              <button
-                onClick={handleNext}
-                disabled={selectedCameras.length === 0}
-                className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50"
-              >
-                Next
-              </button>
+          {loadingCameras ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
+              <p className="text-gray-500 mt-2">Loading cameras...</p>
             </div>
+          ) : cameraError ? (
+            <div className="text-center py-4">
+              <div className="text-red-500 mb-2">{cameraError}</div>
+              <p className="text-gray-500 text-sm">Please try again later</p>
+            </div>
+          ) : cameraList.length === 0 ? (
+            <div className="text-center py-4">
+              <p className="text-gray-500">No cameras available</p>
+            </div>
+          ) : (
+            <div className="space-y-3 mb-6">
+              {cameraList.map(camera => (
+                <label key={camera.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedCameras.includes(camera.id)}
+                    onChange={() => toggleCamera(camera.id)}
+                    className="rounded text-purple-500"
+                  />
+                  <div className="flex-1">
+                    <span className="text-gray-900 font-medium">{camera.name}</span>
+                    {camera.location && (
+                      <span className="text-gray-500 text-sm ml-2">({camera.location})</span>
+                    )}
+                    {camera.status && (
+                      <span className={`text-xs ml-2 px-2 py-1 rounded ${
+                        camera.status === 'online' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {camera.status}
+                      </span>
+                    )}
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setStep(1)}
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+            >
+              Back
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={selectedCameras.length === 0}
+              className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
 
@@ -441,7 +640,7 @@ const CustomEventForm = ({ onClose }) => {
                 type="checkbox"
                 checked={scheduling.isEnabled}
                 onChange={(e) => updateScheduling('isEnabled', e.target.checked)}
-                className="rounded"
+                className="rounded text-purple-500"
               />
               <span className="text-gray-900 font-medium">Enable scheduling for this event</span>
             </label>
@@ -452,7 +651,7 @@ const CustomEventForm = ({ onClose }) => {
               {/* Date Range */}
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700">Date Range (Optional)</label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Start Date</label>
                     <input
@@ -478,13 +677,13 @@ const CustomEventForm = ({ onClose }) => {
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700">Specific Days (Optional)</label>
                 <div className="grid grid-cols-7 gap-2">
-                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (
-                    <label key={day} className="flex flex-col items-center space-y-1">
+                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                    <label key={day} className="flex flex-col items-center space-y-1 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={scheduling.specificDays.includes(day)}
                         onChange={() => toggleSpecificDay(day)}
-                        className="rounded"
+                        className="rounded text-purple-500"
                       />
                       <span className="text-xs text-gray-700">{day.substring(0, 3)}</span>
                     </label>
@@ -495,7 +694,7 @@ const CustomEventForm = ({ onClose }) => {
               {/* Time Range */}
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700">Time Range (Optional)</label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Start Time</label>
                     <input
@@ -520,7 +719,7 @@ const CustomEventForm = ({ onClose }) => {
               {/* Schedule Summary */}
               <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
                 <h4 className="text-sm font-medium text-purple-800 mb-2">Schedule Summary</h4>
-                <div className="text-sm text-purple-700">
+                <div className="text-sm text-purple-700 space-y-1">
                   {scheduling.dateRange.startDate || scheduling.dateRange.endDate ? (
                     <p>Date Range: {scheduling.dateRange.startDate || 'No start date'} to {scheduling.dateRange.endDate || 'No end date'}</p>
                   ) : null}
@@ -540,7 +739,7 @@ const CustomEventForm = ({ onClose }) => {
             </div>
           )}
 
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 mt-6">
             <button
               onClick={() => setStep(2)}
               className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
@@ -551,7 +750,7 @@ const CustomEventForm = ({ onClose }) => {
               onClick={handleSave}
               className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
             >
-              Save Custom Event
+              {editingData ? 'Update Custom Event' : 'Save Custom Event'}
             </button>
           </div>
         </div>

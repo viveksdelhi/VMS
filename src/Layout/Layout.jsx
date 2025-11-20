@@ -4,7 +4,7 @@ import Header from './Header';
 import CustomEventForm from '../Component/Pages/Analytics/CustomEventForm';
 
 const Layout = ({ children }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [showSidebar, setShowSidebar] = useState(false); // for mobile sidebar toggle
   const [customEventPopupOpen, setCustomEventPopupOpen] = useState(false);
 

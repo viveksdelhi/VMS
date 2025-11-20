@@ -166,9 +166,16 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
     setOpenMenus((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const handleSidebarHover = () => {
+    if (collapsed) {
+      onToggleCollapse();
+    }
+  };
+
   return (
     <div
       className={`${collapsed ? "w-16" : "w-65"} h-screen bg-white text-gray-900 flex flex-col justify-between shadow-xl transition-all duration-300`}
+      onMouseEnter={handleSidebarHover}
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4">
@@ -179,7 +186,10 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
           </div>
         )}
         <button
-          onClick={onToggleCollapse}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleCollapse();
+          }}
           className="p-2 rounded-full bg-gray-100 hover:bg-purple-300 transition-all"
         >
           {collapsed ? <MdMenu /> : <MdMenuOpen />}
@@ -192,7 +202,14 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
           <div key={menu.key} className="group relative">
             {/* Parent */}
             <div
-              onClick={() => (collapsed ? null : toggleMenu(menu.key))}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (collapsed) {
+                  onToggleCollapse();
+                } else {
+                  toggleMenu(menu.key);
+                }
+              }}
               className={`flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-all ${collapsed ? "justify-center" : ""}`}
             >
               <div className="flex items-center gap-2">
@@ -214,7 +231,16 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
                         ? "bg-purple-100 text-[#8f5eb8] font-medium"
                         : "hover:bg-gray-50 text-purple-700"
                     }`}
-                    onClick={item.key === 'custom_event' ? (e) => { e.preventDefault(); onCustomEventClick && onCustomEventClick(); } : undefined}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (collapsed) {
+                        onToggleCollapse();
+                      }
+                      if (item.key === 'custom_event') {
+                        e.preventDefault();
+                        onCustomEventClick && onCustomEventClick();
+                      }
+                    }}
                   >
                     {item.icon}
                     <span>{item.label}</span>
@@ -235,7 +261,13 @@ const Sidebar = ({ collapsed, onToggleCollapse, onCustomEventClick }) => {
                         ? "bg-[#b17ef3] text-white font-medium"
                         : "hover:bg-gray-100 text-gray-700"
                     }`}
-                    onClick={item.key === 'custom_event' ? (e) => { e.preventDefault(); onCustomEventClick && onCustomEventClick(); } : undefined}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (item.key === 'custom_event') {
+                        e.preventDefault();
+                        onCustomEventClick && onCustomEventClick();
+                      }
+                    }}
                   >
                     {item.icon}
                     <span>{item.label}</span>

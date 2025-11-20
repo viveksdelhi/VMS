@@ -1,6 +1,6 @@
-import React from "react";
-import { Skeleton } from "antd";
-import { useAlertData } from "../../contexts/AlertDataContext";
+import React from 'react';
+import { Skeleton } from 'antd';
+import { useAlertData } from '../../contexts/AlertDataContext';
 
 const RecentActivity = () => {
   const { alerts, loading } = useAlertData();
@@ -26,15 +26,14 @@ const RecentActivity = () => {
       ) : (
         <div className="space-y-2 max-h-64 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
           {alerts.length > 0 ? (
-            alerts.map((alert) => (
+            alerts.map(alert => (
               <div
                 key={alert.id}
                 className="flex items-start justify-between p-3 rounded-md border-l-4 bg-purple-200 text-purple-700 shadow-sm"
               >
                 <div>
                   <p className="text-sm font-medium text-gray-800">
-                    {alert.camera_name || "Unknown Camera"} —{" "}
-                    {alert.objectName || "No object"}
+                    {alert.camera_name || 'Unknown Camera'} — {alert.objectName || 'No object'}
                   </p>
                   <p className="text-xs text-gray-500">
                     {new Date(alert.regDate).toLocaleString()}
@@ -55,7 +54,6 @@ const RecentActivity = () => {
 };
 
 export default RecentActivity;
-
 
 // import React, { useEffect, useState } from "react";
 

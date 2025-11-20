@@ -1,4 +1,4 @@
-import { useEventContext } from "../contexts/EventContext";
+import { useEventContext } from '../contexts/EventContext';
 
 /**
  * Compatibility hook that reuses the shared EventContext.
@@ -7,4 +7,3 @@ import { useEventContext } from "../contexts/EventContext";
 export const useEvents = () => {
   return useEventContext();
 };
-

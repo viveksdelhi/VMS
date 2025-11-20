@@ -1,22 +1,22 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthContext";
-import Cookies from "js-cookie";
-import { jwtDecode } from "jwt-decode";
-import { motion } from "framer-motion";
-import { API_URL } from "../config";
-import axios from "axios";
-import { FiUser, FiLock } from "react-icons/fi"; // 👤 & 🔒 icons
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
+import { motion } from 'framer-motion';
+import { API_URL } from '../config';
+import axios from 'axios';
+import { FiUser, FiLock } from 'react-icons/fi'; // 👤 & 🔒 icons
 
 const LoginPage = () => {
   const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -33,25 +33,23 @@ const LoginPage = () => {
         const decoded = jwtDecode(accessToken);
 
         const userId =
-          decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
-        const userEmail =
-          decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
-        const userRole =
-          decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+          decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+        const userEmail = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
+        const userRole = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
 
-        Cookies.set("token", accessToken);
-        Cookies.set("refreshToken", refreshToken);
-        Cookies.set("userId", userId);
-        Cookies.set("email", userEmail);
-        Cookies.set("role", userRole);
+        Cookies.set('token', accessToken);
+        Cookies.set('refreshToken', refreshToken);
+        Cookies.set('userId', userId);
+        Cookies.set('email', userEmail);
+        Cookies.set('role', userRole);
 
         login(accessToken, userRole);
-        navigate("/dashboard");
+        navigate('/dashboard');
       } else {
-        setError("Invalid credentials");
+        setError('Invalid credentials');
       }
     } catch (err) {
-      setError("Login failed. Check your credentials or server.");
+      setError('Login failed. Check your credentials or server.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -60,7 +58,6 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-800 via-purple-600 to-purple-900 px-4 relative overflow-hidden">
-
       {/* Floating Particles */}
       {[...Array(40)].map((_, i) => {
         const size = Math.random() * 20 + 6;
@@ -82,7 +79,7 @@ const LoginPage = () => {
             transition={{
               duration: Math.random() * 8 + 5,
               repeat: Infinity,
-              ease: "easeInOut",
+              ease: 'easeInOut',
             }}
           />
         );
@@ -105,11 +102,7 @@ const LoginPage = () => {
             stroke="currentColor"
             strokeWidth={1.5}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M2 7l20 5-5 2-2 7-13-9z"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2 7l20 5-5 2-2 7-13-9z" />
           </svg>
         </div>
 
@@ -118,8 +111,7 @@ const LoginPage = () => {
           VisionHub VMS
         </h1>
         <p className="text-center text-purple-200 mb-6 text-sm">
-          Smarter surveillance, seamless management,
-          and total control over your video streams.
+          Smarter surveillance, seamless management, and total control over your video streams.
         </p>
 
         {error && <div className="text-red-400 text-center mb-4">{error}</div>}
@@ -133,7 +125,7 @@ const LoginPage = () => {
               type="text"
               placeholder="Username or Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               className="w-full pl-12 pr-5 py-3.5 rounded-full border border-purple-400
                          bg-white/10 text-white placeholder-gray-300
                          font-medium tracking-wide text-[15px]
@@ -149,7 +141,7 @@ const LoginPage = () => {
               type="password"
               placeholder="Password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               className="w-full pl-12 pr-5 py-3.5 rounded-full border border-purple-400
                          bg-white/10 text-white placeholder-gray-300
                          font-medium tracking-wide text-[15px]
@@ -169,14 +161,18 @@ const LoginPage = () => {
                        hover:from-purple-700 hover:to-indigo-700
                        transition-all duration-300 shadow-lg font-semibold tracking-wide"
           >
-            {loading ? "Logging in..." : "Login to Dashboard"}
+            {loading ? 'Logging in...' : 'Login to Dashboard'}
           </motion.button>
         </form>
 
         {/* Links */}
         <div className="flex justify-between mt-5 text-sm text-purple-200">
-          <a href="#" className="hover:text-white">Forgot Password?</a>
-          <a href="#" className="hover:text-white">Contact Support</a>
+          <a href="#" className="hover:text-white">
+            Forgot Password?
+          </a>
+          <a href="#" className="hover:text-white">
+            Contact Support
+          </a>
         </div>
       </motion.div>
 

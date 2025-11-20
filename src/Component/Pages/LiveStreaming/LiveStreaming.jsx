@@ -1,11 +1,18 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Button, Modal, Select, Space } from "antd";
-import { FullscreenOutlined, FullscreenExitOutlined } from "@ant-design/icons";
-import { DndContext, PointerSensor, useSensor, useSensors, closestCenter, DragOverlay } from "@dnd-kit/core";
-import HlsPlayer from "react-hls-player";
-import { STREAMING_API_URL } from "../../../config";
-import { CameraSidebar } from "./CameraSidebar";
-import CameraGrid from "./CameraGrid";
+import React, { useState, useRef, useEffect } from 'react';
+import { Button, Modal, Select, Space } from 'antd';
+import { FullscreenOutlined, FullscreenExitOutlined } from '@ant-design/icons';
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+  DragOverlay,
+} from '@dnd-kit/core';
+import HlsPlayer from 'react-hls-player';
+import { STREAMING_API_URL } from '../../../config';
+import { CameraSidebar } from './CameraSidebar';
+import CameraGrid from './CameraGrid';
 
 const { Option } = Select;
 
@@ -15,7 +22,7 @@ const LiveGrid = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [gridCams, setGridCams] = useState(() => {
     // Load from localStorage on initial render
-    const saved = localStorage.getItem("gridCams");
+    const saved = localStorage.getItem('gridCams');
     return saved ? JSON.parse(saved) : Array(16).fill(null);
   });
   const [activeCam, setActiveCam] = useState(null);
@@ -25,7 +32,7 @@ const LiveGrid = () => {
 
   // Save gridCams to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("gridCams", JSON.stringify(gridCams));
+    localStorage.setItem('gridCams', JSON.stringify(gridCams));
   }, [gridCams]);
 
   // Listen to fullscreen changes (e.g., Esc key)
@@ -33,8 +40,8 @@ const LiveGrid = () => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
   const toggleFullscreen = () => {
@@ -47,19 +54,19 @@ const LiveGrid = () => {
     }
   };
 
-  const handleRemove = (i) => {
+  const handleRemove = i => {
     const updated = [...gridCams];
     updated[i] = null;
     setGridCams(updated);
   };
 
-  const onDragStart = (event) => {
+  const onDragStart = event => {
     setActiveCam(event.active.data.current.cam);
   };
 
-  const onDragEnd = (event) => {
-    if (event.over && event.over.id.startsWith("cell-")) {
-      const index = parseInt(event.over.id.split("-")[1], 10);
+  const onDragEnd = event => {
+    if (event.over && event.over.id.startsWith('cell-')) {
+      const index = parseInt(event.over.id.split('-')[1], 10);
       const cam = event.active.data.current.cam;
       if (!cam) return;
 
@@ -79,7 +86,6 @@ const LiveGrid = () => {
     >
       <div className="flex h-screen bg-white">
         <CameraSidebar /> {/* fetch cameras from API */}
-
         <div className="flex-1 p-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-purple-700">Live Streaming</h2>
@@ -88,7 +94,7 @@ const LiveGrid = () => {
                 icon={isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
                 onClick={toggleFullscreen}
               >
-                {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+                {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
               </Button>
               <Select value={gridSize} style={{ width: 120 }} onChange={setGridSize}>
                 <Option value={2}>2 x 2</Option>
@@ -115,7 +121,7 @@ const LiveGrid = () => {
         width="80%"
         centered
         onCancel={() => setZoomCam(null)}
-        bodyStyle={{ padding: 0, background: "black" }}
+        bodyStyle={{ padding: 0, background: 'black' }}
       >
         {zoomCam && (
           <HlsPlayer

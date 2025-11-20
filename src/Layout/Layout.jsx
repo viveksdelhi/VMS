@@ -61,18 +61,42 @@ const Layout = ({ children }) => {
       {/* Main Content */}
       <div
         className={`flex flex-col flex-1 z-10 transition-all duration-300 ease-in-out bg-white text-[#E6E6FA] ${
-          showSidebar ? 'blur-sm select-none pointer-events-none md:pointer-events-auto md:blur-0' : ''
+          showSidebar
+            ? 'blur-sm select-none pointer-events-none md:pointer-events-auto md:blur-0'
+            : ''
         } ${isLiveSidebarCollapsed ? 'md:pr-12' : 'md:pr-80'}`}
       >
         <Header onToggle={() => setShowSidebar(!showSidebar)} />
         <main className="flex-1 pl-1 overflow-y-auto bg-white text-black rounded-tl-md rounded-tr-md">
           {children}
         </main>
-        
+
         {/* Custom Event Popup */}
         {customEventPopupOpen && (
-          <div style={{ position: 'fixed', left: 65, top: 0, width: 'calc(100vw - 65px)', height: '100vh', zIndex: 99999, background: 'rgba(0,0,0,0.38)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px #9164d966', padding: 32, minWidth: 600, maxWidth: '80vw' }}>
+          <div
+            style={{
+              position: 'fixed',
+              left: 65,
+              top: 0,
+              width: 'calc(100vw - 65px)',
+              height: '100vh',
+              zIndex: 99999,
+              background: 'rgba(0,0,0,0.38)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <div
+              style={{
+                background: '#fff',
+                borderRadius: 16,
+                boxShadow: '0 4px 24px #9164d966',
+                padding: 32,
+                minWidth: 600,
+                maxWidth: '80vw',
+              }}
+            >
               <h2 className="text-xl font-bold mb-4 text-black">Create Custom Event</h2>
               <CustomEventForm onClose={() => setCustomEventPopupOpen(false)} />
             </div>
@@ -90,7 +114,6 @@ const Layout = ({ children }) => {
 };
 
 export default Layout;
-
 
 // import React, { useState } from 'react';
 // import Sidebar from './Sidebar';

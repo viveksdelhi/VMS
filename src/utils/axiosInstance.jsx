@@ -1,60 +1,56 @@
-import axios from "axios";
-import Cookies from "js-cookie";
-import {
-  API_URL,
-  CAMERA_API_URL,
-} from "../config";
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import { API_URL, CAMERA_API_URL } from '../config';
 
 // Factory function to create axios instances with interceptors
-const createAxiosInstance = (baseURL) => {
+const createAxiosInstance = baseURL => {
   const instance = axios.create({
     baseURL,
-    headers: { "Content-Type": "application/json" },
+    headers: { 'Content-Type': 'application/json' },
   });
 
   // Attach token
   instance.interceptors.request.use(
-    (config) => {
-      const token = Cookies.get("token");
+    config => {
+      const token = Cookies.get('token');
       if (token) {
-        config.headers["Authorization"] = `Bearer ${token}`;
+        config.headers['Authorization'] = `Bearer ${token}`;
       }
       return config;
     },
-    (error) => Promise.reject(error)
+    error => Promise.reject(error)
   );
 
   // Refresh token handling
   instance.interceptors.response.use(
-    (response) => response,
-    async (error) => {
+    response => response,
+    async error => {
       const originalRequest = error.config;
 
       if (error.response?.status === 403 && !originalRequest._retry) {
         originalRequest._retry = true;
 
         try {
-          const refreshToken = Cookies.get("refreshToken");
-          if (!refreshToken) throw new Error("No refresh token found");
+          const refreshToken = Cookies.get('refreshToken');
+          if (!refreshToken) throw new Error('No refresh token found');
 
           const res = await axios.post(`${API_URL}/Account/refresh-token`, {
             refreshToken,
           });
 
-          const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-            res.data;
+          const { accessToken: newAccessToken, refreshToken: newRefreshToken } = res.data;
 
           // Save new tokens
-          Cookies.set("token", newAccessToken, { secure: true });
-          Cookies.set("refreshToken", newRefreshToken, { secure: true });
+          Cookies.set('token', newAccessToken, { secure: true });
+          Cookies.set('refreshToken', newRefreshToken, { secure: true });
 
           // Retry original request
-          originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+          originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
           return instance(originalRequest);
         } catch (refreshError) {
-          Cookies.remove("token");
-          Cookies.remove("refreshToken");
-          window.location.href = "/login"; // logout
+          Cookies.remove('token');
+          Cookies.remove('refreshToken');
+          window.location.href = '/login'; // logout
           return Promise.reject(refreshError);
         }
       }

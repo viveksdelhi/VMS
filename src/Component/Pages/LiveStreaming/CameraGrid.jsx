@@ -1,17 +1,17 @@
-import React from "react";
-import { useDroppable } from "@dnd-kit/core";
-import { Button, Space, Tooltip } from "antd";
-import { ZoomInOutlined, CloseOutlined } from "@ant-design/icons";
-import HlsPlayer from "react-hls-player";
-import {STREAMING_API_URL} from "../../../config";
+import React from 'react';
+import { useDroppable } from '@dnd-kit/core';
+import { Button, Space, Tooltip } from 'antd';
+import { ZoomInOutlined, CloseOutlined } from '@ant-design/icons';
+import HlsPlayer from 'react-hls-player';
+import { STREAMING_API_URL } from '../../../config';
 const GridCell = ({ index, cam, onZoom, onRemove, refreshKey }) => {
   const { setNodeRef, isOver } = useDroppable({ id: `cell-${index}` });
 
-  return ( 
+  return (
     <div
       ref={setNodeRef}
       className={`relative rounded-sm overflow-hidden border border-gray-700 bg-gray-800 flex items-center justify-center w-full h-full ${
-        isOver ? "ring-2 ring-purple-500" : ""
+        isOver ? 'ring-2 ring-purple-500' : ''
       }`}
     >
       {cam ? (
@@ -40,12 +40,7 @@ const GridCell = ({ index, cam, onZoom, onRemove, refreshKey }) => {
                 />
               </Tooltip>
               <Tooltip title="Remove">
-                <Button
-                  size="small"
-                  shape="circle"
-                  icon={<CloseOutlined />}
-                  onClick={onRemove}
-                />
+                <Button size="small" shape="circle" icon={<CloseOutlined />} onClick={onRemove} />
               </Tooltip>
             </Space>
           </div>
@@ -58,17 +53,10 @@ const GridCell = ({ index, cam, onZoom, onRemove, refreshKey }) => {
 };
 
 // Define grid columns dynamically
-const gridCols = { 2: "grid-cols-2", 3: "grid-cols-3", 4: "grid-cols-4" };
-const gridRows = { 2: "grid-rows-2", 3: "grid-rows-3", 4: "grid-rows-4" };
+const gridCols = { 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4' };
+const gridRows = { 2: 'grid-rows-2', 3: 'grid-rows-3', 4: 'grid-rows-4' };
 
-const CameraGrid = ({
-  gridSize,
-  gridCams,
-  onZoom,
-  onRemove,
-  refreshKey,
-  gridRef,
-}) => (
+const CameraGrid = ({ gridSize, gridCams, onZoom, onRemove, refreshKey, gridRef }) => (
   <div
     ref={gridRef}
     className={`grid ${gridCols[gridSize]} ${gridRows[gridSize]} gap-0 h-[calc(100vh-130px)]`}
@@ -87,4 +75,3 @@ const CameraGrid = ({
 );
 
 export default React.memo(CameraGrid);
-

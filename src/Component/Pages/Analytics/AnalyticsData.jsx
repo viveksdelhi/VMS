@@ -1,46 +1,50 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
   flexRender,
   createColumnHelper,
-} from "@tanstack/react-table";
-import { Image } from "antd"; // ✅ AntD Image (preview/zoom)
-import debounce from "lodash/debounce";
-import Cookies from "js-cookie";
-import { deviceApi } from "../../../utils/axiosInstance";
-import { ANALYTICS_API_URL } from "../../../config";
-import { saveAs } from "file-saver";
-import Papa from "papaparse";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-
+} from '@tanstack/react-table';
+import { Image } from 'antd'; // ✅ AntD Image (preview/zoom)
+import debounce from 'lodash/debounce';
+import Cookies from 'js-cookie';
+import { deviceApi } from '../../../utils/axiosInstance';
+import { ANALYTICS_API_URL } from '../../../config';
+import { saveAs } from 'file-saver';
+import Papa from 'papaparse';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const columnHelper = createColumnHelper();
 
 const AnalyticsTable = () => {
   const [data, setData] = useState([]);
   const [sorting, setSorting] = useState([]);
-  const [globalFilter, setGlobalFilter] = useState("");
-  const [cameraFilter, setCameraFilter] = useState(""); // ✅ Camera filter state
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [cameraFilter, setCameraFilter] = useState(''); // ✅ Camera filter state
   const [cameras, setCameras] = useState([]); // ✅ Dropdown options
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
-  const userId = Cookies.get("userId");
+  const userId = Cookies.get('userId');
   // Rules state (persist per user)
   const [ruleEnabled, setRuleEnabled] = useState(false);
-  const [matchMode, setMatchMode] = useState("AND"); // AND | OR
+  const [matchMode, setMatchMode] = useState('AND'); // AND | OR
   const [rules, setRules] = useState([]); // {id, objectKey, operator, threshold}
-  const [draft, setDraft] = useState({ id: null, objectKey: "person", operator: ">", threshold: 1 });
+  const [draft, setDraft] = useState({
+    id: null,
+    objectKey: 'person',
+    operator: '>',
+    threshold: 1,
+  });
   // ✅ Define table columns
   const columns = [
-    columnHelper.accessor("id", { header: "ID" }), 
-    columnHelper.accessor("objectName", {
-      header: "Objects",
-      cell: (info) => {
+    columnHelper.accessor('id', { header: 'ID' }),
+    columnHelper.accessor('objectName', {
+      header: 'Objects',
+      cell: info => {
         const raw = info.getValue();
         try {
           const cleaned = raw.replace(/'/g, '"');
@@ -48,10 +52,7 @@ const AnalyticsTable = () => {
           return (
             <div className="flex flex-wrap gap-1">
               {Object.entries(parsed).map(([k, v]) => (
-                <span
-                  key={k}
-                  className="px-2 py-1 text-xs rounded bg-purple-100 text-purple-800"
-                >
+                <span key={k} className="px-2 py-1 text-xs rounded bg-purple-100 text-purple-800">
                   {k}: {v}
                 </span>
               ))}
@@ -62,37 +63,37 @@ const AnalyticsTable = () => {
         }
       },
     }),
-    columnHelper.accessor("eventType", { header: "Event Type" }),
+    columnHelper.accessor('eventType', { header: 'Event Type' }),
     // columnHelper.accessor("objectCount", { header: "Count" }),
     // Alert Severity Mapping
-    columnHelper.accessor("alertStatus", {
-      header: "Severity",
-      cell: (info) => {
+    columnHelper.accessor('alertStatus', {
+      header: 'Severity',
+      cell: info => {
         const code = info.getValue();
-        let label = "Unknown";
-        let color = "bg-gray-100 text-gray-600";
-        let emoji = "ℹ️";
+        let label = 'Unknown';
+        let color = 'bg-gray-100 text-gray-600';
+        let emoji = 'ℹ️';
 
         switch (code) {
-          case "B":
-            label = "Basic";
-            color = "bg-blue-100 text-blue-700";
-            emoji = "🔵";
+          case 'B':
+            label = 'Basic';
+            color = 'bg-blue-100 text-blue-700';
+            emoji = '🔵';
             break;
-          case "C":
-            label = "Critical";
-            color = "bg-red-100 text-red-700";
-            emoji = "🚨";
+          case 'C':
+            label = 'Critical';
+            color = 'bg-red-100 text-red-700';
+            emoji = '🚨';
             break;
-          case "S":
-            label = "Severe";
-            color = "bg-orange-100 text-orange-700";
-            emoji = "⚠️";
+          case 'S':
+            label = 'Severe';
+            color = 'bg-orange-100 text-orange-700';
+            emoji = '⚠️';
             break;
-          case "N":
-            label = "Normal";
-            color = "bg-green-100 text-green-700";
-            emoji = "✅";
+          case 'N':
+            label = 'Normal';
+            color = 'bg-green-100 text-green-700';
+            emoji = '✅';
             break;
         }
 
@@ -103,18 +104,18 @@ const AnalyticsTable = () => {
         );
       },
     }),
-    columnHelper.accessor("Accuracy", { header: "Accuracy" }),
-    columnHelper.accessor("regDate", {
-      header: "Timestamp",
-      cell: (info) =>
-        new Date(info.getValue()).toLocaleString("en-IN", {
-          dateStyle: "short",
-          timeStyle: "medium",
+    columnHelper.accessor('Accuracy', { header: 'Accuracy' }),
+    columnHelper.accessor('regDate', {
+      header: 'Timestamp',
+      cell: info =>
+        new Date(info.getValue()).toLocaleString('en-IN', {
+          dateStyle: 'short',
+          timeStyle: 'medium',
         }),
     }),
-    columnHelper.accessor("framePath", {
-      header: "Snapshot",
-      cell: (info) => {
+    columnHelper.accessor('framePath', {
+      header: 'Snapshot',
+      cell: info => {
         const path = info.getValue();
         const imgUrl = `${ANALYTICS_API_URL}/${path}`;
         return (
@@ -124,12 +125,12 @@ const AnalyticsTable = () => {
             width={80}
             height={60}
             className="object-cover rounded border"
-            preview={{ mask: "Click to Preview" }}
+            preview={{ mask: 'Click to Preview' }}
           />
         );
       },
     }),
-    columnHelper.accessor("videoPlayback", { header: "Video Playback" }),
+    columnHelper.accessor('videoPlayback', { header: 'Video Playback' }),
   ];
 
   // ✅ Fetch cameras for filter dropdown
@@ -138,20 +139,20 @@ const AnalyticsTable = () => {
       const res = await deviceApi.get(`/Camera/?user_id=${userId}&page=1&pageSize=100`);
       setCameras(res.data.results || []);
     } catch (err) {
-      console.error("Camera fetch failed:", err);
+      console.error('Camera fetch failed:', err);
     }
   };
 
   // ✅ Fetch alerts using deviceApi instead of hardcoded URL
-  const fetchData = async (search = "", currentPage = 1, size = pageSize) => {
+  const fetchData = async (search = '', currentPage = 1, size = pageSize) => {
     try {
       setLoading(true);
-      const res = await deviceApi.get("/CameraAlert/", {
+      const res = await deviceApi.get('/CameraAlert/', {
         params: {
-          userid: userId,          // you can replace with dynamic userId if needed
+          userid: userId, // you can replace with dynamic userId if needed
           page: currentPage,
           pageSize: size,
-          camera_id: cameraFilter || "", // camera filter
+          camera_id: cameraFilter || '', // camera filter
           search,
         },
       });
@@ -159,7 +160,7 @@ const AnalyticsTable = () => {
       setData(res.data.results || []);
       setTotalPages(Math.ceil(res.data.count / size));
     } catch (err) {
-      console.error("API Error:", err);
+      console.error('API Error:', err);
     } finally {
       setLoading(false);
     }
@@ -178,7 +179,7 @@ const AnalyticsTable = () => {
     try {
       const stored = localStorage.getItem(`analytics_rules_v2_${userId}`);
       if (stored) {
-        const { rules: r = [], enabled = false, mode = "AND" } = JSON.parse(stored);
+        const { rules: r = [], enabled = false, mode = 'AND' } = JSON.parse(stored);
         setRules(r);
         setRuleEnabled(enabled);
         setMatchMode(mode);
@@ -188,18 +189,21 @@ const AnalyticsTable = () => {
 
   useEffect(() => {
     try {
-      localStorage.setItem(`analytics_rules_v2_${userId}` , JSON.stringify({ rules, enabled: ruleEnabled, mode: matchMode }));
+      localStorage.setItem(
+        `analytics_rules_v2_${userId}`,
+        JSON.stringify({ rules, enabled: ruleEnabled, mode: matchMode })
+      );
     } catch {}
   }, [rules, ruleEnabled, matchMode, userId]);
 
   const filteredForRule = useMemo(() => {
     if (!ruleEnabled || rules.length === 0) return data;
-    const safeParse = (raw) => {
-      if (!raw || typeof raw !== "string") return {};
+    const safeParse = raw => {
+      if (!raw || typeof raw !== 'string') return {};
       try {
         const cleaned = raw.replace(/'/g, '"');
         const parsed = JSON.parse(cleaned);
-        return parsed && typeof parsed === "object" ? parsed : {};
+        return parsed && typeof parsed === 'object' ? parsed : {};
       } catch {
         return {};
       }
@@ -209,17 +213,23 @@ const AnalyticsTable = () => {
       const value = Number(obj[r.objectKey] ?? 0);
       const thr = Number(r.threshold);
       switch (r.operator) {
-        case ">": return value > thr;
-        case ">=": return value >= thr;
-        case "==": return value === thr;
-        case "<": return value < thr;
-        case "<=": return value <= thr;
-        default: return true;
+        case '>':
+          return value > thr;
+        case '>=':
+          return value >= thr;
+        case '==':
+          return value === thr;
+        case '<':
+          return value < thr;
+        case '<=':
+          return value <= thr;
+        default:
+          return true;
       }
     };
-    return (data || []).filter((row) => {
-      if (matchMode === "AND") return rules.every((r) => applyRule(row, r));
-      return rules.some((r) => applyRule(row, r));
+    return (data || []).filter(row => {
+      if (matchMode === 'AND') return rules.every(r => applyRule(row, r));
+      return rules.some(r => applyRule(row, r));
     });
   }, [data, ruleEnabled, rules, matchMode]);
 
@@ -234,37 +244,37 @@ const AnalyticsTable = () => {
 
   const handleSearch = useMemo(
     () =>
-      debounce((value) => {
+      debounce(value => {
         setGlobalFilter(value);
         setPage(1);
       }, 300),
     []
   );
 
-  const severityLabel = (code) => {
+  const severityLabel = code => {
     switch (code) {
-      case "B":
-        return "Basic";
-      case "C":
-        return "Critical";
-      case "S":
-        return "Severe";
-      case "N":
-        return "Normal";
+      case 'B':
+        return 'Basic';
+      case 'C':
+        return 'Critical';
+      case 'S':
+        return 'Severe';
+      case 'N':
+        return 'Normal';
       default:
-        return "Unknown";
+        return 'Unknown';
     }
   };
 
-  const formatObjects = (raw) => {
-    if (!raw || typeof raw !== "string") return String(raw ?? "");
+  const formatObjects = raw => {
+    if (!raw || typeof raw !== 'string') return String(raw ?? '');
     try {
       const cleaned = raw.replace(/'/g, '"');
       const parsed = JSON.parse(cleaned);
-      if (parsed && typeof parsed === "object") {
+      if (parsed && typeof parsed === 'object') {
         return Object.entries(parsed)
           .map(([k, v]) => `${k}:${v}`)
-          .join(", ");
+          .join(', ');
       }
       return raw;
     } catch {
@@ -274,21 +284,21 @@ const AnalyticsTable = () => {
 
   const getExportRows = () => {
     const rows = table.getRowModel().rows || [];
-    return rows.map((r) => {
+    return rows.map(r => {
       const original = r.original || {};
       return {
         ID: original.id,
         Objects: formatObjects(original.objectName),
-        "Event Type": original.eventType,
+        'Event Type': original.eventType,
         Severity: severityLabel(original.alertStatus),
         Accuracy: original.Accuracy,
         Timestamp: original.regDate
-          ? new Date(original.regDate).toLocaleString("en-IN", {
-              dateStyle: "short",
-              timeStyle: "medium",
+          ? new Date(original.regDate).toLocaleString('en-IN', {
+              dateStyle: 'short',
+              timeStyle: 'medium',
             })
-          : "",
-        "Video Playback": original.videoPlayback ?? "",
+          : '',
+        'Video Playback': original.videoPlayback ?? '',
       };
     });
   };
@@ -297,35 +307,40 @@ const AnalyticsTable = () => {
     try {
       const rows = getExportRows();
       const csv = Papa.unparse(rows);
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      saveAs(blob, `analytics_alerts_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      saveAs(
+        blob,
+        `analytics_alerts_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`
+      );
     } catch (e) {
-      console.error("CSV export failed:", e);
+      console.error('CSV export failed:', e);
     }
   };
 
   const handleExportPDF = () => {
     try {
       const rows = getExportRows();
-      const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "A4" });
-      const title = "Video Analytics Alerts";
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'A4' });
+      const title = 'Video Analytics Alerts';
       doc.setFontSize(14);
       doc.text(title, 40, 30);
-      const head = [["ID", "Objects", "Event Type", "Severity", "Accuracy", "Timestamp", "Video Playback"]];
-      const body = rows.map((r) => [
-        r["ID"],
-        r["Objects"],
-        r["Event Type"],
-        r["Severity"],
-        r["Accuracy"],
-        r["Timestamp"],
-        r["Video Playback"],
+      const head = [
+        ['ID', 'Objects', 'Event Type', 'Severity', 'Accuracy', 'Timestamp', 'Video Playback'],
+      ];
+      const body = rows.map(r => [
+        r['ID'],
+        r['Objects'],
+        r['Event Type'],
+        r['Severity'],
+        r['Accuracy'],
+        r['Timestamp'],
+        r['Video Playback'],
       ]);
       autoTable(doc, {
         head,
         body,
         startY: 50,
-        styles: { fontSize: 8, cellPadding: 4, overflow: "linebreak" },
+        styles: { fontSize: 8, cellPadding: 4, overflow: 'linebreak' },
         headStyles: { fillColor: [152, 100, 219] },
         columnStyles: {
           0: { cellWidth: 50 },
@@ -337,9 +352,11 @@ const AnalyticsTable = () => {
           6: { cellWidth: 120 },
         },
       });
-      doc.save(`analytics_alerts_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.pdf`);
+      doc.save(
+        `analytics_alerts_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.pdf`
+      );
     } catch (e) {
-      console.error("PDF export failed:", e);
+      console.error('PDF export failed:', e);
     }
   };
 
@@ -347,30 +364,30 @@ const AnalyticsTable = () => {
     <div className="p-4 space-y-4 max-w-full">
       {/* Header */}
       <div className="flex px-2 py-3 rounded-md flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-[#9864db] text-[#E6E6FA]">
-        <h2 className="text-xl font-bold text-[#fce4e4]">
-          Video Analytics Alerts
-        </h2>
+        <h2 className="text-xl font-bold text-[#fce4e4]">Video Analytics Alerts</h2>
 
         <div className="flex gap-3 items-center">
           {/* 🔍 Search */}
           <input
             type="text"
             placeholder="Search (object)..."
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={e => handleSearch(e.target.value)}
             className="px-3 py-1 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring focus:ring-green-300"
           />
 
           {/* 📷 Camera Filter */}
           <select
             value={cameraFilter}
-            onChange={(e) => {
+            onChange={e => {
               setCameraFilter(e.target.value);
               setPage(1);
             }}
             className="px-2 py-1 border border-gray-300 rounded-md text-sm"
           >
-            <option value="" className="text-black">All Cameras</option>
-            {cameras.map((cam) => (
+            <option value="" className="text-black">
+              All Cameras
+            </option>
+            {cameras.map(cam => (
               <option key={cam.id} value={cam.id} className="text-black">
                 {cam.name || `Camera ${cam.id}`}
               </option>
@@ -380,13 +397,13 @@ const AnalyticsTable = () => {
           {/* 📄 Page size */}
           <select
             value={pageSize}
-            onChange={(e) => {
+            onChange={e => {
               setPageSize(Number(e.target.value));
               setPage(1);
             }}
             className="px-2 py-1 border border-gray-300 rounded-md text-sm"
           >
-            {[10, 25, 50].map((size) => (
+            {[10, 25, 50].map(size => (
               <option key={size} value={size} className="text-black">
                 Show {size}
               </option>
@@ -397,18 +414,22 @@ const AnalyticsTable = () => {
             <input
               type="checkbox"
               checked={ruleEnabled}
-              onChange={(e) => setRuleEnabled(e.target.checked)}
+              onChange={e => setRuleEnabled(e.target.checked)}
             />
             Apply Rules
           </label>
           <select
             className="px-2 py-1 border rounded text-sm"
             value={matchMode}
-            onChange={(e) => setMatchMode(e.target.value)}
+            onChange={e => setMatchMode(e.target.value)}
             title="Match mode"
           >
-            <option value="AND" className="text-black">AND</option>
-            <option value="OR" className="text-black">OR</option>
+            <option value="AND" className="text-black">
+              AND
+            </option>
+            <option value="OR" className="text-black">
+              OR
+            </option>
           </select>
           <button
             onClick={handleExportCSV}
@@ -526,20 +547,17 @@ const AnalyticsTable = () => {
       <div className="overflow-x-auto rounded-md border-[#e7e5ec] shadow">
         <table className="min-w-full text-sm ">
           <thead className="bg-[#9864db] text-[#E6E6FA]">
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
                     className="px-4 py-3 border border-[#e7e5ec] text-left font-semibold cursor-pointer"
                     onClick={header.column.getToggleSortingHandler()}
                   >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                    {header.column.getIsSorted() === "asc" && " 🔼"}
-                    {header.column.getIsSorted() === "desc" && " 🔽"}
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.column.getIsSorted() === 'asc' && ' 🔼'}
+                    {header.column.getIsSorted() === 'desc' && ' 🔽'}
                   </th>
                 ))}
               </tr>
@@ -553,17 +571,14 @@ const AnalyticsTable = () => {
                 </td>
               </tr>
             ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map(row => (
                 <tr key={row.id} className="hover:bg-green-50">
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map(cell => (
                     <td
                       key={cell.id}
                       className="px-4 py-3 border border-green-100 whitespace-normal break-words"
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
                 </tr>
@@ -586,14 +601,14 @@ const AnalyticsTable = () => {
         </span>
         <div className="flex gap-2">
           <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+            onClick={() => setPage(p => Math.max(p - 1, 1))}
             className="px-3 py-1 border rounded bg-green-100 text-[#2c028d] disabled:opacity-50"
             disabled={page === 1}
           >
             Prev
           </button>
           <button
-            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+            onClick={() => setPage(p => Math.min(p + 1, totalPages))}
             className="px-3 py-1 border rounded bg-green-100 text-[#2c028d] disabled:opacity-50"
             disabled={page === totalPages}
           >

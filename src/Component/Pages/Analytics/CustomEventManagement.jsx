@@ -1,15 +1,10 @@
-import React, { useEffect, useState } from "react";
-import Cookies from "js-cookie";
-import { Card, Button, Tag, Popconfirm, message, Modal } from "antd";
-import {
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  VideoCameraOutlined,
-} from "@ant-design/icons";
-import CustomEventForm from "./CustomEventForm";
-import { deviceApi } from "../../../utils/axiosInstance";
-import { useCustomEvents } from "../../../contexts/CustomEventContext";
+import React, { useEffect, useState } from 'react';
+import Cookies from 'js-cookie';
+import { Card, Button, Tag, Popconfirm, message, Modal } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, VideoCameraOutlined } from '@ant-design/icons';
+import CustomEventForm from './CustomEventForm';
+import { deviceApi } from '../../../utils/axiosInstance';
+import { useCustomEvents } from '../../../contexts/CustomEventContext';
 
 const CustomEventManagement = () => {
   const [events, setEvents] = useState([]);
@@ -17,14 +12,14 @@ const CustomEventManagement = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const { refreshEvents } = useCustomEvents();
 
-  const userId = Cookies.get("userId");
+  const userId = Cookies.get('userId');
 
   const fetchEvents = async () => {
     try {
       const res = await deviceApi.get(`/event/?userid=${userId}`);
       setEvents(res.data.results || []);
     } catch (err) {
-      message.error("Failed to load events");
+      message.error('Failed to load events');
     }
   };
 
@@ -32,16 +27,16 @@ const CustomEventManagement = () => {
     fetchEvents();
   }, []);
 
-  const handleDelete = async (eventId) => {
+  const handleDelete = async eventId => {
     try {
       await deviceApi.delete(`/event/${eventId}/`);
-      message.success("Event deleted");
+      message.success('Event deleted');
 
       // Refresh all event data
       fetchEvents(); // Refresh custom events
       refreshEvents(); // Sidebar update
     } catch (err) {
-      message.error("Delete failed");
+      message.error('Delete failed');
     }
   };
 
@@ -50,21 +45,19 @@ const CustomEventManagement = () => {
       {/* Page Heading */}
       <div className="mb-8">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-800">
-            Custom Event Management
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-800">Custom Event Management</h1>
 
           <Button
             size="large"
             icon={<PlusOutlined />}
             style={{
-              background: "#B17EF3",
-              borderColor: "#B17EF3",
-              color: "white",
-              padding: "0 20px",
-              height: "45px",
-              borderRadius: "12px",
-              boxShadow: "0 6px 14px rgba(177, 126, 243, 0.4)",
+              background: '#B17EF3',
+              borderColor: '#B17EF3',
+              color: 'white',
+              padding: '0 20px',
+              height: '45px',
+              borderRadius: '12px',
+              boxShadow: '0 6px 14px rgba(177, 126, 243, 0.4)',
             }}
             onClick={() => {
               setEditingEvent(null);
@@ -82,28 +75,23 @@ const CustomEventManagement = () => {
 
       {/* EVENT LIST */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-        {events.map((ev) => (
+        {events.map(ev => (
           <Card
             key={ev.eventId}
             className="relative border border-purple-200 rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl bg-white/95 backdrop-blur-xl"
           >
             {/* Card Title */}
             <div className="flex items-center gap-3 mb-4">
-              <VideoCameraOutlined
-                className="text-2xl"
-                style={{ color: "#B17EF3" }}
-              />
-              <h2 className="text-xl font-semibold text-gray-900">
-                {ev.eventName}
-              </h2>
+              <VideoCameraOutlined className="text-2xl" style={{ color: '#B17EF3' }} />
+              <h2 className="text-xl font-semibold text-gray-900">{ev.eventName}</h2>
               <div className="absolute top-4 right-4 flex gap-2 z-10">
                 <Button
                   size="small"
                   icon={<EditOutlined />}
                   style={{
-                    borderRadius: "50%",
-                    borderColor: "#B17EF3",
-                    color: "#B17EF3",
+                    borderRadius: '50%',
+                    borderColor: '#B17EF3',
+                    color: '#B17EF3',
                   }}
                   onClick={() => {
                     setEditingEvent(ev);
@@ -111,16 +99,13 @@ const CustomEventManagement = () => {
                   }}
                 />
 
-                <Popconfirm
-                  title="Delete this event?"
-                  onConfirm={() => handleDelete(ev.eventId)}
-                >
+                <Popconfirm title="Delete this event?" onConfirm={() => handleDelete(ev.eventId)}>
                   <Button
                     size="small"
                     danger
                     style={{
-                      borderRadius: "50%",
-                      borderColor: "#ff4d4f",
+                      borderRadius: '50%',
+                      borderColor: '#ff4d4f',
                     }}
                     icon={<DeleteOutlined />}
                   />
@@ -153,7 +138,7 @@ const CustomEventManagement = () => {
             {/* Cameras */}
             <div className="mb-4">
               <p className="font-medium">Cameras:</p>
-              <Tag color="volcano">{ev.cameras?.join(", ")}</Tag>
+              <Tag color="volcano">{ev.cameras?.join(', ')}</Tag>
             </div>
 
             {/* Schedule */}
@@ -161,14 +146,12 @@ const CustomEventManagement = () => {
               <p className="font-medium mb-1">Schedule:</p>
               <div className="text-gray-600 text-sm space-y-1">
                 <p>
-                  📅 {ev.scheduling?.dateRange?.startDate} →{" "}
-                  {ev.scheduling?.dateRange?.endDate}
+                  📅 {ev.scheduling?.dateRange?.startDate} → {ev.scheduling?.dateRange?.endDate}
                 </p>
                 <p>
-                  ⏰ {ev.scheduling?.timeRange?.startTime} →{" "}
-                  {ev.scheduling?.timeRange?.endTime}
+                  ⏰ {ev.scheduling?.timeRange?.startTime} → {ev.scheduling?.timeRange?.endTime}
                 </p>
-                <p>🗓 Days: {ev.scheduling?.specificDays?.join(", ") || "-"}</p>
+                <p>🗓 Days: {ev.scheduling?.specificDays?.join(', ') || '-'}</p>
               </div>
             </div>
           </Card>
@@ -187,11 +170,11 @@ const CustomEventManagement = () => {
         destroyOnClose
         style={{ top: 20 }}
         styles={{
-          body: { 
+          body: {
             maxHeight: 'calc(100vh - 100px)',
             overflowY: 'auto',
-            padding: '20px'
-          }
+            padding: '20px',
+          },
         }}
       >
         <CustomEventForm

@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   FaVideo,
   FaBell,
@@ -7,11 +7,11 @@ import {
   FaLayerGroup,
   FaMapMarkerAlt,
   FaClipboardList,
-} from "react-icons/fa";
-import { Link } from "react-router-dom";
-import { Skeleton } from "antd";
-import { useDeviceInventory } from "../../contexts/DeviceInventoryContext";
-import { useAlertData } from "../../contexts/AlertDataContext";
+} from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { Skeleton } from 'antd';
+import { useDeviceInventory } from '../../contexts/DeviceInventoryContext';
+import { useAlertData } from '../../contexts/AlertDataContext';
 
 const DashboardCards = () => {
   const {
@@ -22,73 +22,73 @@ const DashboardCards = () => {
     loading: inventoryLoading,
   } = useDeviceInventory();
   const { alertsCount, loading: alertLoading } = useAlertData();
-  const systemHealth = "Healthy";
+  const systemHealth = 'Healthy';
   const loading = inventoryLoading || alertLoading;
 
   const cards = [
     {
-      title: "Sites",
+      title: 'Sites',
       count: siteCount,
-      subtitle: "Total active Sites",
+      subtitle: 'Total active Sites',
       icon: <FaLayerGroup className="text-xl text-purple-500" />,
-      link: "/devices/locations",
-      bg: "bg-purple-100",
+      link: '/devices/locations',
+      bg: 'bg-purple-100',
     },
     {
-      title: "Zones",
+      title: 'Zones',
       count: zoneCount,
-      subtitle: "Total active Zones",
+      subtitle: 'Total active Zones',
       icon: <FaMapMarkerAlt className="text-xl text-purple-500" />,
-      link: "/devices/zones",
-      bg: "bg-purple-100",
+      link: '/devices/zones',
+      bg: 'bg-purple-100',
     },
     {
-      title: "Alerts",
+      title: 'Alerts',
       count: alertsCount,
-      subtitle: "All Alerts",
+      subtitle: 'All Alerts',
       icon: <FaClipboardList className="text-xl text-purple-500" />,
-      link: "/reports/alerts",
-      bg: "bg-purple-100",
+      link: '/reports/alerts',
+      bg: 'bg-purple-100',
     },
     {
-      title: "Events",
+      title: 'Events',
       count: alertsCount,
-      subtitle: "Recent security & safety events",
+      subtitle: 'Recent security & safety events',
       icon: <FaBell className="text-xl text-purple-500" />,
-      link: "/analytics",
-      bg: "bg-purple-100",
+      link: '/analytics',
+      bg: 'bg-purple-100',
     },
     {
-      title: "Analytics",
+      title: 'Analytics',
       count: alertsCount,
-      subtitle: "AI-driven insights",
+      subtitle: 'AI-driven insights',
       icon: <FaChartLine className="text-xl text-purple-500" />,
-      link: "/analytics",
-      bg: "bg-purple-100",
+      link: '/analytics',
+      bg: 'bg-purple-100',
     },
     {
-      title: "NVRs",
+      title: 'NVRs',
       count: nvrCount,
-      subtitle: "Total connected NVRs",
+      subtitle: 'Total connected NVRs',
       icon: <FaServer className="text-xl text-purple-500" />,
-      link: "/devices/nvrs",
-      bg: "bg-purple-100",
+      link: '/devices/nvrs',
+      bg: 'bg-purple-100',
     },
     {
-      title: "Cameras",
+      title: 'Cameras',
       count: cameraCount,
-      subtitle: "Total active cameras",
+      subtitle: 'Total active cameras',
       icon: <FaVideo className="text-xl text-purple-500" />,
-      link: "/devices/cameras",
-      bg: "bg-purple-100",
+      link: '/devices/cameras',
+      bg: 'bg-purple-100',
     },
     {
-      title: "System Health",
+      title: 'System Health',
       count: systemHealth,
-      subtitle: "Health",
+      subtitle: 'Health',
       icon: <FaServer className="text-xl text-purple-500" />,
-      link: "/devices/nvrs",
-      bg: "bg-purple-100",
+      link: '/devices/nvrs',
+      bg: 'bg-purple-100',
     },
   ];
 
@@ -111,17 +111,11 @@ const DashboardCards = () => {
               className={`${card.bg} rounded-lg border border-purple-200 shadow-lg p-2 h-fit flex flex-col justify-between transition duration-300 hover:shadow-xl`}
             >
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-purple-900">
-                  {card.title}
-                </h2>
-                <div className="bg-white p-2 rounded-full shadow">
-                  {card.icon}
-                </div>
+                <h2 className="text-lg font-semibold text-purple-900">{card.title}</h2>
+                <div className="bg-white p-2 rounded-full shadow">{card.icon}</div>
               </div>
               <div className="mt-2">
-                <p className="text-2xl font-bold text-purple-900">
-                  {card.count}
-                </p>
+                <p className="text-2xl font-bold text-purple-900">{card.count}</p>
                 <p className="text-xs text-purple-700 mt-1">{card.subtitle}</p>
               </div>
               <div className="text-right mt-1">

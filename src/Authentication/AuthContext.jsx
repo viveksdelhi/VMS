@@ -54,13 +54,6 @@ export const AuthProvider = ({ children }) => {
 // Custom hook to access auth context
 export const useAuth = () => useContext(AuthContext);
 
-
-
-
-
-
-
-
 // import React, { createContext, useState, useContext, useEffect } from 'react';
 // import Cookies from 'js-cookie'; // Import js-cookie
 

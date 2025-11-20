@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   Modal,
@@ -11,8 +11,8 @@ import {
   Spin,
   message,
   Pagination,
-} from "antd";
-import { motion } from "framer-motion";
+} from 'antd';
+import { motion } from 'framer-motion';
 import {
   PlayCircleOutlined,
   ReloadOutlined,
@@ -20,13 +20,13 @@ import {
   VideoCameraOutlined,
   DownloadOutlined,
   FileTextOutlined,
-} from "@ant-design/icons";
-import dayjs from "dayjs";
-import axios from "axios";
-import Cookies from "js-cookie";
-import { deviceApi } from "../../../utils/axiosInstance";
-import recording_thumbnail from "../../../assets/recording_thumbnail.png";
-import { RECORDING_API_URL } from "../../../config";
+} from '@ant-design/icons';
+import dayjs from 'dayjs';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import { deviceApi } from '../../../utils/axiosInstance';
+import recording_thumbnail from '../../../assets/recording_thumbnail.png';
+import { RECORDING_API_URL } from '../../../config';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -46,7 +46,7 @@ const RecordingViewer = () => {
   const [pageSize] = useState(12);
   const [total, setTotal] = useState(0);
 
-  const userId = Cookies.get("userId");
+  const userId = Cookies.get('userId');
 
   // ✅ Fetch cameras for dropdown
   useEffect(() => {
@@ -55,15 +55,15 @@ const RecordingViewer = () => {
         const res = await deviceApi.get(`/Camera/`, {
           params: {
             user_id: userId,
-            search: "",
+            search: '',
             page: 1,
             pageSize: 100,
           },
         });
         setCameras(res.data.results || []);
       } catch (err) {
-        console.error("Error fetching cameras:", err);
-        message.error("Failed to load cameras");
+        console.error('Error fetching cameras:', err);
+        message.error('Failed to load cameras');
       }
     };
     if (userId) fetchCameras();
@@ -74,18 +74,15 @@ const RecordingViewer = () => {
     if (!selectedCamera) return;
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${RECORDING_API_URL}/Recording/GetRecordings`,
-        {
-          params: {
-            cameraid: selectedCamera,
-            pageno: page,
-            pagesize: pageSize,
-            fromdate: dateRange?.[0]?.toISOString(),
-            todate: dateRange?.[1]?.toISOString(),
-          },
-        }
-      );
+      const res = await axios.get(`${RECORDING_API_URL}/Recording/GetRecordings`, {
+        params: {
+          cameraid: selectedCamera,
+          pageno: page,
+          pagesize: pageSize,
+          fromdate: dateRange?.[0]?.toISOString(),
+          todate: dateRange?.[1]?.toISOString(),
+        },
+      });
 
       const data = res.data.recordings || [];
       const parsed = data.map((rec, index) => ({
@@ -95,7 +92,7 @@ const RecordingViewer = () => {
         fileName: rec.fileName,
         size: `${(rec.fileSizeKB / 1024).toFixed(2)} MB`,
         start_time: rec.recDate,
-        duration: rec.duration || "N/A",
+        duration: rec.duration || 'N/A',
         thumbnail: rec.thumbnailUrl || recording_thumbnail,
       }));
 
@@ -103,8 +100,8 @@ const RecordingViewer = () => {
       setTotal(res.data.total || 0); // ✅ use API total
       setCurrentPage(page);
     } catch (err) {
-      console.error("Error fetching recordings:", err);
-      message.error("Failed to load recordings");
+      console.error('Error fetching recordings:', err);
+      message.error('Failed to load recordings');
     }
     setLoading(false);
   };
@@ -112,7 +109,7 @@ const RecordingViewer = () => {
   // ✅ Apply filters
   const applyFilters = () => {
     if (!selectedCamera) {
-      message.warning("Please select a camera first");
+      message.warning('Please select a camera first');
       return;
     }
     fetchRecordings(1);
@@ -127,11 +124,11 @@ const RecordingViewer = () => {
   };
 
   // ✅ Handle download
-  const handleDownload = (rec) => {
-    const link = document.createElement("a");
+  const handleDownload = rec => {
+    const link = document.createElement('a');
     link.href = rec.url;
     link.download = rec.fileName;
-    link.target = "_blank";
+    link.target = '_blank';
     link.click();
   };
 
@@ -144,35 +141,27 @@ const RecordingViewer = () => {
             placeholder="Select Camera"
             style={{ minWidth: 220 }}
             value={selectedCamera}
-            onChange={(val) => setSelectedCamera(val)}
+            onChange={val => setSelectedCamera(val)}
             allowClear
             showSearch
             filterOption={(input, option) =>
               option?.children?.toLowerCase().includes(input.toLowerCase())
             }
           >
-            {cameras.map((cam) => (
+            {cameras.map(cam => (
               <Option key={cam.id} value={cam.id}>
-                {cam.name} {cam.zone ? `(${cam.zone.name})` : ""}
+                {cam.name} {cam.zone ? `(${cam.zone.name})` : ''}
               </Option>
             ))}
           </Select>
 
-          <RangePicker
-            value={dateRange}
-            onChange={(val) => setDateRange(val || [])}
-            allowClear
-          />
+          <RangePicker value={dateRange} onChange={val => setDateRange(val || [])} allowClear />
 
           <Button type="primary" onClick={applyFilters}>
             Apply
           </Button>
 
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={resetFilters}
-            className="border-gray-300"
-          >
+          <Button icon={<ReloadOutlined />} onClick={resetFilters} className="border-gray-300">
             Reset
           </Button>
         </div>
@@ -180,13 +169,11 @@ const RecordingViewer = () => {
         {/* Active Filters */}
         <div className="mt-3 space-x-2">
           {selectedCamera && (
-            <Tag color="purple">
-              Camera: {cameras.find((c) => c.id === selectedCamera)?.name}
-            </Tag>
+            <Tag color="purple">Camera: {cameras.find(c => c.id === selectedCamera)?.name}</Tag>
           )}
           {dateRange.length === 2 && (
             <Tag color="blue">
-              {dateRange[0].format("MMM D")} - {dateRange[1].format("MMM D")}
+              {dateRange[0].format('MMM D')} - {dateRange[1].format('MMM D')}
             </Tag>
           )}
         </div>
@@ -199,7 +186,7 @@ const RecordingViewer = () => {
             <Spin size="large" />
           </div>
         ) : recordings.length > 0 ? (
-          recordings.map((rec) => (
+          recordings.map(rec => (
             <motion.div
               key={rec.id}
               whileHover={{ scale: 1.03 }}
@@ -231,9 +218,7 @@ const RecordingViewer = () => {
                 <div className="flex justify-between items-center mb-2">
                   <Badge
                     color="purple"
-                    text={
-                      cameras.find((c) => c.id === rec.camera)?.name || "Camera"
-                    }
+                    text={cameras.find(c => c.id === rec.camera)?.name || 'Camera'}
                   />
                   <Tag color="blue" icon={<ClockCircleOutlined />}>
                     {rec.size}
@@ -244,16 +229,14 @@ const RecordingViewer = () => {
                   {rec.fileName}
                 </h3>
                 <p className="text-xs text-gray-500">
-                  {dayjs(rec.start_time).format("MMM D, YYYY HH:mm")}
+                  {dayjs(rec.start_time).format('MMM D, YYYY HH:mm')}
                 </p>
-                <p className="text-xs text-gray-500">
-                  Duration: {rec.duration}
-                </p>
+                <p className="text-xs text-gray-500">Duration: {rec.duration}</p>
                 <Button
                   size="small"
                   type="link"
                   icon={<DownloadOutlined />}
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     handleDownload(rec);
                   }}
@@ -278,7 +261,7 @@ const RecordingViewer = () => {
             current={currentPage}
             pageSize={pageSize}
             total={total}
-            onChange={(page) => fetchRecordings(page)}
+            onChange={page => fetchRecordings(page)}
           />
         </div>
       )}
@@ -313,13 +296,11 @@ const RecordingViewer = () => {
             <div className="mb-3">
               <p className="text-sm text-gray-700">
                 <VideoCameraOutlined className="mr-1" />
-                <strong>Camera:</strong>{" "}
-                {cameras.find((c) => c.id === currentMeta?.camera)?.name}
+                <strong>Camera:</strong> {cameras.find(c => c.id === currentMeta?.camera)?.name}
               </p>
               <p className="text-sm text-gray-700">
                 <ClockCircleOutlined className="mr-1" />
-                <strong>Date:</strong>{" "}
-                {dayjs(currentMeta?.start_time).format("MMM D, YYYY HH:mm")}
+                <strong>Date:</strong> {dayjs(currentMeta?.start_time).format('MMM D, YYYY HH:mm')}
               </p>
               <p className="text-sm text-gray-700">
                 <strong>File:</strong> {currentMeta?.fileName}
@@ -337,7 +318,7 @@ const RecordingViewer = () => {
               controls
               width="100%"
               height="480px"
-              style={{ borderRadius: "8px" }}
+              style={{ borderRadius: '8px' }}
             />
           </>
         )}

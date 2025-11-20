@@ -1,20 +1,7 @@
-import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Form,
-  Input,
-  Button,
-  Card,
-  message,
-  Tooltip,
-  Popconfirm,
-} from "antd";
-import {
-  EditOutlined,
-  DeleteOutlined,
-  ExclamationCircleOutlined,
-} from "@ant-design/icons";
-import { api } from "../../../utils/axiosInstance"; // centralized axios instance
+import React, { useEffect, useState } from 'react';
+import { Table, Form, Input, Button, Card, message, Tooltip, Popconfirm } from 'antd';
+import { EditOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { api } from '../../../utils/axiosInstance'; // centralized axios instance
 
 const RoleData = () => {
   const [form] = Form.useForm();
@@ -33,15 +20,15 @@ const RoleData = () => {
   const fetchRoles = async () => {
     setTableLoading(true);
     try {
-      const res = await api.get("/roles");
+      const res = await api.get('/roles');
       const data = res.data || [];
       setRoles(data);
-      setPagination((prev) => ({
+      setPagination(prev => ({
         ...prev,
         total: data.length,
       }));
     } catch (err) {
-      message.error("Failed to load roles");
+      message.error('Failed to load roles');
     } finally {
       setTableLoading(false);
     }
@@ -52,55 +39,54 @@ const RoleData = () => {
   }, []);
 
   // Add / Update Role
-  const onFinish = async (values) => {
+  const onFinish = async values => {
     try {
       setLoading(true);
       if (editingRole) {
         await api.put(`/roles/${editingRole.id}`, values);
-        message.success("Role updated!");
+        message.success('Role updated!');
       } else {
-        await api.post("/roles", values);
-        message.success("Role created!");
+        await api.post('/roles', values);
+        message.success('Role created!');
       }
       form.resetFields();
       setEditingRole(null);
       fetchRoles();
     } catch (err) {
-      message.error("Operation failed");
+      message.error('Operation failed');
     } finally {
       setLoading(false);
     }
   };
 
   // Delete Role
-  const handleDelete = async (id) => {
+  const handleDelete = async id => {
     try {
       await api.delete(`/roles/${id}`);
-      message.success("Role deleted!");
+      message.success('Role deleted!');
       fetchRoles();
     } catch (err) {
-      message.error("Delete failed");
+      message.error('Delete failed');
     }
   };
 
   // Columns
   const columns = [
     {
-      title: "S.No",
-      render: (_, __, index) =>
-        (pagination.current - 1) * pagination.pageSize + index + 1,
+      title: 'S.No',
+      render: (_, __, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
     },
     {
-      title: "Role ID",
-      dataIndex: "id",
+      title: 'Role ID',
+      dataIndex: 'id',
     },
     {
-      title: "Role Name",
-      dataIndex: "name",
+      title: 'Role Name',
+      dataIndex: 'name',
     },
     {
-      title: "Actions",
-      key: "actions",
+      title: 'Actions',
+      key: 'actions',
       render: (_, record) => (
         <div className="flex gap-2">
           <Tooltip title="Edit">
@@ -118,7 +104,7 @@ const RoleData = () => {
             onConfirm={() => handleDelete(record.id)}
             okText="Yes"
             cancelText="No"
-            icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
+            icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
           >
             <Tooltip title="Delete">
               <Button type="link" danger icon={<DeleteOutlined />} />
@@ -130,7 +116,7 @@ const RoleData = () => {
   ];
 
   // Table pagination change
-  const handleTableChange = (pag) => {
+  const handleTableChange = pag => {
     setPagination(pag);
   };
 
@@ -146,27 +132,20 @@ const RoleData = () => {
       <div className="flex justify-between items-center bg-[#9864DB] text-white px-6 py-2 rounded-md shadow-sm mb-4">
         <div>
           <h3 className="text-2xl font-semibold mb-1">
-            {editingRole ? "✏️ Edit Role" : "🛡️ Create New Role"}
+            {editingRole ? '✏️ Edit Role' : '🛡️ Create New Role'}
           </h3>
           <p className="text-sm text-gray-100">
-            {editingRole
-              ? `Editing: ${editingRole.name}`
-              : "Enter role name and save"}
+            {editingRole ? `Editing: ${editingRole.name}` : 'Enter role name and save'}
           </p>
         </div>
       </div>
 
       {/* Form */}
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={{ name: "" }}
-        onFinish={onFinish}
-      >
+      <Form form={form} layout="vertical" initialValues={{ name: '' }} onFinish={onFinish}>
         <Form.Item
           name="name"
           label="Role Name"
-          rules={[{ required: true, message: "Please enter role name" }]}
+          rules={[{ required: true, message: 'Please enter role name' }]}
         >
           <Input placeholder="Enter role name" />
         </Form.Item>
@@ -176,9 +155,9 @@ const RoleData = () => {
             type="primary"
             htmlType="submit"
             loading={loading}
-            style={{ background: "#522EA8", border: "none" }}
+            style={{ background: '#522EA8', border: 'none' }}
           >
-            {editingRole ? "Update Role" : "Create Role"}
+            {editingRole ? 'Update Role' : 'Create Role'}
           </Button>
           {editingRole && (
             <Button

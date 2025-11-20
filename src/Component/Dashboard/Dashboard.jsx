@@ -1,11 +1,11 @@
-import React from "react";
-import DashboardCards from "./DashboardCards";
-import RecentActivity from "./RecentActivity";
-import MapComponent from "./MapComponent";
-import WeeklyAlertGraph from "./WeeklyAlertGraph";
-import DashboardFilters from "./DashboardFilters";
-import { DeviceInventoryProvider } from "../../contexts/DeviceInventoryContext";
-import { AlertDataProvider } from "../../contexts/AlertDataContext";
+import React from 'react';
+import DashboardCards from './DashboardCards';
+import RecentActivity from './RecentActivity';
+import MapComponent from './MapComponent';
+import WeeklyAlertGraph from './WeeklyAlertGraph';
+import DashboardFilters from './DashboardFilters';
+import { DeviceInventoryProvider } from '../../contexts/DeviceInventoryContext';
+import { AlertDataProvider } from '../../contexts/AlertDataContext';
 
 const DashboardContent = () => (
   <div>

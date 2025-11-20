@@ -1,19 +1,8 @@
-import React, { useEffect, useState } from "react";
-import {
-  Form,
-  Input,
-  InputNumber,
-  Button,
-  Card,
-  Select,
-  Spin,
-  message,
-  Row,
-  Col,
-} from "antd";
-import { useNavigate, useLocation } from "react-router-dom";
-import { deviceApi } from "../../../../utils/axiosInstance";
-import Cookies from "js-cookie";
+import React, { useEffect, useState } from 'react';
+import { Form, Input, InputNumber, Button, Card, Select, Spin, message, Row, Col } from 'antd';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { deviceApi } from '../../../../utils/axiosInstance';
+import Cookies from 'js-cookie';
 
 const { Option } = Select;
 
@@ -27,7 +16,7 @@ function CameraForm() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const userId = Cookies.get("userId");
+  const userId = Cookies.get('userId');
   const editingCamera = location.state?.camera || null;
 
   // ✅ Fetch NVRs
@@ -36,7 +25,7 @@ function CameraForm() {
       const nvrRes = await deviceApi.get(`/NVR/?user_id=${userId}&page=1&page_size=100`);
       setNvrs(nvrRes.data.results || []);
     } catch (err) {
-      message.error("Failed to load NVR data");
+      message.error('Failed to load NVR data');
     }
   };
 
@@ -46,7 +35,7 @@ function CameraForm() {
       const res = await deviceApi.get(`/Location/?user_id=${userId}&page=1&page_size=100`);
       setLocations(res.data.results || []);
     } catch (err) {
-      message.error("Failed to load locations");
+      message.error('Failed to load locations');
     }
   };
 
@@ -56,7 +45,7 @@ function CameraForm() {
       const res = await deviceApi.get(`/Zone/?user_id=${userId}&page=1&page_size=100`);
       setZones(res.data.results || []);
     } catch (err) {
-      message.error("Failed to load zones");
+      message.error('Failed to load zones');
     }
   };
 
@@ -76,64 +65,64 @@ function CameraForm() {
       {
         pattern:
           /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/,
-        message: "Invalid IP address",
+        message: 'Invalid IP address',
       },
     ],
     rtsp: [
-      { required: true, message: "RTSP URL is required" },
+      { required: true, message: 'RTSP URL is required' },
       {
         pattern:
           /^rtsp:\/\/(?:\S+(?::\S*)?@)?(?:[A-Za-z0-9.-]+|\[[A-Fa-f0-9:.]+\])(?::\d+)?(?:\/[^\s]*)?$/,
-        message: "Invalid RTSP URL",
+        message: 'Invalid RTSP URL',
       },
     ],
     latitude: [
-      { required: true, message: "Latitude is required" },
+      { required: true, message: 'Latitude is required' },
       {
         validator: (_, value) =>
           value >= -90 && value <= 90
             ? Promise.resolve()
-            : Promise.reject("Latitude must be between -90 and 90"),
+            : Promise.reject('Latitude must be between -90 and 90'),
       },
     ],
     longitude: [
-      { required: true, message: "Longitude is required" },
+      { required: true, message: 'Longitude is required' },
       {
         validator: (_, value) =>
           value >= -180 && value <= 180
             ? Promise.resolve()
-            : Promise.reject("Longitude must be between -180 and 180"),
+            : Promise.reject('Longitude must be between -180 and 180'),
       },
     ],
   };
 
   // ✅ Submit handler
-  const onFinish = async (values) => {
+  const onFinish = async values => {
     setLoading(true);
     try {
       const payload = {
         ...values,
-        hotspot: "2", // static
+        hotspot: '2', // static
         channelId: 101, // static
-        macAddress: "00:1A:2B:3C:4D:5E", // static
+        macAddress: '00:1A:2B:3C:4D:5E', // static
         userid: String(userId),
         isRecording: 0,
         isStreaming: 1,
-        creditId: "67890",
+        creditId: '67890',
       };
 
       if (editingCamera) {
         await deviceApi.put(`/Camera/${editingCamera.id}/`, payload);
-        message.success("Camera updated successfully!");
+        message.success('Camera updated successfully!');
       } else {
         await deviceApi.post(`/Camera/`, payload);
-        message.success("Camera created successfully!");
+        message.success('Camera created successfully!');
       }
 
-      navigate("/devices/cameras");
+      navigate('/devices/cameras');
     } catch (err) {
       console.error(err);
-      message.error("Operation failed");
+      message.error('Operation failed');
     } finally {
       setLoading(false);
     }
@@ -143,14 +132,14 @@ function CameraForm() {
     <Card className="m-4 shadow-md">
       <div className="mb-4 bg-[#9864DB] text-white px-6 py-2 rounded-md flex justify-between items-center">
         <h3 className="text-xl font-semibold">
-          {editingCamera ? "✏️ Edit Camera" : "➕ Add Camera"}
+          {editingCamera ? '✏️ Edit Camera' : '➕ Add Camera'}
         </h3>
         <Button
-          onClick={() => navigate("/devices/cameras")}
+          onClick={() => navigate('/devices/cameras')}
           style={{
-            background: "#9864DB",
-            color: "white",
-            borderColor: "#9864DB",
+            background: '#9864DB',
+            color: 'white',
+            borderColor: '#9864DB',
           }}
         >
           📋 Camera Details
@@ -165,7 +154,7 @@ function CameraForm() {
               <Form.Item
                 label="Camera Name"
                 name="name"
-                rules={[{ required: true, message: "Camera Name is required" }]}
+                rules={[{ required: true, message: 'Camera Name is required' }]}
               >
                 <Input placeholder="Enter camera name" />
               </Form.Item>
@@ -181,17 +170,17 @@ function CameraForm() {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item label="Port" name="port">
-                <InputNumber min={1} max={65535} style={{ width: "100%" }} />
+                <InputNumber min={1} max={65535} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
                 label="Location"
                 name="location"
-                rules={[{ required: true, message: "Location is required" }]}
+                rules={[{ required: true, message: 'Location is required' }]}
               >
                 <Select placeholder="Select Location">
-                  {locations.map((loc) => (
+                  {locations.map(loc => (
                     <Option key={loc.id} value={loc.id}>
                       {loc.name}
                     </Option>
@@ -212,10 +201,10 @@ function CameraForm() {
               <Form.Item
                 label="NVR"
                 name="nvrId"
-                rules={[{ required: true, message: "Please select an NVR!" }]}
+                rules={[{ required: true, message: 'Please select an NVR!' }]}
               >
                 <Select placeholder="Select NVR">
-                  {nvrs.map((n) => (
+                  {nvrs.map(n => (
                     <Option key={n.id} value={n.id}>
                       {n.name}
                     </Option>
@@ -245,10 +234,10 @@ function CameraForm() {
               <Form.Item
                 label="Zone"
                 name="zone"
-                rules={[{ required: true, message: "Zone is required" }]}
+                rules={[{ required: true, message: 'Zone is required' }]}
               >
                 <Select placeholder="Select Zone">
-                  {zones.map((z) => (
+                  {zones.map(z => (
                     <Option key={z.id} value={z.id}>
                       {z.name}
                     </Option>
@@ -263,14 +252,14 @@ function CameraForm() {
             <Button
               type="primary"
               htmlType="submit"
-              style={{ background: "#9864DB", borderColor: "#9864DB" }}
+              style={{ background: '#9864DB', borderColor: '#9864DB' }}
             >
-              {editingCamera ? "Update Camera" : "Create Camera"}
+              {editingCamera ? 'Update Camera' : 'Create Camera'}
             </Button>
             <Button
               className="ml-2"
-              onClick={() => navigate("/devices/cameras")}
-              style={{ borderColor: "#522EA8", color: "#522EA8" }}
+              onClick={() => navigate('/devices/cameras')}
+              style={{ borderColor: '#522EA8', color: '#522EA8' }}
             >
               Cancel
             </Button>
@@ -282,8 +271,6 @@ function CameraForm() {
 }
 
 export default CameraForm;
-
-
 
 // import React, { useEffect, useState } from "react";
 // import {

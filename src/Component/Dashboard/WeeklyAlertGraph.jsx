@@ -1,15 +1,7 @@
-import React, { useMemo } from "react";
-import {
-  BarChart,
-  Bar,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import { Card, Skeleton } from "antd";
-import { useAlertData } from "../../contexts/AlertDataContext";
+import React, { useMemo } from 'react';
+import { BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { Card, Skeleton } from 'antd';
+import { useAlertData } from '../../contexts/AlertDataContext';
 
 const WeeklyAlertGraph = () => {
   const { weeklyCounts, loading } = useAlertData();
@@ -21,10 +13,10 @@ const WeeklyAlertGraph = () => {
     return Array.from({ length: 7 }).map((_, idx) => {
       const date = new Date();
       date.setDate(today.getDate() - (6 - idx));
-      const key = date.toISOString().split("T")[0];
-      const match = weeklyCounts.find((item) => item.date === key);
+      const key = date.toISOString().split('T')[0];
+      const match = weeklyCounts.find(item => item.date === key);
       return {
-        day: date.toLocaleDateString("en-US", { weekday: "short" }),
+        day: date.toLocaleDateString('en-US', { weekday: 'short' }),
         total: match?.count || 0,
       };
     });
@@ -36,11 +28,11 @@ const WeeklyAlertGraph = () => {
       className="rounded-2xl shadow-lg bg-gradient-to-b from-purple-50 to-white"
       bordered={false}
       headStyle={{
-        background: "transparent",
-        borderBottom: "none",
-        padding: "12px 20px",
+        background: 'transparent',
+        borderBottom: 'none',
+        padding: '12px 20px',
       }}
-      bodyStyle={{ padding: "0 16px 16px 16px" }}
+      bodyStyle={{ padding: '0 16px 16px 16px' }}
     >
       {loading ? (
         <div className="flex flex-col justify-center items-center h-72 space-y-4">
@@ -56,12 +48,12 @@ const WeeklyAlertGraph = () => {
                     width: 25,
                     height: `${40 + Math.random() * 60}px`,
                     borderRadius: 8,
-                    background: "linear-gradient(180deg,#ddd6fe 0%,#ede9fe 100%)",
+                    background: 'linear-gradient(180deg,#ddd6fe 0%,#ede9fe 100%)',
                   }}
                 />
               ))}
           </div>
-          <Skeleton.Input active style={{ width: "60%", height: 10, borderRadius: 4 }} />
+          <Skeleton.Input active style={{ width: '60%', height: 10, borderRadius: 4 }} />
         </div>
       ) : (
         <div className="h-72">
@@ -79,20 +71,15 @@ const WeeklyAlertGraph = () => {
                 tickLine={false}
                 axisLine={false}
               />
-              <YAxis
-                stroke="#7C3AED"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
+              <YAxis stroke="#7C3AED" fontSize={12} tickLine={false} axisLine={false} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#f5f3ff",
-                  border: "1px solid #c4b5fd",
-                  borderRadius: "10px",
-                  color: "#5b21b6",
+                  backgroundColor: '#f5f3ff',
+                  border: '1px solid #c4b5fd',
+                  borderRadius: '10px',
+                  color: '#5b21b6',
                 }}
-                cursor={{ fill: "#ede9fe" }}
+                cursor={{ fill: '#ede9fe' }}
               />
               <Bar
                 dataKey="total"

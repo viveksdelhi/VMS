@@ -1,16 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Modal, Spin } from "antd";
-import { CloseOutlined } from "@ant-design/icons";
-import Hls from "hls.js";
-import { STREAMING_API_URL } from "../../../../config";
+import React, { useEffect, useRef, useState } from 'react';
+import { Modal, Spin } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
+import Hls from 'hls.js';
+import { STREAMING_API_URL } from '../../../../config';
 
 const CameraModal = ({ open, onClose, camera }) => {
   const videoRef = useRef(null);
   const [loading, setLoading] = useState(true);
 
-  const hlsUrl = camera
-    ? `${STREAMING_API_URL}/Streaming/stream/${camera.id}/stream.m3u8`
-    : null;
+  const hlsUrl = camera ? `${STREAMING_API_URL}/Streaming/stream/${camera.id}/stream.m3u8` : null;
 
   useEffect(() => {
     if (hlsUrl && open) {
@@ -26,7 +24,7 @@ const CameraModal = ({ open, onClose, camera }) => {
         hls.on(Hls.Events.ERROR, () => setLoading(false));
 
         return () => hls.destroy();
-      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = hlsUrl;
         video.onloadedmetadata = () => setLoading(false);
       }
@@ -42,19 +40,16 @@ const CameraModal = ({ open, onClose, camera }) => {
       className="!p-0 !m-0 modal-custom"
       width={1000}
       styles={{
-        body: { padding: 0, background: "transparent" },
-        content: { background: "transparent", boxShadow: "none" },
-        header: { display: "none" },
+        body: { padding: 0, background: 'transparent' },
+        content: { background: 'transparent', boxShadow: 'none' },
+        header: { display: 'none' },
       }}
     >
-
       {camera ? (
         <div className="relative rounded-xl overflow-hidden shadow-lg border border-gray-900">
           {/* Header (floating on top of video) */}
           <div className="absolute top-0 left-0 w-full flex justify-between items-center px-4 py-2 bg-black/60 z-20">
-            <span className="text-white font-semibold text-lg">
-              {camera.name || "Live Camera"}
-            </span>
+            <span className="text-white font-semibold text-lg">{camera.name || 'Live Camera'}</span>
             <button
               onClick={onClose}
               className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 hover:bg-red-500 hover:text-white transition"
@@ -71,13 +66,7 @@ const CameraModal = ({ open, onClose, camera }) => {
           )}
 
           {/* Video fills all area */}
-          <video
-            ref={videoRef}
-            controls
-            autoPlay
-            muted
-            className="w-full h-[550px] bg-black"
-          />
+          <video ref={videoRef} controls autoPlay muted className="w-full h-[550px] bg-black" />
         </div>
       ) : (
         <p className="text-center text-gray-500">No camera selected</p>

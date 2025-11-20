@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   if (allowedRoles.length > 0) {
     const normalizedRole = role?.toLowerCase();
     const normalizedAllowedRoles = allowedRoles.map(r => r.toLowerCase());
-    
+
     if (!normalizedAllowedRoles.includes(normalizedRole)) {
       console.warn(`Access denied: User role "${role}" not in allowed roles:`, allowedRoles);
       return <Navigate to="/unauthorized" replace />;
@@ -32,8 +32,6 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 };
 
 export default ProtectedRoute;
-
-
 
 // import React from 'react';
 // import { Navigate } from 'react-router-dom';

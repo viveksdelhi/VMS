@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Form,
   Input,
@@ -11,10 +11,10 @@ import {
   Row,
   Col,
   message,
-} from "antd";
-import { useNavigate, useLocation } from "react-router-dom";
-import { deviceApi } from "../../../../utils/axiosInstance"; // ✅ central axios instance
-import Cookies from "js-cookie";
+} from 'antd';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { deviceApi } from '../../../../utils/axiosInstance'; // ✅ central axios instance
+import Cookies from 'js-cookie';
 
 const { Option } = Select;
 
@@ -25,18 +25,18 @@ function LocationForm() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const userId = Cookies.get("userId");
+  const userId = Cookies.get('userId');
   const editingLocation = location.state?.location || null;
 
   // ✅ Fetch location types dynamically
   useEffect(() => {
     const fetchLocationTypes = async () => {
       try {
-        const res = await deviceApi.get("/LocationType/"); // adjust endpoint if different
+        const res = await deviceApi.get('/LocationType/'); // adjust endpoint if different
         setLocationTypes(res.data.results || res.data || []);
       } catch (error) {
-        console.error("Failed to fetch location types", error);
-        message.error("Failed to load location types");
+        console.error('Failed to fetch location types', error);
+        message.error('Failed to load location types');
       }
     };
 
@@ -51,33 +51,33 @@ function LocationForm() {
 
   const rules = {
     latitude: [
-      { required: true, message: "Latitude is required" },
+      { required: true, message: 'Latitude is required' },
       {
         validator: (_, value) =>
           value >= -90 && value <= 90
             ? Promise.resolve()
-            : Promise.reject("Latitude must be between -90 and 90"),
+            : Promise.reject('Latitude must be between -90 and 90'),
       },
     ],
     longitude: [
-      { required: true, message: "Longitude is required" },
+      { required: true, message: 'Longitude is required' },
       {
         validator: (_, value) =>
           value >= -180 && value <= 180
             ? Promise.resolve()
-            : Promise.reject("Longitude must be between -180 and 180"),
+            : Promise.reject('Longitude must be between -180 and 180'),
       },
     ],
     pincode: [
-      { required: true, message: "Pincode is required" },
+      { required: true, message: 'Pincode is required' },
       {
         pattern: /^[1-9][0-9]{5}$/,
-        message: "Invalid pincode format",
+        message: 'Invalid pincode format',
       },
     ],
   };
 
-  const onFinish = async (values) => {
+  const onFinish = async values => {
     setLoading(true);
     try {
       const payload = {
@@ -87,16 +87,16 @@ function LocationForm() {
 
       if (editingLocation) {
         await deviceApi.put(`/Location/${editingLocation.id}/`, payload); // ✅ deviceApi
-        message.success("Location updated successfully!");
+        message.success('Location updated successfully!');
       } else {
         await deviceApi.post(`/Location/`, payload); // ✅ deviceApi
-        message.success("Location created successfully!");
+        message.success('Location created successfully!');
       }
 
-      navigate("/devices/locations");
+      navigate('/devices/locations');
     } catch (err) {
       console.error(err);
-      message.error("Operation failed");
+      message.error('Operation failed');
     } finally {
       setLoading(false);
     }
@@ -107,14 +107,14 @@ function LocationForm() {
       {/* Header */}
       <div className="mb-4 bg-[#9864DB] text-white px-6 py-2 rounded-md flex justify-between items-center">
         <h3 className="text-xl font-semibold">
-          {editingLocation ? "✏️ Edit Location" : "➕ Add Location"}
+          {editingLocation ? '✏️ Edit Location' : '➕ Add Location'}
         </h3>
         <Button
-          onClick={() => navigate("/devices/locations")}
+          onClick={() => navigate('/devices/locations')}
           style={{
-            background: "#9864DB",
-            color: "white",
-            borderColor: "#9864DB",
+            background: '#9864DB',
+            color: 'white',
+            borderColor: '#9864DB',
           }}
         >
           📍 Location Details
@@ -130,7 +130,7 @@ function LocationForm() {
               <Form.Item
                 label="Location Name"
                 name="name"
-                rules={[{ required: true, message: "Location name is required" }]}
+                rules={[{ required: true, message: 'Location name is required' }]}
               >
                 <Input placeholder="Enter location name" />
               </Form.Item>
@@ -148,7 +148,7 @@ function LocationForm() {
               <Form.Item
                 label="Street"
                 name="street"
-                rules={[{ required: true, message: "Street is required" }]}
+                rules={[{ required: true, message: 'Street is required' }]}
               >
                 <Input placeholder="Enter street" />
               </Form.Item>
@@ -157,7 +157,7 @@ function LocationForm() {
               <Form.Item
                 label="City"
                 name="city"
-                rules={[{ required: true, message: "City is required" }]}
+                rules={[{ required: true, message: 'City is required' }]}
               >
                 <Input placeholder="Enter city" />
               </Form.Item>
@@ -170,7 +170,7 @@ function LocationForm() {
               <Form.Item
                 label="State"
                 name="state"
-                rules={[{ required: true, message: "State is required" }]}
+                rules={[{ required: true, message: 'State is required' }]}
               >
                 <Input placeholder="Enter state" />
               </Form.Item>
@@ -186,27 +186,23 @@ function LocationForm() {
           <Row gutter={16}>
             <Col span={8}>
               <Form.Item label="Latitude" name="latitude" rules={rules.latitude}>
-                <InputNumber style={{ width: "100%" }} />
+                <InputNumber style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item
-                label="Longitude"
-                name="longitude"
-                rules={rules.longitude}
-              >
-                <InputNumber style={{ width: "100%" }} />
+              <Form.Item label="Longitude" name="longitude" rules={rules.longitude}>
+                <InputNumber style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
                 label="Location Type"
                 name="locationType"
-                rules={[{ required: true, message: "Location type is required" }]}
+                rules={[{ required: true, message: 'Location type is required' }]}
               >
                 <Select placeholder="Select type">
                   {locationTypes.length > 0 ? (
-                    locationTypes.map((lt) => (
+                    locationTypes.map(lt => (
                       <Option key={lt.id} value={lt.id}>
                         {lt.name}
                       </Option>
@@ -232,12 +228,7 @@ function LocationForm() {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item
-                label="Status"
-                name="status"
-                valuePropName="checked"
-                initialValue={false}
-              >
+              <Form.Item label="Status" name="status" valuePropName="checked" initialValue={false}>
                 <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
               </Form.Item>
             </Col>
@@ -248,14 +239,14 @@ function LocationForm() {
             <Button
               type="primary"
               htmlType="submit"
-              style={{ background: "#9864DB", borderColor: "#9864DB" }}
+              style={{ background: '#9864DB', borderColor: '#9864DB' }}
             >
-              {editingLocation ? "Update Location" : "Create Location"}
+              {editingLocation ? 'Update Location' : 'Create Location'}
             </Button>
             <Button
               className="ml-2"
-              onClick={() => navigate("/devices/locations")}
-              style={{ borderColor: "#522EA8", color: "#522EA8" }}
+              onClick={() => navigate('/devices/locations')}
+              style={{ borderColor: '#522EA8', color: '#522EA8' }}
             >
               Cancel
             </Button>

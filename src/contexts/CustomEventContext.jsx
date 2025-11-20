@@ -46,13 +46,15 @@ export const CustomEventProvider = ({ children }) => {
   }, []);
 
   return (
-    <CustomEventContext.Provider value={{
-      customEvents,
-      loading,
-      refreshEvents,
-      getCustomEventsForSidebar,
-      fetchCustomEvents, // Expose fetch function directly
-    }}>
+    <CustomEventContext.Provider
+      value={{
+        customEvents,
+        loading,
+        refreshEvents,
+        getCustomEventsForSidebar,
+        fetchCustomEvents, // Expose fetch function directly
+      }}
+    >
       {children}
     </CustomEventContext.Provider>
   );

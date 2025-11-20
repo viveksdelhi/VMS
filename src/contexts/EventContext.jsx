@@ -1,14 +1,7 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import axios from "axios";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import axios from 'axios';
 
-const EVENT_API_URL = "http://14.195.152.244:9009";
+const EVENT_API_URL = 'http://14.195.152.244:9009';
 
 const EventContext = createContext(null);
 
@@ -23,7 +16,7 @@ export const EventProvider = ({ children }) => {
       setError(null);
 
       const response = await axios.get(`${EVENT_API_URL}/api/event/`, {
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
       });
 
       if (response.data && response.data.results) {
@@ -34,8 +27,8 @@ export const EventProvider = ({ children }) => {
         setEvents([]);
       }
     } catch (err) {
-      console.error("Error fetching events:", err);
-      setError(err.message || "Failed to fetch events");
+      console.error('Error fetching events:', err);
+      setError(err.message || 'Failed to fetch events');
       setEvents([]);
     } finally {
       setLoading(false);
@@ -56,17 +49,13 @@ export const EventProvider = ({ children }) => {
     [events, loading, error, fetchEvents]
   );
 
-  return (
-    <EventContext.Provider value={value}>{children}</EventContext.Provider>
-  );
+  return <EventContext.Provider value={value}>{children}</EventContext.Provider>;
 };
 
 export const useEventContext = () => {
   const context = useContext(EventContext);
   if (!context) {
-    throw new Error("useEventContext must be used within an EventProvider");
+    throw new Error('useEventContext must be used within an EventProvider');
   }
   return context;
 };
-
-

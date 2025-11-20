@@ -1,13 +1,6 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import Cookies from "js-cookie";
-import { deviceApi } from "../utils/axiosInstance";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import Cookies from 'js-cookie';
+import { deviceApi } from '../utils/axiosInstance';
 
 const DeviceInventoryContext = createContext(null);
 
@@ -20,8 +13,8 @@ const normalizeResults = (response = {}) => {
 };
 
 const extractCount = (response = {}) => {
-  if (typeof response?.data?.count === "number") return response.data.count;
-  if (typeof response?.count === "number") return response.count;
+  if (typeof response?.data?.count === 'number') return response.data.count;
+  if (typeof response?.count === 'number') return response.count;
   const list = normalizeResults(response);
   return Array.isArray(list) ? list.length : 0;
 };
@@ -40,7 +33,7 @@ export const DeviceInventoryProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const userId = Cookies.get("userId");
+  const userId = Cookies.get('userId');
 
   const fetchInventory = useCallback(async () => {
     if (!userId) {
@@ -57,16 +50,16 @@ export const DeviceInventoryProvider = ({ children }) => {
       setError(null);
 
       const [siteRes, zoneRes, nvrRes, cameraRes] = await Promise.all([
-        deviceApi.get("/Location/", {
+        deviceApi.get('/Location/', {
           params: { userid: userId, page: 1, pageSize: 100 },
         }),
-        deviceApi.get("/Zone/", {
+        deviceApi.get('/Zone/', {
           params: { userid: userId, page: 1, pageSize: 100 },
         }),
-        deviceApi.get("/NVR/", {
+        deviceApi.get('/NVR/', {
           params: { user_id: userId, page: 1, page_size: 100 },
         }),
-        deviceApi.get("/Camera/", {
+        deviceApi.get('/Camera/', {
           params: { user_id: userId, page: 1, pageSize: 100 },
         }),
       ]);
@@ -88,8 +81,8 @@ export const DeviceInventoryProvider = ({ children }) => {
         cameraCount: extractCount(cameraRes),
       });
     } catch (err) {
-      console.error("Failed to fetch device inventory:", err);
-      setError(err.message || "Failed to load device data");
+      console.error('Failed to fetch device inventory:', err);
+      setError(err.message || 'Failed to load device data');
     } finally {
       setLoading(false);
     }
@@ -114,19 +107,14 @@ export const DeviceInventoryProvider = ({ children }) => {
   );
 
   return (
-    <DeviceInventoryContext.Provider value={value}>
-      {children}
-    </DeviceInventoryContext.Provider>
+    <DeviceInventoryContext.Provider value={value}>{children}</DeviceInventoryContext.Provider>
   );
 };
 
 export const useDeviceInventory = () => {
   const context = useContext(DeviceInventoryContext);
   if (!context) {
-    throw new Error(
-      "useDeviceInventory must be used within a DeviceInventoryProvider"
-    );
+    throw new Error('useDeviceInventory must be used within a DeviceInventoryProvider');
   }
   return context;
 };
-

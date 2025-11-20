@@ -1,28 +1,28 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
   flexRender,
   createColumnHelper,
-} from "@tanstack/react-table";
-import debounce from "lodash/debounce";
-import { EditOutlined, DeleteOutlined, SaveOutlined } from "@ant-design/icons";
-import { Switch, message, Spin } from "antd";
-import { deviceApi } from "../../../../utils/axiosInstance";
-import Cookies from "js-cookie";
+} from '@tanstack/react-table';
+import debounce from 'lodash/debounce';
+import { EditOutlined, DeleteOutlined, SaveOutlined } from '@ant-design/icons';
+import { Switch, message, Spin } from 'antd';
+import { deviceApi } from '../../../../utils/axiosInstance';
+import Cookies from 'js-cookie';
 
 const columnHelper = createColumnHelper();
 
 const ZoneDetails = () => {
   const [zones, setZones] = useState([]);
   const [sorting, setSorting] = useState([]);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
-  const [formData, setFormData] = useState({ name: "", status: true });
+  const [formData, setFormData] = useState({ name: '', status: true });
   const [editingZone, setEditingZone] = useState(null);
 
   const [loading, setLoading] = useState(false);
@@ -30,22 +30,20 @@ const ZoneDetails = () => {
   const [deletingId, setDeletingId] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
 
-  const userId = Cookies.get("userId");
+  const userId = Cookies.get('userId');
 
   // 🔹 Fetch zones
-  const fetchZones = async (search = "", currentPage = 1, size = pageSize) => {
+  const fetchZones = async (search = '', currentPage = 1, size = pageSize) => {
     try {
       setLoading(true);
       const res = await deviceApi.get(`/Zone/`, {
         params: { search, page: currentPage, page_size: size, user_id: userId },
       });
       setZones(res.data.results || res.data);
-      setTotalPages(
-        res.data.totalPages || Math.ceil(res.data.count / size) || 1
-      );
+      setTotalPages(res.data.totalPages || Math.ceil(res.data.count / size) || 1);
     } catch (err) {
-      console.error("API Error:", err);
-      message.error("Failed to fetch zones");
+      console.error('API Error:', err);
+      message.error('Failed to fetch zones');
     } finally {
       setLoading(false);
     }
@@ -65,33 +63,33 @@ const ZoneDetails = () => {
 
       if (editingZone) {
         await deviceApi.put(`/Zone/${editingZone.id}/`, payload);
-        message.success("Zone updated!");
+        message.success('Zone updated!');
       } else {
         await deviceApi.post(`/Zone/`, payload);
-        message.success("Zone added!");
+        message.success('Zone added!');
       }
 
-      setFormData({ name: "", status: true });
+      setFormData({ name: '', status: true });
       setEditingZone(null);
       fetchZones(globalFilter, page, pageSize);
     } catch (err) {
-      console.error("Save Error:", err);
-      message.error("Failed to save zone");
+      console.error('Save Error:', err);
+      message.error('Failed to save zone');
     } finally {
       setSaving(false);
     }
   };
 
   // 🔹 Delete zone
-  const handleDelete = async (id) => {
+  const handleDelete = async id => {
     try {
       setDeletingId(id);
       await deviceApi.delete(`/Zone/${id}/`);
-      message.success("Zone deleted!");
+      message.success('Zone deleted!');
       fetchZones(globalFilter, page, pageSize);
     } catch (err) {
-      console.error("Delete Error:", err);
-      message.error("Failed to delete zone");
+      console.error('Delete Error:', err);
+      message.error('Failed to delete zone');
     } finally {
       setDeletingId(null);
     }
@@ -106,13 +104,11 @@ const ZoneDetails = () => {
         status: value,
         userId: String(userId),
       });
-      setZones((prev) =>
-        prev.map((z) => (z.id === row.id ? { ...z, status: value } : z))
-      );
-      message.success("Status updated!");
+      setZones(prev => prev.map(z => (z.id === row.id ? { ...z, status: value } : z)));
+      message.success('Status updated!');
     } catch (err) {
-      console.error("Toggle Error:", err);
-      message.error("Failed to update status");
+      console.error('Toggle Error:', err);
+      message.error('Failed to update status');
     } finally {
       setTogglingId(null);
     }
@@ -120,26 +116,24 @@ const ZoneDetails = () => {
 
   // 🔹 Table columns
   const columns = [
-    columnHelper.accessor("id", { header: "ID" }),
-    columnHelper.accessor("name", {
-      header: "Zone Name",
-      cell: (info) => (
-        <span className="font-semibold text-green-800">{info.getValue()}</span>
-      ),
+    columnHelper.accessor('id', { header: 'ID' }),
+    columnHelper.accessor('name', {
+      header: 'Zone Name',
+      cell: info => <span className="font-semibold text-green-800">{info.getValue()}</span>,
     }),
-    columnHelper.accessor("status", {
-      header: "Status",
-      cell: (info) => (
+    columnHelper.accessor('status', {
+      header: 'Status',
+      cell: info => (
         <Switch
           checked={!!info.getValue()}
           loading={togglingId === info.row.original.id}
-          onChange={(val) => handleToggle(info.row.original, val)}
+          onChange={val => handleToggle(info.row.original, val)}
         />
       ),
     }),
     columnHelper.display({
-      header: "Actions",
-      cell: (info) => {
+      header: 'Actions',
+      cell: info => {
         const row = info.row.original;
         return (
           <div className="flex gap-2">
@@ -177,7 +171,7 @@ const ZoneDetails = () => {
   // 🔹 Debounced search
   const handleSearch = useMemo(
     () =>
-      debounce((value) => {
+      debounce(value => {
         setGlobalFilter(value);
         setPage(1);
       }, 300),
@@ -189,7 +183,7 @@ const ZoneDetails = () => {
       {/* Form Header */}
       <div className="px-4 py-3 rounded-md bg-purple-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h2 className="text-xl font-bold text-purple-900">
-          {editingZone ? "Edit Zone" : "Add Zone"}
+          {editingZone ? 'Edit Zone' : 'Add Zone'}
         </h2>
 
         <div className="flex flex-col sm:flex-row gap-3 items-center w-full sm:w-auto">
@@ -197,25 +191,22 @@ const ZoneDetails = () => {
             type="text"
             placeholder="Zone name"
             value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
+            onChange={e => setFormData({ ...formData, name: e.target.value })}
             className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black"
           />
           <Switch
             checked={formData.status}
-            onChange={(val) => setFormData({ ...formData, status: val })}
+            onChange={val => setFormData({ ...formData, status: val })}
           />
           <button
             onClick={handleSave}
             disabled={saving}
-            className={`flex items-center gap-1 px-3 py-1 rounded-md text-white ${saving
-              ? "bg-purple-400 cursor-not-allowed"
-              : "bg-purple-600 hover:bg-purple-700"
-              }`}
+            className={`flex items-center gap-1 px-3 py-1 rounded-md text-white ${
+              saving ? 'bg-purple-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
+            }`}
           >
             {saving ? <Spin size="small" /> : <SaveOutlined />}
-            {editingZone ? "Update Zone" : "Add Zone"}
+            {editingZone ? 'Update Zone' : 'Add Zone'}
           </button>
         </div>
       </div>
@@ -224,13 +215,13 @@ const ZoneDetails = () => {
       <div className="flex justify-between items-center">
         <select
           value={pageSize}
-          onChange={(e) => {
+          onChange={e => {
             setPageSize(Number(e.target.value));
             setPage(1);
           }}
           className="px-2 py-1 border border-gray-300 rounded-md text-sm"
         >
-          {[10, 25, 50].map((size) => (
+          {[10, 25, 50].map(size => (
             <option key={size} value={size} className="text-black">
               Show {size}
             </option>
@@ -240,7 +231,7 @@ const ZoneDetails = () => {
         <input
           type="text"
           placeholder="Search..."
-          onChange={(e) => handleSearch(e.target.value)}
+          onChange={e => handleSearch(e.target.value)}
           className="px-3 py-1 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring focus:ring-purple-300"
         />
       </div>
@@ -254,33 +245,27 @@ const ZoneDetails = () => {
         )}
         <table className="min-w-full text-sm">
           <thead className="bg-[#9864db] text-[#E6E6FA]">
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
                     className="px-4 py-3 border border-[#e7e5ec] text-left font-semibold text-[#E6E6FA] cursor-pointer whitespace-nowrap"
                     onClick={header.column.getToggleSortingHandler()}
                   >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                    {header.column.getIsSorted() === "asc" && " 🔼"}
-                    {header.column.getIsSorted() === "desc" && " 🔽"}
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.column.getIsSorted() === 'asc' && ' 🔼'}
+                    {header.column.getIsSorted() === 'desc' && ' 🔽'}
                   </th>
                 ))}
               </tr>
             ))}
           </thead>
           <tbody className="bg-white divide-y divide-green-100">
-            {table.getRowModel().rows.map((row) => (
+            {table.getRowModel().rows.map(row => (
               <tr key={row.id} className="hover:bg-green-50">
-                {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className="px-4 py-3 border border-green-100 whitespace-nowrap"
-                  >
+                {row.getVisibleCells().map(cell => (
+                  <td key={cell.id} className="px-4 py-3 border border-green-100 whitespace-nowrap">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
@@ -301,14 +286,14 @@ const ZoneDetails = () => {
         </span>
         <div className="flex gap-2">
           <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+            onClick={() => setPage(p => Math.max(p - 1, 1))}
             className="px-3 py-1 border rounded bg-purple-100 text-purple-700 disabled:opacity-50"
             disabled={page === 1}
           >
             Prev
           </button>
           <button
-            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+            onClick={() => setPage(p => Math.min(p + 1, totalPages))}
             className="px-3 py-1 border rounded bg-purple-100 text-purple-700 disabled:opacity-50"
             disabled={page === totalPages}
           >
@@ -331,17 +316,13 @@ const ZonePage = () => {
 
       {/* Right Half - Paragraph + Video */}
       <div className="w-full md:w-1/2 h-full p-6 flex flex-col items-start justify-start bg-gray-50 overflow-y-auto">
-        <h2 className="text-2xl font-bold text-purple-700 mb-4">
-          Video Management System (VMS)
-        </h2>
+        <h2 className="text-2xl font-bold text-purple-700 mb-4">Video Management System (VMS)</h2>
         <p className="text-gray-700 leading-relaxed text-justify mb-6">
-          A Video Management System (VMS) is a software solution that enables
-          organizations to manage, record, and analyze video feeds from
-          surveillance cameras. It provides features like live monitoring,
-          playback, event recording, user management, and integrations with
-          other security systems. With VMS, businesses can enhance security,
-          improve situational awareness, and ensure compliance with safety
-          regulations.
+          A Video Management System (VMS) is a software solution that enables organizations to
+          manage, record, and analyze video feeds from surveillance cameras. It provides features
+          like live monitoring, playback, event recording, user management, and integrations with
+          other security systems. With VMS, businesses can enhance security, improve situational
+          awareness, and ensure compliance with safety regulations.
         </p>
 
         {/* Embedded Video */}
@@ -362,7 +343,6 @@ const ZonePage = () => {
 };
 
 export default ZonePage;
-
 
 // import React, { useState, useEffect, useMemo } from "react";
 // import {

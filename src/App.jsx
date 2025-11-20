@@ -8,7 +8,6 @@ import AppRoutes from './Authentication/AppRoutes';
 import LoginPage from './Authentication/Login';
 import ProtectedRoute from './Authentication/ProtectedRoute';
 
-
 const App = () => {
   return (
     <AuthProvider>
@@ -16,23 +15,23 @@ const App = () => {
         <CustomEventProvider>
           <Router>
             <Routes>
-            {/* Redirect root (/) to /login */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
+              {/* Redirect root (/) to /login */}
+              <Route path="/" element={<Navigate to="/login" replace />} />
 
-            {/* Public Login Route */}
-            <Route path="/login" element={<LoginPage />} />
+              {/* Public Login Route */}
+              <Route path="/login" element={<LoginPage />} />
 
-            {/* Protected Routes */}
-            <Route
-              path="/*"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <AppRoutes />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
+              {/* Protected Routes */}
+              <Route
+                path="/*"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <AppRoutes />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </Router>
         </CustomEventProvider>

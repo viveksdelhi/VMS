@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Form,
   Input,
@@ -12,17 +12,17 @@ import {
   Col,
   Switch,
   Upload,
-} from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-import { useNavigate, useLocation } from "react-router-dom";
-import { deviceApi } from "../../../../utils/axiosInstance";
-import Cookies from "js-cookie";
+} from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { deviceApi } from '../../../../utils/axiosInstance';
+import Cookies from 'js-cookie';
 const { Option } = Select;
 const zones = [
-  { id: 1, name: "North Zone" },
-  { id: 2, name: "South Zone" },
-  { id: 3, name: "East Zone" },
-  { id: 4, name: "West Zone" },
+  { id: 1, name: 'North Zone' },
+  { id: 2, name: 'South Zone' },
+  { id: 3, name: 'East Zone' },
+  { id: 4, name: 'West Zone' },
 ];
 
 function NvrForm() {
@@ -32,16 +32,16 @@ function NvrForm() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const userId = Cookies.get("userId");
+  const userId = Cookies.get('userId');
   const editingNvr = location.state?.nvr || null;
 
   // Fetch dropdown data
   const fetchData = async () => {
     try {
-      const zoneRes = await deviceApi.get("/zones");
+      const zoneRes = await deviceApi.get('/zones');
       setZones(zoneRes.data || []);
     } catch (err) {
-      message.error("Failed to load dropdown data");
+      message.error('Failed to load dropdown data');
     }
   };
 
@@ -51,7 +51,7 @@ function NvrForm() {
       form.setFieldsValue({
         name: editingNvr.name,
         username: editingNvr.username,
-        password: editingNvr.password ? "********" : "",
+        password: editingNvr.password ? '********' : '',
         nvrip: editingNvr.nvrip,
         port: editingNvr.port || 554,
         nvrtype: editingNvr.nvrtype,
@@ -68,26 +68,26 @@ function NvrForm() {
     }
   }, [editingNvr]);
 
-  const onFinish = async (values) => {
+  const onFinish = async values => {
     setLoading(true);
     try {
       const payload = { ...values, status: values.status ? 1 : 0, userid: String(userId) };
 
-      if (editingNvr && values.password === "********") {
+      if (editingNvr && values.password === '********') {
         delete payload.password; // keep old password
       }
 
       if (editingNvr) {
         await deviceApi.put(`/NVR/${editingNvr.id}/`, payload);
-        message.success("NVR updated successfully!");
+        message.success('NVR updated successfully!');
       } else {
-        await deviceApi.post("/NVR/", payload);
-        message.success("NVR created successfully!");
+        await deviceApi.post('/NVR/', payload);
+        message.success('NVR created successfully!');
       }
-      navigate("/devices/nvrs");
+      navigate('/devices/nvrs');
     } catch (err) {
       console.error(err);
-      message.error("Operation failed");
+      message.error('Operation failed');
     } finally {
       setLoading(false);
     }
@@ -96,12 +96,10 @@ function NvrForm() {
   return (
     <Card className="m-4 shadow-md">
       <div className="mb-4 bg-[#9864DB] text-white px-6 py-2 rounded-md flex justify-between items-center">
-        <h3 className="text-xl font-semibold">
-          {editingNvr ? "✏️ Edit NVR" : "➕ Add NVR"}
-        </h3>
+        <h3 className="text-xl font-semibold">{editingNvr ? '✏️ Edit NVR' : '➕ Add NVR'}</h3>
         <Button
-          onClick={() => navigate("/devices/nvrs")}
-          style={{ background: "#9864DB", color: "white", borderColor: "#9864DB" }}
+          onClick={() => navigate('/devices/nvrs')}
+          style={{ background: '#9864DB', color: 'white', borderColor: '#9864DB' }}
         >
           📋 NVR Details
         </Button>
@@ -119,7 +117,7 @@ function NvrForm() {
               <Form.Item
                 label="NVR Name"
                 name="name"
-                rules={[{ required: true, message: "NVR Name is required" }]}
+                rules={[{ required: true, message: 'NVR Name is required' }]}
               >
                 <Input placeholder="Enter NVR name" />
               </Form.Item>
@@ -129,7 +127,7 @@ function NvrForm() {
               <Form.Item
                 label="Username"
                 name="username"
-                rules={[{ required: true, message: "Username is required" }]}
+                rules={[{ required: true, message: 'Username is required' }]}
               >
                 <Input placeholder="Enter NVR username" />
               </Form.Item>
@@ -145,15 +143,11 @@ function NvrForm() {
                 rules={
                   editingNvr
                     ? [] // optional on edit
-                    : [{ required: true, message: "Password is required" }]
+                    : [{ required: true, message: 'Password is required' }]
                 }
               >
                 <Input.Password
-                  placeholder={
-                    editingNvr
-                      ? "Leave blank to keep current"
-                      : "Enter NVR password"
-                  }
+                  placeholder={editingNvr ? 'Leave blank to keep current' : 'Enter NVR password'}
                 />
               </Form.Item>
             </Col>
@@ -162,7 +156,7 @@ function NvrForm() {
               <Form.Item
                 label="NVR IP"
                 name="nvrip"
-                rules={[{ required: true, message: "NVR IP is required" }]}
+                rules={[{ required: true, message: 'NVR IP is required' }]}
               >
                 <Input placeholder="e.g., 192.168.1.100" />
               </Form.Item>
@@ -175,9 +169,9 @@ function NvrForm() {
               <Form.Item
                 label="Port"
                 name="port"
-                rules={[{ required: true, message: "Port is required" }]}
+                rules={[{ required: true, message: 'Port is required' }]}
               >
-                <InputNumber min={1} max={65535} style={{ width: "100%" }} />
+                <InputNumber min={1} max={65535} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
 
@@ -185,7 +179,7 @@ function NvrForm() {
               <Form.Item
                 label="Location"
                 name="location"
-                rules={[{ required: true, message: "Please enter location" }]}
+                rules={[{ required: true, message: 'Please enter location' }]}
               >
                 <Input placeholder="Enter location" />
               </Form.Item>
@@ -198,10 +192,10 @@ function NvrForm() {
               <Form.Item
                 label="Zone"
                 name="zone"
-                rules={[{ required: true, message: "Please select a zone" }]}
+                rules={[{ required: true, message: 'Please select a zone' }]}
               >
                 <Select placeholder="Select zone">
-                  {zones.map((z) => (
+                  {zones.map(z => (
                     <Option key={z.id} value={z.id}>
                       {z.name}
                     </Option>
@@ -252,7 +246,10 @@ function NvrForm() {
             <Col span={12}>
               <Form.Item label="Upload Image" name="img">
                 <Upload beforeUpload={() => false} maxCount={1}>
-                  <Button icon={<UploadOutlined />} style={{ borderColor: "#522EA8", color: "#522EA8" }}>
+                  <Button
+                    icon={<UploadOutlined />}
+                    style={{ borderColor: '#522EA8', color: '#522EA8' }}
+                  >
                     Click to Upload
                   </Button>
                 </Upload>
@@ -265,14 +262,14 @@ function NvrForm() {
             <Button
               type="primary"
               htmlType="submit"
-              style={{ background: "#9864DB", borderColor: "#9864DB" }}
+              style={{ background: '#9864DB', borderColor: '#9864DB' }}
             >
-              {editingNvr ? "Update NVR" : "Create NVR"}
+              {editingNvr ? 'Update NVR' : 'Create NVR'}
             </Button>
             <Button
               className="ml-2"
-              onClick={() => navigate("/devices/nvrs")}
-              style={{ borderColor: "#522EA8", color: "#522EA8" }}
+              onClick={() => navigate('/devices/nvrs')}
+              style={{ borderColor: '#522EA8', color: '#522EA8' }}
             >
               Cancel
             </Button>

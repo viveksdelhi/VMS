@@ -1,19 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  FaBars,
-  FaExpand,
-  FaCompress,
-  FaBell,
-  FaUserCircle,
-  FaSignOutAlt,
-} from "react-icons/fa";
-import { useAuth } from "../Authentication/AuthContext";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from 'react';
+import { FaBars, FaExpand, FaCompress, FaBell, FaUserCircle, FaSignOutAlt } from 'react-icons/fa';
+import { useAuth } from '../Authentication/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Header = ({ onToggle }) => {
   const [showAlerts, setShowAlerts] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [currentTime, setCurrentTime] = useState("");
+  const [currentTime, setCurrentTime] = useState('');
   const [hasNewAlerts, setHasNewAlerts] = useState(true);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
@@ -28,9 +21,9 @@ const Header = ({ onToggle }) => {
       const now = new Date();
       setCurrentTime(
         now.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
           hour12: true,
         })
       );
@@ -40,7 +33,7 @@ const Header = ({ onToggle }) => {
 
   // Close menus on outside click
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = event => {
       if (alertRef.current && !alertRef.current.contains(event.target)) {
         setShowAlerts(false);
       }
@@ -48,9 +41,8 @@ const Header = ({ onToggle }) => {
         setShowProfileMenu(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Fullscreen toggle
@@ -83,9 +75,9 @@ const Header = ({ onToggle }) => {
   };
 
   const alerts = [
-    { id: 1, message: "Fire detected in Zone A", time: "2 mins ago" },
-    { id: 2, message: "Motion detected in Parking", time: "10 mins ago" },
-    { id: 3, message: "Camera 5 disconnected", time: "30 mins ago" },
+    { id: 1, message: 'Fire detected in Zone A', time: '2 mins ago' },
+    { id: 2, message: 'Motion detected in Parking', time: '10 mins ago' },
+    { id: 3, message: 'Camera 5 disconnected', time: '30 mins ago' },
   ];
 
   return (
@@ -103,9 +95,7 @@ const Header = ({ onToggle }) => {
       <div className="flex items-center gap-3">
         <FaUserCircle className="text-2xl text-[#9864db]" />
         <div>
-          <p className="text-sm font-semibold text-[#3B1E54]">
-            Welcome, Admin
-          </p>
+          <p className="text-sm font-semibold text-[#3B1E54]">Welcome, Admin</p>
           <p className="text-xs text-gray-500">{currentTime}</p>
         </div>
       </div>
@@ -148,11 +138,8 @@ const Header = ({ onToggle }) => {
                 Recent Alerts
               </div>
               <ul className="max-h-60 overflow-y-auto">
-                {alerts.map((alert) => (
-                  <li
-                    key={alert.id}
-                    className="px-4 py-2 text-sm hover:bg-purple-50 transition"
-                  >
+                {alerts.map(alert => (
+                  <li key={alert.id} className="px-4 py-2 text-sm hover:bg-purple-50 transition">
                     <p className="font-medium text-gray-800">{alert.message}</p>
                     <p className="text-xs text-gray-500">{alert.time}</p>
                   </li>
@@ -191,7 +178,7 @@ const Header = ({ onToggle }) => {
               </div>
               <ul>
                 <li
-                  onClick={() => navigate("/profile")}
+                  onClick={() => navigate('/profile')}
                   className="px-4 py-2 text-sm hover:bg-purple-50 cursor-pointer"
                 >
                   My Profile
@@ -199,7 +186,7 @@ const Header = ({ onToggle }) => {
                 <li
                   onClick={() => {
                     logout();
-                    navigate("/login");
+                    navigate('/login');
                   }}
                   className="px-4 py-2 text-sm text-red-500 hover:bg-purple-50 cursor-pointer flex items-center gap-2"
                 >

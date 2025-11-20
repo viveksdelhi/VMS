@@ -1,29 +1,24 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
   flexRender,
   createColumnHelper,
-} from "@tanstack/react-table";
-import debounce from "lodash/debounce";
-import { deviceApi } from "../../../../utils/axiosInstance";
-import { useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
-import { message, Popconfirm, Modal, Spin, Switch } from "antd";
-import {
-  EditOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-  EnvironmentOutlined,
-} from "@ant-design/icons";
+} from '@tanstack/react-table';
+import debounce from 'lodash/debounce';
+import { deviceApi } from '../../../../utils/axiosInstance';
+import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
+import { message, Popconfirm, Modal, Spin, Switch } from 'antd';
+import { EditOutlined, DeleteOutlined, EyeOutlined, EnvironmentOutlined } from '@ant-design/icons';
 
 const columnHelper = createColumnHelper();
 
 const LocationDetailsTable = () => {
   const [data, setData] = useState([]);
   const [sorting, setSorting] = useState([]);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState('');
   const [loading, setLoading] = useState(false);
 
   const [viewLocation, setViewLocation] = useState(null);
@@ -33,20 +28,20 @@ const LocationDetailsTable = () => {
   const [deletingId, setDeletingId] = useState(null);
 
   const navigate = useNavigate();
-  const userId = Cookies.get("userId");
+  const userId = Cookies.get('userId');
 
   // ✅ Fetch location data using deviceApi
   const fetchData = async (search = globalFilter, currentPage = page, size = pageSize) => {
     setLoading(true);
     try {
-      const res = await deviceApi.get("/Location/", {
+      const res = await deviceApi.get('/Location/', {
         params: { user_id: userId, search, page: currentPage, pageSize: size },
       });
       setData(res.data.results || []);
       setTotalPages(res.data.totalPages || 1);
     } catch (err) {
-      console.error("API Error:", err);
-      message.error("Failed to fetch locations!");
+      console.error('API Error:', err);
+      message.error('Failed to fetch locations!');
     } finally {
       setLoading(false);
     }
@@ -59,7 +54,7 @@ const LocationDetailsTable = () => {
 
   const handleSearch = useMemo(
     () =>
-      debounce((value) => {
+      debounce(value => {
         setGlobalFilter(value);
         setPage(1);
       }, 300),
@@ -67,15 +62,15 @@ const LocationDetailsTable = () => {
   );
 
   // ✅ Delete location with deviceApi
-  const handleDelete = async (id) => {
+  const handleDelete = async id => {
     setDeletingId(id);
     try {
       await deviceApi.delete(`/Location/${id}/`);
-      setData((prev) => prev.filter((item) => item.id !== id));
-      message.success("Location deleted successfully!");
+      setData(prev => prev.filter(item => item.id !== id));
+      message.success('Location deleted successfully!');
     } catch (err) {
-      console.error("Delete failed:", err);
-      message.error("Failed to delete location!");
+      console.error('Delete failed:', err);
+      message.error('Failed to delete location!');
     } finally {
       setDeletingId(null);
     }
@@ -87,68 +82,61 @@ const LocationDetailsTable = () => {
       const payload = { ...row, status: value ? 1 : 0, userId };
       await deviceApi.put(`/Location/${row.id}/`, payload);
 
-      setData((prev) =>
-        prev.map((loc) =>
-          loc.id === row.id ? { ...loc, status: value ? 1 : 0 } : loc
-        )
+      setData(prev =>
+        prev.map(loc => (loc.id === row.id ? { ...loc, status: value ? 1 : 0 } : loc))
       );
-      message.success("Status updated successfully!");
+      message.success('Status updated successfully!');
     } catch (err) {
-      console.error("Toggle error:", err);
-      message.error("Failed to update status");
+      console.error('Toggle error:', err);
+      message.error('Failed to update status');
       fetchData();
     }
   };
 
   const columns = [
     columnHelper.display({
-      id: "serial",
-      header: "S.No",
-      cell: (info) => (
+      id: 'serial',
+      header: 'S.No',
+      cell: info => (
         <span className="font-medium text-gray-700">
           {(page - 1) * pageSize + info.row.index + 1}
         </span>
       ),
     }),
-    columnHelper.accessor("name", {
-      header: "Location Name",
-      cell: (info) => (
-        <span className="font-semibold text-[#2c028d]">{info.getValue()}</span>
-      ),
+    columnHelper.accessor('name', {
+      header: 'Location Name',
+      cell: info => <span className="font-semibold text-[#2c028d]">{info.getValue()}</span>,
     }),
-    columnHelper.accessor("city", { header: "City" }),
-    columnHelper.accessor("state", { header: "State" }),
-    columnHelper.accessor("pincode", { header: "Pincode" }),
-    columnHelper.accessor("locationType", { header: "Type" }),
-    columnHelper.accessor("status", {
-      header: "Status",
-      cell: (info) => (
+    columnHelper.accessor('city', { header: 'City' }),
+    columnHelper.accessor('state', { header: 'State' }),
+    columnHelper.accessor('pincode', { header: 'Pincode' }),
+    columnHelper.accessor('locationType', { header: 'Type' }),
+    columnHelper.accessor('status', {
+      header: 'Status',
+      cell: info => (
         <Switch
           checked={!!info.getValue()}
-          onChange={(val) => handleToggle(info.row.original, val)}
+          onChange={val => handleToggle(info.row.original, val)}
         />
       ),
     }),
-    columnHelper.accessor("created_at", {
-      header: "Created",
-      cell: (info) =>
-        info.getValue()
-          ? new Date(info.getValue()).toLocaleDateString()
-          : "—",
+    columnHelper.accessor('created_at', {
+      header: 'Created',
+      cell: info => (info.getValue() ? new Date(info.getValue()).toLocaleDateString() : '—'),
     }),
     columnHelper.display({
-      id: "actions",
-      header: "Actions",
-      cell: (info) => {
+      id: 'actions',
+      header: 'Actions',
+      cell: info => {
         const row = info.row.original;
         return (
           <div className="flex gap-3 items-center">
             <EyeOutlined
-              style={{ color: "#9000DB", fontSize: "15px", cursor: "pointer" }}
+              style={{ color: '#9000DB', fontSize: '15px', cursor: 'pointer' }}
               onClick={() => setViewLocation(row)}
             />
             <EditOutlined
-              style={{ color: "#16a34a", fontSize: "15px", cursor: "pointer" }}
+              style={{ color: '#16a34a', fontSize: '15px', cursor: 'pointer' }}
               onClick={() => navigate(`/location/form`, { state: { location: row } })}
             />
             <Popconfirm
@@ -160,18 +148,13 @@ const LocationDetailsTable = () => {
               {deletingId === row.id ? (
                 <Spin size="small" />
               ) : (
-                <DeleteOutlined
-                  style={{ color: "#dc2626", fontSize: "15px", cursor: "pointer" }}
-                />
+                <DeleteOutlined style={{ color: '#dc2626', fontSize: '15px', cursor: 'pointer' }} />
               )}
             </Popconfirm>
             <EnvironmentOutlined
-              style={{ color: "#1677ff", fontSize: "15px", cursor: "pointer" }}
+              style={{ color: '#1677ff', fontSize: '15px', cursor: 'pointer' }}
               onClick={() =>
-                window.open(
-                  `https://maps.google.com/?q=${row.latitude},${row.longitude}`,
-                  "_blank"
-                )
+                window.open(`https://maps.google.com/?q=${row.latitude},${row.longitude}`, '_blank')
               }
             />
           </div>
@@ -198,11 +181,11 @@ const LocationDetailsTable = () => {
           <input
             type="text"
             placeholder="Search locations..."
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={e => handleSearch(e.target.value)}
             className="px-3 py-1 border border-gray-300 rounded-md shadow-sm text-sm text-black"
           />
           <button
-            onClick={() => navigate("/location/form")}
+            onClick={() => navigate('/location/form')}
             className="bg-white hover:bg-gray-200 text-black px-3 py-1 rounded-md shadow"
           >
             + Add Location
@@ -214,17 +197,17 @@ const LocationDetailsTable = () => {
       <div className="overflow-x-auto rounded-md border border-[#e7e5ec] shadow">
         <table className="min-w-full text-sm">
           <thead className="bg-[#9864db] text-[#E6E6FA]">
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
                     className="px-4 py-3 border border-[#e7e5ec] text-left font-semibold whitespace-nowrap cursor-pointer select-none"
                     onClick={header.column.getToggleSortingHandler()}
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
-                    {header.column.getIsSorted() === "asc" && " 🔼"}
-                    {header.column.getIsSorted() === "desc" && " 🔽"}
+                    {header.column.getIsSorted() === 'asc' && ' 🔼'}
+                    {header.column.getIsSorted() === 'desc' && ' 🔽'}
                   </th>
                 ))}
               </tr>
@@ -238,9 +221,9 @@ const LocationDetailsTable = () => {
                 </td>
               </tr>
             ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map(row => (
                 <tr key={row.id} className="hover:bg-purple-50">
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map(cell => (
                     <td
                       key={cell.id}
                       className="px-4 py-3 border border-purple-100 whitespace-nowrap"
@@ -268,14 +251,14 @@ const LocationDetailsTable = () => {
         </span>
         <div className="flex gap-2">
           <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+            onClick={() => setPage(p => Math.max(p - 1, 1))}
             className="px-3 py-1 border rounded bg-purple-100 text-[#2c028d] disabled:opacity-50"
             disabled={page === 1}
           >
             Prev
           </button>
           <button
-            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+            onClick={() => setPage(p => Math.min(p + 1, totalPages))}
             className="px-3 py-1 border rounded bg-purple-100 text-[#2c028d] disabled:opacity-50"
             disabled={page === totalPages}
           >
@@ -293,20 +276,48 @@ const LocationDetailsTable = () => {
       >
         {viewLocation && (
           <div className="space-y-2">
-            <p><b>ID:</b> {viewLocation.id}</p>
-            <p><b>Name:</b> {viewLocation.name}</p>
-            <p><b>Type:</b> {viewLocation.locationType}</p>
-            <p><b>Address:</b> {viewLocation.address}</p>
-            <p><b>Landmark:</b> {viewLocation.landmark}</p>
-            <p><b>Street:</b> {viewLocation.street}</p>
-            <p><b>City:</b> {viewLocation.city}</p>
-            <p><b>State:</b> {viewLocation.state}</p>
-            <p><b>Pincode:</b> {viewLocation.pincode}</p>
-            <p><b>Latitude:</b> {viewLocation.latitude}</p>
-            <p><b>Longitude:</b> {viewLocation.longitude}</p>
-            <p><b>Status:</b> {viewLocation.status ? "Active" : "Inactive"}</p>
-            <p><b>Created:</b> {new Date(viewLocation.created_at).toLocaleString()}</p>
-            <p><b>Updated:</b> {new Date(viewLocation.updated_at).toLocaleString()}</p>
+            <p>
+              <b>ID:</b> {viewLocation.id}
+            </p>
+            <p>
+              <b>Name:</b> {viewLocation.name}
+            </p>
+            <p>
+              <b>Type:</b> {viewLocation.locationType}
+            </p>
+            <p>
+              <b>Address:</b> {viewLocation.address}
+            </p>
+            <p>
+              <b>Landmark:</b> {viewLocation.landmark}
+            </p>
+            <p>
+              <b>Street:</b> {viewLocation.street}
+            </p>
+            <p>
+              <b>City:</b> {viewLocation.city}
+            </p>
+            <p>
+              <b>State:</b> {viewLocation.state}
+            </p>
+            <p>
+              <b>Pincode:</b> {viewLocation.pincode}
+            </p>
+            <p>
+              <b>Latitude:</b> {viewLocation.latitude}
+            </p>
+            <p>
+              <b>Longitude:</b> {viewLocation.longitude}
+            </p>
+            <p>
+              <b>Status:</b> {viewLocation.status ? 'Active' : 'Inactive'}
+            </p>
+            <p>
+              <b>Created:</b> {new Date(viewLocation.created_at).toLocaleString()}
+            </p>
+            <p>
+              <b>Updated:</b> {new Date(viewLocation.updated_at).toLocaleString()}
+            </p>
           </div>
         )}
       </Modal>

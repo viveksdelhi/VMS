@@ -1,23 +1,18 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
   flexRender,
   createColumnHelper,
-} from "@tanstack/react-table";
-import debounce from "lodash/debounce";
-import { message, Popconfirm, Modal, Tag, Spin } from "antd";
-import { deviceApi } from "../../../../utils/axiosInstance";
-import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
-import {
-  EditOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-  CameraOutlined,
-} from "@ant-design/icons";
-import Expand from "./Expand";
+} from '@tanstack/react-table';
+import debounce from 'lodash/debounce';
+import { message, Popconfirm, Modal, Tag, Spin } from 'antd';
+import { deviceApi } from '../../../../utils/axiosInstance';
+import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
+import { EditOutlined, DeleteOutlined, EyeOutlined, CameraOutlined } from '@ant-design/icons';
+import Expand from './Expand';
 
 const columnHelper = createColumnHelper();
 
@@ -25,12 +20,12 @@ const NvrDetailsTable = () => {
   const [data, setData] = useState([]);
   const [cameras, setCameras] = useState([]); // ✅ Existing cameras
   const [sorting, setSorting] = useState([]);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
-  const userId = Cookies.get("userId");
+  const userId = Cookies.get('userId');
   const [viewNvr, setViewNvr] = useState(null);
   const [viewOnvif, setViewOnvif] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -47,7 +42,7 @@ const NvrDetailsTable = () => {
       const nvrs = res.data.results || [];
       setData(
         nvrs.filter(
-          (n) =>
+          n =>
             n.name?.toLowerCase().includes(search.toLowerCase()) ||
             n.location?.toLowerCase().includes(search.toLowerCase()) ||
             n.zone?.toLowerCase().includes(search.toLowerCase())
@@ -55,8 +50,8 @@ const NvrDetailsTable = () => {
       );
       setTotalPages(Math.ceil(res.data.count / size));
     } catch (err) {
-      console.error("API Error:", err);
-      message.error("Failed to fetch NVRs!");
+      console.error('API Error:', err);
+      message.error('Failed to fetch NVRs!');
     } finally {
       setLoading(false);
     }
@@ -68,8 +63,8 @@ const NvrDetailsTable = () => {
       const res = await deviceApi.get(`/Camera/?user_id=${userId}`);
       setCameras(res.data.results || []);
     } catch (err) {
-      console.error("Camera API Error:", err);
-      message.error("Failed to fetch cameras!");
+      console.error('Camera API Error:', err);
+      message.error('Failed to fetch cameras!');
     }
   };
 
@@ -80,7 +75,7 @@ const NvrDetailsTable = () => {
 
   const handleSearch = useMemo(
     () =>
-      debounce((value) => {
+      debounce(value => {
         setGlobalFilter(value);
         setPage(1);
       }, 300),
@@ -88,14 +83,14 @@ const NvrDetailsTable = () => {
   );
 
   // ✅ Delete NVR
-  const handleDelete = async (id) => {
+  const handleDelete = async id => {
     setLoading(true);
     try {
       await deviceApi.delete(`/NVR/${id}/`);
-      message.success("NVR deleted successfully!");
+      message.success('NVR deleted successfully!');
       fetchNvrs(globalFilter, page, pageSize);
     } catch (err) {
-      message.error("Failed to delete NVR");
+      message.error('Failed to delete NVR');
     } finally {
       setLoading(false);
     }
@@ -104,26 +99,26 @@ const NvrDetailsTable = () => {
   // ✅ Columns
   const columns = [
     columnHelper.display({
-      id: "serial",
-      header: "S.No",
-      cell: (info) => (
+      id: 'serial',
+      header: 'S.No',
+      cell: info => (
         <span className="font-medium text-gray-700">
           {(page - 1) * pageSize + info.row.index + 1}
         </span>
       ),
     }),
     columnHelper.display({
-      id: "onvif",
-      header: "ONVIF",
-      cell: (info) => {
+      id: 'onvif',
+      header: 'ONVIF',
+      cell: info => {
         const row = info.row.original;
         return (
           <Tag
             style={{
-              cursor: "pointer",
+              cursor: 'pointer',
               fontWeight: 500,
-              color: "#522EA8",
-              borderColor: "#522EA8",
+              color: '#522EA8',
+              borderColor: '#522EA8',
             }}
             icon={<CameraOutlined />}
             onClick={() => setViewOnvif(row)}
@@ -133,31 +128,27 @@ const NvrDetailsTable = () => {
         );
       },
     }),
-    columnHelper.accessor("name", {
-      header: "NVR Name",
-      cell: (info) => (
-        <span className="font-semibold text-purple-700">
-          {info.getValue()}
-        </span>
-      ),
+    columnHelper.accessor('name', {
+      header: 'NVR Name',
+      cell: info => <span className="font-semibold text-purple-700">{info.getValue()}</span>,
     }),
-    columnHelper.accessor("nvrip", { header: "IP Address" }),
-    columnHelper.accessor("port", { header: "Port" }),
-    columnHelper.accessor("location", { header: "Location" }),
-    columnHelper.accessor("zone", { header: "Zone" }),
+    columnHelper.accessor('nvrip', { header: 'IP Address' }),
+    columnHelper.accessor('port', { header: 'Port' }),
+    columnHelper.accessor('location', { header: 'Location' }),
+    columnHelper.accessor('zone', { header: 'Zone' }),
     columnHelper.display({
-      id: "actions",
-      header: "Actions",
-      cell: (info) => {
+      id: 'actions',
+      header: 'Actions',
+      cell: info => {
         const row = info.row.original;
         return (
           <div className="flex gap-3">
             <EyeOutlined
-              style={{ color: "#9000DB", fontSize: "15px", cursor: "pointer" }}
+              style={{ color: '#9000DB', fontSize: '15px', cursor: 'pointer' }}
               onClick={() => setViewNvr(row)}
             />
             <EditOutlined
-              style={{ color: "#16a34a", fontSize: "15px", cursor: "pointer" }}
+              style={{ color: '#16a34a', fontSize: '15px', cursor: 'pointer' }}
               onClick={() => navigate(`/nvr/form`, { state: { nvr: row } })}
             />
             <Popconfirm
@@ -168,9 +159,9 @@ const NvrDetailsTable = () => {
             >
               <DeleteOutlined
                 style={{
-                  color: "#dc2626",
-                  fontSize: "15px",
-                  cursor: "pointer",
+                  color: '#dc2626',
+                  fontSize: '15px',
+                  cursor: 'pointer',
                 }}
               />
             </Popconfirm>
@@ -198,11 +189,11 @@ const NvrDetailsTable = () => {
           <input
             type="text"
             placeholder="Search NVRs..."
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={e => handleSearch(e.target.value)}
             className="px-3 py-1 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring focus:ring-purple-300"
           />
           <button
-            onClick={() => navigate("/nvr/form")}
+            onClick={() => navigate('/nvr/form')}
             className="px-3 py-1.5 bg-white text-purple-700 rounded-md text-sm font-medium hover:bg-purple-100 shadow"
           >
             + Add NVR
@@ -214,20 +205,17 @@ const NvrDetailsTable = () => {
       <div className="overflow-x-auto rounded-md border-[#e7e5ec] shadow">
         <table className="min-w-full text-sm">
           <thead className="bg-[#9864db] text-[#E6E6FA]">
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
                     className="px-4 py-3 border border-[#e7e5ec] text-left font-semibold cursor-pointer whitespace-nowrap"
                     onClick={header.column.getToggleSortingHandler()}
                   >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                    {header.column.getIsSorted() === "asc" && " 🔼"}
-                    {header.column.getIsSorted() === "desc" && " 🔽"}
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.column.getIsSorted() === 'asc' && ' 🔼'}
+                    {header.column.getIsSorted() === 'desc' && ' 🔽'}
                   </th>
                 ))}
               </tr>
@@ -241,17 +229,14 @@ const NvrDetailsTable = () => {
                 </td>
               </tr>
             ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map(row => (
                 <tr key={row.id} className="hover:bg-purple-50">
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map(cell => (
                     <td
                       key={cell.id}
                       className="px-4 py-3 border border-gray-200 whitespace-nowrap"
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
                 </tr>
@@ -275,27 +260,27 @@ const NvrDetailsTable = () => {
         <div className="flex gap-2">
           <select
             value={pageSize}
-            onChange={(e) => {
+            onChange={e => {
               setPageSize(Number(e.target.value));
               setPage(1);
             }}
             className="px-2 py-1 border border-gray-300 rounded-md text-sm"
           >
-            {[10, 25, 50].map((size) => (
+            {[10, 25, 50].map(size => (
               <option key={size} value={size}>
                 Show {size}
               </option>
             ))}
           </select>
           <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+            onClick={() => setPage(p => Math.max(p - 1, 1))}
             className="px-3 py-1 border rounded bg-purple-100 text-purple-700 disabled:opacity-50"
             disabled={page === 1}
           >
             Prev
           </button>
           <button
-            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+            onClick={() => setPage(p => Math.min(p + 1, totalPages))}
             className="px-3 py-1 border rounded bg-purple-100 text-purple-700 disabled:opacity-50"
             disabled={page === totalPages}
           >
@@ -315,8 +300,8 @@ const NvrDetailsTable = () => {
           <div className="space-y-2">
             {Object.entries(viewNvr).map(([key, value]) => (
               <p key={key}>
-                <strong className="capitalize">{key}:</strong>{" "}
-                {value !== null ? value.toString() : "—"}
+                <strong className="capitalize">{key}:</strong>{' '}
+                {value !== null ? value.toString() : '—'}
               </p>
             ))}
           </div>
@@ -345,8 +330,6 @@ const NvrDetailsTable = () => {
 };
 
 export default NvrDetailsTable;
-
-
 
 // import React, { useState, useEffect, useMemo } from "react";
 // import {
@@ -649,4 +632,3 @@ export default NvrDetailsTable;
 // };
 
 // export default NvrDetailsTable;
-

@@ -1,23 +1,23 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
   flexRender,
   createColumnHelper,
-} from "@tanstack/react-table";
-import debounce from "lodash/debounce";
-import { api } from "../../../utils/axiosInstance"; // centralized axios instance
-import { message, Popconfirm, Modal, Tag, Spin } from "antd";
-import { useNavigate } from "react-router-dom";
-import { EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
+} from '@tanstack/react-table';
+import debounce from 'lodash/debounce';
+import { api } from '../../../utils/axiosInstance'; // centralized axios instance
+import { message, Popconfirm, Modal, Tag, Spin } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 
 const columnHelper = createColumnHelper();
 
 const UserTable = () => {
   const [data, setData] = useState([]);
   const [sorting, setSorting] = useState([]);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -31,24 +31,21 @@ const UserTable = () => {
   const fetchData = async (search = globalFilter, currentPage = page, size = pageSize) => {
     setLoading(true);
     try {
-      const res = await api.get("/users"); // ✅ centralized axios
+      const res = await api.get('/users'); // ✅ centralized axios
       const users = res.data;
 
       let filtered = users.filter(
-        (u) =>
+        u =>
           u.email.toLowerCase().includes(search.toLowerCase()) ||
-          u.roles.join(",").toLowerCase().includes(search.toLowerCase())
+          u.roles.join(',').toLowerCase().includes(search.toLowerCase())
       );
 
       setTotalPages(Math.ceil(filtered.length / size));
-      const paginated = filtered.slice(
-        (currentPage - 1) * size,
-        currentPage * size
-      );
+      const paginated = filtered.slice((currentPage - 1) * size, currentPage * size);
       setData(paginated);
     } catch (err) {
-      console.error("API Error:", err);
-      message.error("Failed to fetch users!");
+      console.error('API Error:', err);
+      message.error('Failed to fetch users!');
     } finally {
       setLoading(false);
     }
@@ -60,7 +57,7 @@ const UserTable = () => {
 
   const handleSearch = useMemo(
     () =>
-      debounce((value) => {
+      debounce(value => {
         setGlobalFilter(value);
         setPage(1);
       }, 300),
@@ -68,20 +65,20 @@ const UserTable = () => {
   );
 
   // Delete
-  const handleDelete = async (id) => {
+  const handleDelete = async id => {
     setLoading(true);
     try {
       await api.delete(`/users/${id}`);
-      message.success("User deleted successfully!");
+      message.success('User deleted successfully!');
 
       // ✅ Re-fetch data after delete
-      const res = await api.get("/users");
+      const res = await api.get('/users');
       const users = res.data;
 
       let filtered = users.filter(
-        (u) =>
+        u =>
           u.email.toLowerCase().includes(globalFilter.toLowerCase()) ||
-          u.roles.join(",").toLowerCase().includes(globalFilter.toLowerCase())
+          u.roles.join(',').toLowerCase().includes(globalFilter.toLowerCase())
       );
 
       const newTotalPages = Math.ceil(filtered.length / pageSize);
@@ -94,7 +91,7 @@ const UserTable = () => {
         fetchData(globalFilter, page, pageSize);
       }
     } catch (err) {
-      message.error("Failed to delete user");
+      message.error('Failed to delete user');
     } finally {
       setLoading(false);
     }
@@ -102,34 +99,28 @@ const UserTable = () => {
 
   const columns = [
     columnHelper.display({
-      id: "serial",
-      header: "S.No",
-      cell: (info) => (
+      id: 'serial',
+      header: 'S.No',
+      cell: info => (
         <span className="font-medium text-gray-700">
           {(page - 1) * pageSize + info.row.index + 1}
         </span>
       ),
       enableSorting: false,
     }),
-    columnHelper.accessor("id", {
-      header: "ID",
-      cell: (info) => (
-        <span className="text-xs text-gray-500">{info.getValue()}</span>
-      ),
+    columnHelper.accessor('id', {
+      header: 'ID',
+      cell: info => <span className="text-xs text-gray-500">{info.getValue()}</span>,
       enableSorting: true,
     }),
-    columnHelper.accessor("email", {
-      header: "Email",
-      cell: (info) => (
-        <span className="font-semibold text-purple-700">
-          {info.getValue()}
-        </span>
-      ),
+    columnHelper.accessor('email', {
+      header: 'Email',
+      cell: info => <span className="font-semibold text-purple-700">{info.getValue()}</span>,
       enableSorting: true,
     }),
-    columnHelper.accessor("roles", {
-      header: "Roles",
-      cell: (info) =>
+    columnHelper.accessor('roles', {
+      header: 'Roles',
+      cell: info =>
         info.getValue()?.length > 0 ? (
           <>
             {info.getValue().map((role, idx) => (
@@ -144,29 +135,27 @@ const UserTable = () => {
       enableSorting: false,
     }),
     columnHelper.display({
-      id: "actions",
-      header: "Actions",
-      cell: (info) => {
+      id: 'actions',
+      header: 'Actions',
+      cell: info => {
         const row = info.row.original;
         return (
           <div className="flex gap-3">
             <EyeOutlined
               style={{
-                color: "#9000DB",
-                fontSize: "15px",
-                cursor: "pointer",
+                color: '#9000DB',
+                fontSize: '15px',
+                cursor: 'pointer',
               }}
               onClick={() => setViewUser(row)}
             />
             <EditOutlined
               style={{
-                color: "#16a34a",
-                fontSize: "15px",
-                cursor: "pointer",
+                color: '#16a34a',
+                fontSize: '15px',
+                cursor: 'pointer',
               }}
-              onClick={() =>
-                navigate(`/user/form`, { state: { user: row } })
-              }
+              onClick={() => navigate(`/user/form`, { state: { user: row } })}
             />
             <Popconfirm
               title="Are you sure to delete this user?"
@@ -176,9 +165,9 @@ const UserTable = () => {
             >
               <DeleteOutlined
                 style={{
-                  color: "#dc2626",
-                  fontSize: "15px",
-                  cursor: "pointer",
+                  color: '#dc2626',
+                  fontSize: '15px',
+                  cursor: 'pointer',
                 }}
               />
             </Popconfirm>
@@ -207,11 +196,11 @@ const UserTable = () => {
           <input
             type="text"
             placeholder="Search users..."
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={e => handleSearch(e.target.value)}
             className="px-3 py-1 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring focus:ring-green-300"
           />
           <button
-            onClick={() => navigate("/user/form")}
+            onClick={() => navigate('/user/form')}
             className="px-3 py-1.5 bg-purple-700 text-white rounded-md text-sm hover:bg-purple-700"
           >
             + Add User
@@ -223,21 +212,18 @@ const UserTable = () => {
       <div className="overflow-x-auto rounded-md border-[#e7e5ec] shadow">
         <table className="min-w-full text-sm">
           <thead className="bg-[#9864db] text-[#E6E6FA]">
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <th
                     key={header.id}
                     className="px-4 py-3 border border-[#e7e5ec] text-left font-semibold text-[#E6E6FA] whitespace-nowrap cursor-pointer select-none"
                     onClick={header.column.getToggleSortingHandler()}
                   >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                    {flexRender(header.column.columnDef.header, header.getContext())}
                     {{
-                      asc: " 🔼",
-                      desc: " 🔽",
+                      asc: ' 🔼',
+                      desc: ' 🔽',
                     }[header.column.getIsSorted()] ?? null}
                   </th>
                 ))}
@@ -248,35 +234,26 @@ const UserTable = () => {
             {/* Show loader row when loading */}
             {loading ? (
               <tr>
-                <td
-                  colSpan={columns.length}
-                  className="py-6 text-center text-gray-500"
-                >
+                <td colSpan={columns.length} className="py-6 text-center text-gray-500">
                   <Spin tip="Loading users..." />
                 </td>
               </tr>
             ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map(row => (
                 <tr key={row.id} className="hover:bg-green-50">
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map(cell => (
                     <td
                       key={cell.id}
                       className="px-4 py-3 border border-green-100 whitespace-nowrap"
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
                 </tr>
               ))
             ) : (
               <tr>
-                <td
-                  colSpan={columns.length}
-                  className="py-6 text-center text-gray-500"
-                >
+                <td colSpan={columns.length} className="py-6 text-center text-gray-500">
                   No users found.
                 </td>
               </tr>
@@ -293,27 +270,27 @@ const UserTable = () => {
         <div className="flex gap-2">
           <select
             value={pageSize}
-            onChange={(e) => {
+            onChange={e => {
               setPageSize(Number(e.target.value));
               setPage(1);
             }}
             className="px-2 py-1 border border-gray-300 rounded-md text-sm"
           >
-            {[10, 25, 50].map((size) => (
+            {[10, 25, 50].map(size => (
               <option key={size} value={size} className="text-black">
                 Show {size}
               </option>
             ))}
           </select>
           <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+            onClick={() => setPage(p => Math.max(p - 1, 1))}
             className="px-3 py-1 border rounded bg-green-100 text-[#2c028d] disabled:opacity-50"
             disabled={page === 1}
           >
             Prev
           </button>
           <button
-            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+            onClick={() => setPage(p => Math.min(p + 1, totalPages))}
             className="px-3 py-1 border rounded bg-green-100 text-[#2c028d] disabled:opacity-50"
             disabled={page === totalPages}
           >
@@ -338,10 +315,8 @@ const UserTable = () => {
               <strong>Email:</strong> {viewUser.email}
             </p>
             <p>
-              <strong>Roles:</strong>{" "}
-              {viewUser.roles?.length > 0
-                ? viewUser.roles.join(", ")
-                : "No Role"}
+              <strong>Roles:</strong>{' '}
+              {viewUser.roles?.length > 0 ? viewUser.roles.join(', ') : 'No Role'}
             </p>
           </div>
         )}

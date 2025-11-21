@@ -118,6 +118,14 @@ const DashboardFilters = () => {
         ))}
       </div>
       <div className="flex justify-end mt-4">
+      <button
+          type="button"
+          onClick={refreshInventory}
+          className="text-sm text-purple-600 underline mr-4"
+          disabled={inventoryLoading}
+        >
+          Submit
+        </button>
         <button
           type="button"
           onClick={refreshInventory}

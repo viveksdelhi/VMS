@@ -178,11 +178,15 @@ const LiveEventsSidebar = ({ isCollapsed = true, onCollapseChange = () => {} }) 
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">
+                  <p className="text-sm font-semibold mt-1 text-purple-600">
+                      {event.eventType || 'Default Event'}
+                    </p>
+                    <p className="text-xs font-medium text-gray-800 truncate">
                       {event.camera_name || 'Unknown Camera'}
                     </p>
+                  
                     <p className="text-xs font-semibold mt-1 text-gray-700">
-                      {event.objectName || 'No object detected'}
+                      {event.objectName || 'Unknown Event'}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       <p className="text-xs text-gray-500">{formatTimeAgo(event.regDate)}</p>
@@ -192,9 +196,21 @@ const LiveEventsSidebar = ({ isCollapsed = true, onCollapseChange = () => {} }) 
                       </p>
                     </div>
                   </div>
-                  <span className="text-xs font-medium px-2 py-1 rounded-md bg-white/80 shadow-inner flex-shrink-0">
-                    #{event.id}
-                  </span>
+                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                    {event.framePath && (
+                      <Image
+                        src={`${ANALYTICS_API_URL}${event.framePath}`}
+                        alt="Event frame"
+                        className="rounded-md border border-gray-300"
+                        width={100}
+                        height={70}
+                        preview={false}
+                        fallback="https://via.placeholder.com/100x70?text=No+Image"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    )}
+                    
+                  </div>
                 </div>
               </div>
             ))
@@ -210,7 +226,7 @@ const LiveEventsSidebar = ({ isCollapsed = true, onCollapseChange = () => {} }) 
 
       {/* Collapsed View */}
       {isCollapsed && (
-        <div className="flex flex-col items-center justify-center h-full p-2">
+        <div className="flex flex-col items-center justify-center h-full p-2 gap-2">
           <div className="relative p-2 rounded-md hover:bg-purple-100 transition-colors">
             <MdNotificationsActive className="text-purple-600 text-2xl" />
             {events.length > 0 && (
@@ -269,6 +285,12 @@ const LiveEventsSidebar = ({ isCollapsed = true, onCollapseChange = () => {} }) 
                 </p>
               </div>
               <div>
+                <p className="text-gray-500">Event Type</p>
+                <p className="font-medium text-gray-800">
+                  {selectedEvent.eventType || 'Default Event'}
+                </p>
+              </div>
+              <div>
                 <p className="text-gray-500">Location</p>
                 <p className="font-medium text-gray-800">
                   {selectedEvent.camera_location || 'N/A'}
@@ -276,7 +298,7 @@ const LiveEventsSidebar = ({ isCollapsed = true, onCollapseChange = () => {} }) 
               </div>
               <div>
                 <p className="text-gray-500">Object</p>
-                <p className="font-medium text-gray-800">{selectedEvent.objectName || 'Unknown'}</p>
+                <p className="font-medium text-gray-800">{selectedEvent.objectName || 'Unknown Event'}</p>
               </div>
               <div>
                 <p className="text-gray-500">Object Count</p>
